@@ -1,0 +1,11 @@
+services:
+  development:
+    build:
+      context: .
+    ports:
+      - ${PORT:-3000}:${PORT:-3000}
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./:/app
+    command: sh -c "yarn install && yarn run start:dev"
