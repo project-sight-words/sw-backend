@@ -1,73 +1,52 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+  <a href="https://github.com/project-sight-words/" target="blank"><img src="https://avatars.githubusercontent.com/u/111692176?s=200&v=4/" width="200" style="border-radius: 30%;" alt="Project Sight Words Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
+<p align="center">
+  Backend service for Project Sight Words built using <a href="https://nestjs.com/">NestJS</a>.
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## Setting Up
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This section describes the process of setting up and running the backend of Project Sight Words on your local computer.
 
-## Installation
+### Prerequisites
 
-```bash
-$ npm install
-```
+Before we begin the set up process, ensure that the following tools have been installed in your local computer.
 
-## Running the app
+- [Git](https://git-scm.com/): Version control system
+- [Docker Engine](https://docs.docker.com/engine/): Containerization
+  - Install through [Docker Desktop](https://docs.docker.com/desktop/) (Recommended 👍)
 
-```bash
-# development
-$ npm run start
+### Guide
 
-# watch mode
-$ npm run start:dev
+1. Clone the repository into your local computer and change your working directory to the project's root folder.
+   ```console
+   $ git clone https://github.com/project-sight-words/sw-backend.git
+   $ cd sw-backend
+   ```
+2. Create a `.env` file that contains the environment variables used by the project. You can refer to `.env.example` as a guide.
+3. Build and run the container images using docker compose.
+   ```console
+   $ docker compose up
+   ```
 
-# production mode
-$ npm run start:prod
-```
+## Development
 
-## Test
+This section explains how to use this project on your local computer for development purposes.
 
-```bash
-# unit tests
-$ npm run test
+### Starting up
 
-# e2e tests
-$ npm run test:e2e
+1. Ensure that you are in the root directory of the project on your computer.
+2. Start the docker containers.
+   ```console
+   $ docker compose up
+   ```
 
-# test coverage
-$ npm run test:cov
-```
+### Shutting down
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+1. Ensure that you are in the root directory of the project on your computer.
+2. Stop the docker containers.
+   ```console
+   $ docker compose down
+   ```
