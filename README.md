@@ -21,14 +21,14 @@ Before we begin the set up process, ensure that the following tools have been in
 ### Guide
 
 1. Clone the repository into your local computer and change your working directory to the project's root folder.
-   ```console
-   $ git clone https://github.com/project-sight-words/sw-backend.git
-   $ cd sw-backend
+   ```shell
+   git clone https://github.com/project-sight-words/sw-backend.git
+   cd sw-backend
    ```
 2. Create a `.env` file that contains the environment variables used by the project. You can refer to `.env.example` as a guide.
 3. Build and run the container images using docker compose.
-   ```console
-   $ docker compose up
+   ```shell
+   docker compose up
    ```
 
 ## Development
@@ -39,14 +39,14 @@ This section explains how to use this project on your local computer for develop
 
 1. Ensure that you are in the root directory of the project on your computer.
 2. Start the docker containers.
-   ```console
-   $ docker compose up
+   ```shell
+   docker compose up
    ```
 
 ### Shutting down
 
 1. Ensure that you are in the root directory of the project on your computer.
 2. Stop the docker containers.
-   ```console
-   $ docker compose down
+   ```shell
+   docker compose down
    ```
