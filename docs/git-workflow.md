@@ -52,4 +52,3 @@ cd sw-backend/
 While not described in the guide above, please try to keep your commits as [atomic](https://en.wikipedia.org/wiki/Atomic_commit) as possible. This means not changing large chunks of unrelated code and committing it all at once.
 
 The most ideal flow when committing would be to commit once a set of related changes have been added and can be easily described with a one-liner as the subject of the commit.
-
