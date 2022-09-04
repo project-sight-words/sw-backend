@@ -73,5 +73,10 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "lint-staged": {
+    "*.md": [
+      "markdown-lint --fix --typograph"
+    ]
   }
 }
