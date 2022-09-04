@@ -2,6 +2,6 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 yarn run lint
-lint-staged
+yarn run lint:markdown
 
 exit 1
