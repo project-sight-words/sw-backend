@@ -1,6 +1,7 @@
 # Git workflow
 
-The workflow applied for the backend is a [Git Feature Branch Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow).
+The workflow applied for the backend is a
+[Git Feature Branch Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow).
 
 ## Prerequisites
 
@@ -15,40 +16,49 @@ cd sw-backend/
 
 1. Grab the latest changes from `main`.
 
-    ```shell
-    git checkout main
-    git fetch origin main
-    git reset --hard origin/main
-    ```
+   ```shell
+   git checkout main
+   git fetch origin main
+   git reset --hard origin/main
+   ```
 
-2. Create a new local feature branch as per our naming convention `<name>/[fix|feature]/<issue number>`. An example is shown below.
+2. Create a new local feature branch as per our naming convention
+   `<name>/[fix|feature]/<issue number>`. An example is shown below.
 
-    ```shell
-    git checkout -b jiahao/fix/12
-    ```
+   ```shell
+   git checkout -b jiahao/fix/12
+   ```
 
 3. Make the relevant changes within the branch.
 
-4. Commit your changes. The general convention for what goes into a commit message is based off of [CS2103T's Git commit conventions.](https://se-education.org/guides/conventions/git.html#git-conventions)
+4. Commit your changes. The general convention for what goes into a commit
+   message is based off of
+   [CS2103T’s Git commit conventions.](https://se-education.org/guides/conventions/git.html#git-conventions)
 
-    ```shell
-    git add <files>
-    git commit -m "Add ..."
-    ```
+   ```shell
+   git add <files>
+   git commit -m "Add ..."
+   ```
 
-5. Push the feature branch to the Github remote repository.
+5. Push the feature branch to the Github remote repository.
 
-    ```shell
-    git push -u origin jiahao/fix/12
-    ```
+   ```shell
+   git push -u origin jiahao/fix/12
+   ```
 
-6. Create a pull request from your new feature branch to `main`.
-7. Describe the pull request in detail, providing explanations for the changes made.
+6. Create a pull request from your new feature branch to `main`.
+
+7. Describe the pull request in detail, providing explanations for the changes
+   made.
 
 ## Guidelines
 
 ### Atomic commits
 
-While not described in the guide above, please try to keep your commits as [atomic](https://en.wikipedia.org/wiki/Atomic_commit) as possible. This means not changing large chunks of unrelated code and committing it all at once.
+While not described in the guide above, please try to keep your commits as
+[atomic](https://en.wikipedia.org/wiki/Atomic_commit) as possible. This means
+not changing large chunks of unrelated code and committing it all at once.
 
-The most ideal flow when committing would be to commit once a set of related changes have been added and can be easily described with a one-liner as the subject of the commit.
+The most ideal flow when committing would be to commit once a set of related
+changes have been added and can be easily described with a one-liner as the
+subject of the commit.
