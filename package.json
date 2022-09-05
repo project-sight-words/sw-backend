@@ -10,6 +10,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint:markdown": "markdown-lint --typograph README.md -r docs/",
     "lint:markdown:fix": "markdown-lint --fix --typograph README.md -r docs/",
     "postinstall": "husky install",
     "prebuild": "rimraf dist",
