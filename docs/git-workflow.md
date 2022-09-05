@@ -46,8 +46,8 @@ cd sw-backend/
    git push -u origin jiahao/fix/12
    ```
 
-   **Note:** A push can fail if the Markdown files in the repository are not
-   properly formatted. To fix the formatting, run `yarn lint:markdown` and
+   **Note:** A push can fail if the Markdown files in the repository are not
+   properly formatted. To fix the formatting, run `yarn lint:markdown:fix` and
    commit the relevant Markdown files changed.
 
 6. Create a pull request from your new feature branch to `main`.
