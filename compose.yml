@@ -6,6 +6,7 @@ services:
       - "postgres:/var/lib/postgresql/data"
     ports:
       - ${DB_PORT:-5432}:${DB_PORT:-5432}
+    restart: always
     environment:
       POSTGRES_DB: sw-db
       POSTGRES_USER: ${DB_USER:-postgres}
