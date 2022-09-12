@@ -16,7 +16,8 @@ Options:
 1. deleted_at column to store deleted records.
 2. Create an archive table for deleted records.
 
-Decision: Use a deleted_at column within the user table and if needed, convert to archive table for maintain deleted records in future.
+Decision: Use a deleted_at column within the user table and if needed, convert to archive table for maintain deleted records 
+in future.
 
 ### Joint Tables
 
