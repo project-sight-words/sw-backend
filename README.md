@@ -56,3 +56,11 @@ development purposes.
    ```shell
    docker compose down
    ```
+
+### Database schema migrations
+
+1. Ensure that you are in the root directory of the project on your computer.
+2. Run the migration script.
+   ```shell
+   yarn migrate
+   ```
