@@ -7,11 +7,11 @@ dotenv.config();
 
 async function main() {
   const client = new Client({
-    database: "sw-db",
-    user: "postgres",
-    password: "postgres",
-    host: "localhost",
+    host: process.env.DB_HOST ?? "sw-db",
     port: parseInt(process.env.DB_PORT ?? "5432"),
+    user: process.env.DB_USER ?? "postgres",
+    password: process.env.DB_PASSWORD ?? "postgres",
+    database: process.env.DB_NAME ?? "sw-db",
   });
 
   console.log(`Connecting to database at ${client.host}:${client.port}`);
