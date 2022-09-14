@@ -14,12 +14,12 @@ cd sw-backend/
 
 ## General steps
 
-1. Grab the latest changes from `main`.
+1. Grab the latest changes from `development`.
 
    ```shell
-   git checkout main
-   git fetch origin main
-   git reset --hard origin/main
+   git checkout development
+   git fetch origin development
+   git reset --hard origin/development
    ```
 
 2. Create a new local feature branch as per our naming convention
@@ -50,7 +50,7 @@ cd sw-backend/
    properly formatted. To fix the formatting, run `yarn lint:markdown:fix` and
    commit the relevant Markdown files changed.
 
-6. Create a pull request from your new feature branch to `main`.
+6. Create a pull request from your new feature branch to `development`.
 
 7. Describe the pull request in detail, providing explanations for the changes
    made.
