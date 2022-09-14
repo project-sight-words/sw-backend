@@ -57,6 +57,14 @@ cd sw-backend/
 
 ## Guidelines
 
+### Creating issues
+
+Before creating a new branch, always ensure that a new issue is created first
+so that the branch can properly target that issue.
+
+Without an issue, it is harder to track the progress and reasons why the
+feature/fix was made.
+
 ### Atomic commits
 
 While not described in the guide above, please try to keep your commits as
