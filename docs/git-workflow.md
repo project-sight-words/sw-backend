@@ -14,12 +14,12 @@ cd sw-backend/
 
 ## General steps
 
-1. Grab the latest changes from `main`.
+1. Grab the latest changes from `development`.
 
    ```shell
-   git checkout main
-   git fetch origin main
-   git reset --hard origin/main
+   git checkout development
+   git fetch origin development
+   git reset --hard origin/development
    ```
 
 2. Create a new local feature branch as per our naming convention
@@ -50,12 +50,27 @@ cd sw-backend/
    properly formatted. To fix the formatting, run `yarn lint:markdown:fix` and
    commit the relevant Markdown files changed.
 
-6. Create a pull request from your new feature branch to `main`.
+6. Create a pull request from your new feature branch to `development`.
 
 7. Describe the pull request in detail, providing explanations for the changes
    made.
 
 ## Guidelines
+
+### Creating issues
+
+Before creating a new branch, always ensure that a new issue is created first
+so that the branch can properly target that issue.
+
+Without an issue, it is harder to track the progress and reasons why the
+feature/fix was made.
+
+For bug reports, please include the following information as a starting point to
+help the assigned developer replicate the issue.
+
+1. Steps taken to encounter the bug.
+2. Environment you are using when the bug occurred.
+3. Additional information about the bug.
 
 ### Atomic commits
 
