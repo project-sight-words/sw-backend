@@ -65,6 +65,13 @@ so that the branch can properly target that issue.
 Without an issue, it is harder to track the progress and reasons why the
 feature/fix was made.
 
+For bug reports, please include the following information as a starting point to
+help the assigned developer replicate the issue.
+
+1. Steps taken to encounter the bug.
+2. Environment you are using when the bug occurred.
+3. Additional information about the bug.
+
 ### Atomic commits
 
 While not described in the guide above, please try to keep your commits as
