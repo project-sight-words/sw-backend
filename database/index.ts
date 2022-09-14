@@ -10,7 +10,7 @@ async function main() {
     database: "sw-db",
     user: "postgres",
     password: "postgres",
-    host: "localhost",
+    host: "sw-db",
     port: parseInt(process.env.DB_PORT ?? "5432"),
   });
 
