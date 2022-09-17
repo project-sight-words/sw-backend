@@ -14,7 +14,7 @@ export class AuthenticationController {
   constructor(private readonly googleService: GoogleService) {}
 
   @Post("google")
-  async authenticate(
+  async authenticateWithGoogle(
     @Body() data: AuthenticateDto,
     @Res({ passthrough: true }) response: Response,
   ) {
