@@ -13,6 +13,6 @@ CREATE TABLE user_teacher (
   created_at  TIMESTAMPTZ,
   created_by  UUID,
   deleted_at  TIMESTAMPTZ,
-  deleted_by  UUID    
+  deleted_by  UUID,
   UNIQUE(user_id, teacher_id, deleted_at=NULL)
 );
