@@ -1,20 +1,18 @@
-import { GoogleService } from "./google.service";
+import { SessionService } from "./session.service";
 import { Test, TestingModule } from "@nestjs/testing";
 
-describe("GoogleService", () => {
-  let service: GoogleService;
+describe("SessionService", () => {
+  let service: SessionService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [GoogleService],
+      providers: [SessionService],
     }).compile();
 
-    service = module.get<GoogleService>(GoogleService);
+    service = module.get<SessionService>(SessionService);
   });
 
   it("should be defined", () => {
     expect(service).toBeDefined();
   });
-
-  // TODO: Add tests for verifyIdToken
 });

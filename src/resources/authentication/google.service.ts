@@ -1,4 +1,4 @@
-import { google } from "googleapis";
+import { Auth, google } from "googleapis";
 import {
   Injectable,
   InternalServerErrorException,
@@ -14,17 +14,21 @@ export class GoogleService {
 
   private readonly logService = new Logger("GoogleService");
 
-  async verifyIdToken(idToken: string): Promise<string | Error> {
-    const ticket = await GoogleService.oauthClient
-      .verifyIdToken({
+  async verifyIdToken(idToken: string): Promise<Auth.LoginTicket> {
+    try {
+      const ticket = await GoogleService.oauthClient.verifyIdToken({
         idToken,
-        audience: process.env.FRONTEND_GOOGLE_OAUTH_CLIENT_ID,
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Error) this.logService.error(error);
-        return new Error("Verification error");
+        // TODO: Add audience setting so that only log ins to authorized clients can access
+        // audience: process.env.FRONTEND_GOOGLE_OAUTH_CLIENT_ID,
       });
-    if (ticket instanceof Error) return ticket;
+      return ticket;
+    } catch (error: unknown) {
+      this.logService.error(error);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  getEmailFromTicket(ticket: Auth.LoginTicket): string {
     const payload = ticket.getPayload();
     if (!payload) throw new InternalServerErrorException();
     const { email } = payload;

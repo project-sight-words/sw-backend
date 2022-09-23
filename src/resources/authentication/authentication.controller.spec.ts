@@ -1,4 +1,5 @@
 import { AuthenticationController } from "./authentication.controller";
+import { GoogleService } from "./google.service";
 import { Test, TestingModule } from "@nestjs/testing";
 
 describe("AuthenticationController", () => {
@@ -7,6 +8,7 @@ describe("AuthenticationController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthenticationController],
+      providers: [GoogleService],
     }).compile();
 
     controller = module.get<AuthenticationController>(AuthenticationController);
@@ -16,5 +18,5 @@ describe("AuthenticationController", () => {
     expect(controller).toBeDefined();
   });
 
-  // TODO: Add tests for authenticateWithGoogle
+  // TODO: Add tests for loginWithGoogle
 });
