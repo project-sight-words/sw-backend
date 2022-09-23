@@ -1,5 +1,10 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { Pool } from "pg";
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnModuleDestroy,
+} from "@nestjs/common";
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
@@ -11,12 +16,24 @@ export class DatabaseService implements OnModuleDestroy {
     database: process.env.DB_NAME ?? "sw-db",
   });
 
+  private readonly loggerService = new Logger("DatabaseService");
+
   async query(SQL: string, values?: unknown[]): Promise<unknown[]> {
-    const { rows } = await DatabaseService.pool.query(SQL, values);
-    return rows as unknown[];
+    try {
+      const { rows } = await DatabaseService.pool.query(SQL, values);
+      return rows as unknown[];
+    } catch (error: unknown) {
+      this.loggerService.error(error);
+      throw new InternalServerErrorException();
+    }
   }
 
-  async onModuleDestroy() {
-    await DatabaseService.pool.end();
+  async onModuleDestroy(): Promise<void> {
+    try {
+      await DatabaseService.pool.end();
+    } catch (error: unknown) {
+      this.loggerService.error(error);
+      throw new InternalServerErrorException();
+    }
   }
 }
