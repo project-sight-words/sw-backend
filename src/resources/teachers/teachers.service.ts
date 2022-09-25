@@ -1,7 +1,5 @@
 import { Injectable } from "@nestjs/common";
 
-import { Teacher } from "./teachers.model";
-
 @Injectable()
 export class TeachersService {
   createTeacher(staff_id: string, name: string): void {

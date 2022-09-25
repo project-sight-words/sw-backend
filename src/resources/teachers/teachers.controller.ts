@@ -6,9 +6,12 @@ import {
   Put,
   Param,
   Body,
+  UsePipes,
 } from "@nestjs/common";
+import { CreateTeacherDto } from "./dto/create.dto";
 
 import { TeachersService } from "./teachers.service";
+import { ValidationPipe } from "@nestjs/common/pipes";
 
 @Controller("teachers")
 export class TeachersController {
@@ -16,11 +19,14 @@ export class TeachersController {
   //instantiate a teacher service
   constructor(private teachersService: TeachersService) {}
   @Post()
+  @UsePipes(ValidationPipe)
   createTeacher(
-    @Body("staff_id") staff_id: string,
-    @Body("name") name: string,
-  ): void {
-    return this.teachersService.createTeacher(staff_id, name);
+    // @Body("staff_id") staff_id: string,
+    // @Body("name") name: string,
+    @Body() teacherData: CreateTeacherDto,
+  ) {
+    return { data: teacherData };
+    // return this.teachersService.createTeacher(staff_id, name);
     // return "Teacher created";
   }
 

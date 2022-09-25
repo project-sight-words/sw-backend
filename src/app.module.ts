@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { TeachersModule } from "./controllers/teachers/teachers.module";
+import { TeachersModule } from "./resources/teachers/teachers.module";
 
 @Module({
   imports: [ConfigModule.forRoot(), TeachersModule],
