@@ -9,6 +9,9 @@
     "module": "commonjs",
     "noFallthroughCasesInSwitch": false,
     "outDir": "./dist",
+    "paths": {
+      "*": ["./src/*"]
+    },
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,

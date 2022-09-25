@@ -1,4 +1,5 @@
 import { DatabaseService } from "./database.service";
+import { InternalServerErrorException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 
 describe("DatabaseService", () => {
@@ -16,7 +17,7 @@ describe("DatabaseService", () => {
     expect(service).toBeDefined();
   });
 
-  it("should be able to query", async () => {
+  it("should return rows on query", async () => {
     const rows = await service.query("SELECT 1;");
     expect(rows.length).toBeGreaterThan(0);
     expect(typeof rows[0]).toBe("object");
@@ -24,6 +25,11 @@ describe("DatabaseService", () => {
     const values = Object.values(row);
     expect(values.length).toBeGreaterThan(0);
     expect(values[0]).toBe(1);
+  });
+
+  it("should throw InternalServerErrorException on invalid query", async () => {
+    const promise = service.query("INVALID QUERY;");
+    await expect(promise).rejects.toThrow(InternalServerErrorException);
   });
 
   afterAll(async () => {
