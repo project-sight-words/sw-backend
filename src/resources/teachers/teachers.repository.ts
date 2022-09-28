@@ -1,32 +1,49 @@
-// import { InternalServerErrorException } from "@nestjs/common";
-// import { DatabaseService } from "src/database/database.service";
-// import { Teacher } from "./teachers.model";
+import { InternalServerErrorException, Logger } from "@nestjs/common";
+import { DatabaseService } from "src/database/database.service";
+import { TeacherEntity } from "src/entities/teacher.entities";
+import { TeacherDatabaseObj } from "src/entities/teacher.entities";
 
-// export class TeachersRepository {
-//   async insertTeacher(staff_id: string, name: string): Promise<void> {
-//     const rows = await DatabaseService.query(
-//       `
-//       INSERT INTO teachers(staff_id, name)
-//       VALUES (staff_id, name)
-//       RETURNING *;
-//       `,
-//       [teacher.staff_id, teacher.name]
-//     );
-//     if (rows instanceof Error) throw new InternalServerErrorException();
-//     if (rows.length !== 1) throw new InternalServerErrorException();
-//     return ;//sth
-//   }
+export class TeachersRepository {
+  constructor(private readonly databaseService: DatabaseService) {}
+  private readonly loggerService = new Logger("Database Service");
 
-//   async selectTeacher(id: number): Promise<Teacher> {
-//     const rows = await DatabaseService.query(
-//       `
-//       SELECT id FROM teachers WHERE id=:id
-//       RETURNING *
-//       `
-//       [teacher] //sth
-//     );
-//     if (rows instanceof Error) throw new InternalServerErrorException();
-//     if (rows.length !== 1) throw new InternalServerErrorException();
-//     return ;//sth
-//   }
-// }
+  async insertTeacher(teachers: TeacherEntity): Promise<TeacherEntity> {
+    const query = `
+    INSERT INTO teachers(staff_id, name)
+    VALUES($1, $2)
+    RETURNING *
+    `;
+    try {
+      const request = await this.databaseService.query(query, [
+        teachers.get_staff_id(),
+        teachers.get_name(),
+      ]);
+
+      const response = request[0] as TeacherDatabaseObj;
+      return TeacherEntity.loadTeacher(response);
+    } catch (error) {
+      if (error instanceof Error) {
+        this.loggerService.error(error);
+      }
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async getTeacher(id: number): Promise<TeacherEntity> {
+    const query = `
+    SELECT id
+    FROM teachers
+    WHERE (id = $1)
+    `;
+    try {
+      const request = await this.databaseService.query(query, [id]);
+      const response = request[0] as TeacherDatabaseObj;
+      return TeacherEntity.loadTeacher(response);
+    } catch (error) {
+      if (error instanceof Error) {
+        this.loggerService.error(error);
+      }
+      throw new InternalServerErrorException();
+    }
+  }
+}
