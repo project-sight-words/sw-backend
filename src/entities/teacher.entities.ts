@@ -6,7 +6,7 @@ export interface TeacherDatabaseObj {
   updated_by: string;
 }
 
-export class TeacherEntity {
+export class TeachersEntity {
   private constructor(
     private _staff_id: string,
     private _name: string,
@@ -24,12 +24,12 @@ export class TeacherEntity {
     return this._name;
   }
 
-  public static createTeacher(staffId: string, name: string): TeacherEntity {
-    return new TeacherEntity(staffId, name);
+  public static createTeacher(staffId: string, name: string): TeachersEntity {
+    return new TeachersEntity(staffId, name);
   }
 
-  public static loadTeacher(response: TeacherDatabaseObj): TeacherEntity {
-    return new TeacherEntity(
+  public static loadTeacher(response: TeacherDatabaseObj): TeachersEntity {
+    return new TeachersEntity(
       response.staff_id,
       response.name,
       response.id,

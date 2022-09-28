@@ -1,13 +1,12 @@
 import { InternalServerErrorException, Logger } from "@nestjs/common";
-import { DatabaseService } from "src/database/database.service";
-import { TeacherEntity } from "src/entities/teacher.entities";
-import { TeacherDatabaseObj } from "src/entities/teacher.entities";
-
+import { DatabaseService } from "database/database.service";
+import { TeachersEntity } from "entities/teacher.entities";
+import { TeacherDatabaseObj } from "entities/teacher.entities";
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
   private readonly loggerService = new Logger("Database Service");
 
-  async insertTeacher(teachers: TeacherEntity): Promise<TeacherEntity> {
+  async insertTeacher(teachers: TeachersEntity): Promise<TeachersEntity> {
     const query = `
     INSERT INTO teachers(staff_id, name)
     VALUES($1, $2)

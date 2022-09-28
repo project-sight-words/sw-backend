@@ -9,20 +9,20 @@ import {
   UsePipes,
 } from "@nestjs/common";
 import { CreateTeacherDto } from "./dto/create.dto";
-
 import { TeachersService } from "./teachers.service";
 import { ValidationPipe } from "@nestjs/common/pipes";
-import { TeacherEntity } from "src/entities/teacher.entities";
+import { TeachersEntity } from "entities/teacher.entities";
 
 @Controller("teachers")
 export class TeachersController {
-  //teacher object need to make a model?
   //instantiate a teacher service
   constructor(private teachersService: TeachersService) {}
 
   @Post()
   @UsePipes(ValidationPipe)
-  createTeacher(@Body() teacherData: CreateTeacherDto): Promise<TeacherEntity> {
+  createTeacher(
+    @Body() teacherData: CreateTeacherDto,
+  ): Promise<TeachersEntity> {
     return this.teachersService.createTeacher(teacherData);
   }
 
@@ -34,7 +34,7 @@ export class TeachersController {
   }
 
   @Get(":id")
-  getTeacher(@Param("id") id: number): Promise<TeacherEntity> {
+  getTeacher(@Param("id") id: number): Promise<TeachersEntity> {
     //returns a teacher
     return this.teachersService.getTeacher(id);
     // return "Return a {params.id} teacher";

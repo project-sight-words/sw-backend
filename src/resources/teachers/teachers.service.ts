@@ -1,14 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { CreateTeacherDto } from "./dto/create.dto";
-import { TeacherEntity } from "src/entities/teacher.entities";
+import { TeachersEntity } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
 
+@Injectable()
 export class TeachersService {
   constructor(private teachersRepository: TeachersRepository) {}
 
-  createTeacher(teacherData: CreateTeacherDto): Promise<TeacherEntity> {
+  createTeacher(teacherData: CreateTeacherDto): Promise<TeachersEntity> {
     // returns nothing
-    const teachersEntity = TeacherEntity.createTeacher(
+    const teachersEntity = TeachersEntity.createTeacher(
       teacherData.staff_id,
       teacherData.name,
     );
@@ -21,7 +22,7 @@ export class TeachersService {
     return "Get all teachers";
   }
 
-  getTeacher(id: number): Promise<TeacherEntity> {
+  getTeacher(id: number): Promise<TeachersEntity> {
     // return a teacher object
     return this.teachersRepository.getTeacher(id);
     // return "Get Single Teacher";
