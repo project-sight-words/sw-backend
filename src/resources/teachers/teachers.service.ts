@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { CreateTeacherDto } from "./dto/create.dto";
-import { TeachersEntity } from "entities/teacher.entities";
+import { TeachersEntity } from "src/entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
 
 @Injectable()

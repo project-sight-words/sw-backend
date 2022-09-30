@@ -1,7 +1,8 @@
 import { InternalServerErrorException, Logger } from "@nestjs/common";
-import { DatabaseService } from "database/database.service";
-import { TeachersEntity } from "entities/teacher.entities";
-import { TeacherDatabaseObj } from "entities/teacher.entities";
+import { DatabaseService } from "src/database/database.service";
+import { TeachersEntity } from "src/entities/teacher.entities";
+import { TeacherDatabaseObj } from "src/entities/teacher.entities";
+
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
   private readonly loggerService = new Logger("Database Service");
@@ -19,7 +20,7 @@ export class TeachersRepository {
       ]);
 
       const response = request[0] as TeacherDatabaseObj;
-      return TeacherEntity.loadTeacher(response);
+      return TeachersEntity.loadTeacher(response);
     } catch (error) {
       if (error instanceof Error) {
         this.loggerService.error(error);
@@ -28,7 +29,7 @@ export class TeachersRepository {
     }
   }
 
-  async getTeacher(id: number): Promise<TeacherEntity> {
+  async getTeacher(id: number): Promise<TeachersEntity> {
     const query = `
     SELECT id
     FROM teachers
@@ -37,7 +38,7 @@ export class TeachersRepository {
     try {
       const request = await this.databaseService.query(query, [id]);
       const response = request[0] as TeacherDatabaseObj;
-      return TeacherEntity.loadTeacher(response);
+      return TeachersEntity.loadTeacher(response);
     } catch (error) {
       if (error instanceof Error) {
         this.loggerService.error(error);
