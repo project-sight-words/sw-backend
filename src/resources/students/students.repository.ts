@@ -13,9 +13,9 @@ export class StudentsRepository {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly usersRepository: UsersRepository,
-  ) {}
+  ) { }
 
-  async getStudentById(id: string): Promise<Student> {
+  async getStudentById(id: string): Promise<Student | null> {
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -32,6 +32,8 @@ export class StudentsRepository {
       `,
       [id],
     );
+
+    if (!rows[0]) return null;
 
     return plainToClass(Student, rows[0]);
   }
