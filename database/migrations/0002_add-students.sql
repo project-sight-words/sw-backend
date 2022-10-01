@@ -14,7 +14,7 @@ CREATE TABLE students (
 CREATE TABLE user_students (
   user_id UUID NOT NULL,
   student_id UUID NOT NULL,
-  created_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   created_by UUID,
   PRIMARY KEY (user_id, student_id),
   CONSTRAINT fk_users FOREIGN KEY (user_id) REFERENCES users (id),
