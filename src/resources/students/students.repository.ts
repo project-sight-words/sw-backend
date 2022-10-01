@@ -3,17 +3,14 @@ import { plainToClass, plainToInstance } from "class-transformer";
 import { DatabaseService } from "../../database/database.service";
 import {
   NewStudent,
+  NewUserStudent,
   Student,
   UserStudent,
 } from "../../entities/student.entities";
-import { UsersRepository } from "../users/users.repository";
 
 @Injectable()
 export class StudentsRepository {
-  constructor(
-    private readonly databaseService: DatabaseService,
-    private readonly usersRepository: UsersRepository,
-  ) { }
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async getStudentById(id: string): Promise<Student | null> {
     const rows = await this.databaseService.query(
@@ -82,11 +79,6 @@ export class StudentsRepository {
   }
 
   async upsertByEmailAndStudentId(student: NewStudent): Promise<Student> {
-    const newUser = await this.usersRepository.upsertByEmail({
-      email: student.email,
-      lastLoggedIn: null,
-    });
-
     // TODO: Don't set updated_at?
     // TODO: Wrap into ORM transaction?
     const upsertStudent = await this.databaseService.query(
@@ -102,7 +94,13 @@ export class StudentsRepository {
     );
     const newStudent = plainToClass(Student, upsertStudent[0]);
     newStudent.email = student.email;
+    return newStudent;
+  }
 
+  async linkStudentToUser(
+    userStudent: NewUserStudent,
+    student: Student,
+  ): Promise<Student> {
     // Do nothing ON CONFLICT for now as nothing can be updated
     const upsertUserStudent = await this.databaseService.query(
       `
@@ -112,11 +110,11 @@ export class StudentsRepository {
         DO NOTHING
         RETURNING *;
       `,
-      [newUser.id, newStudent.id],
+      [userStudent.userId, userStudent.studentId],
     );
     const newUserStudent = plainToClass(UserStudent, upsertUserStudent[0]);
-    newStudent.userStudent = newUserStudent;
+    student.userStudent = newUserStudent;
 
-    return newStudent;
+    return student;
   }
 }

@@ -35,6 +35,18 @@ export class Student extends NewStudent {
   userStudent!: UserStudent | null;
 }
 
+export class NewUserStudent {
+  @Expose({ name: "user_id" })
+  @IsNotEmpty()
+  @IsUUID()
+  userId!: string;
+
+  @Expose({ name: "student_id" })
+  @IsNotEmpty()
+  @IsUUID()
+  studentId!: string;
+}
+
 export class UserStudent {
   @Expose({ name: "created_by" })
   @Exclude({ toPlainOnly: true })
