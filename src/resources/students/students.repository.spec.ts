@@ -44,4 +44,32 @@ describe("StudentsRepository", () => {
     expect(retrievedStudent.studentId).toBe(testNewStudent.studentId);
     expect(retrievedStudent.name).toBe(testNewStudent.name);
   });
+
+  it("should return Student on updateStudent", async () => {
+    const testStudent = {
+      email: "update_student@example.com",
+      studentId: "S17",
+      name: "Mary Jane",
+    };
+    await service.upsertByEmailAndStudentId(testStudent);
+
+    const testUpdateStudent = {
+      email: testStudent.email,
+      studentId: testStudent.studentId,
+      name: "Jerry Doe",
+    };
+    const updatedStudent = await service.updateStudent(testUpdateStudent);
+    expect(updatedStudent).toBeInstanceOf(Student);
+    // Don't test for email as that is not returned with the UPDATE
+    expect(updatedStudent.studentId).toBe(testUpdateStudent.studentId);
+    expect(updatedStudent.name).toBe(testUpdateStudent.name);
+
+    // TODO: Better mock this
+    const failedUpdatedStudent = await service.updateStudent({
+      email: "something@email.com",
+      studentId: "123",
+      name: "Jerry Doe",
+    });
+    expect(failedUpdatedStudent).toBeUndefined();
+  });
 });

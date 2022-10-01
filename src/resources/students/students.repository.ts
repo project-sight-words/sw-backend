@@ -56,6 +56,29 @@ export class StudentsRepository {
     return plainToInstance(Student, rows);
   }
 
+  async updateStudent(student: NewStudent): Promise<Student> {
+    // TODO: Allow updating of email from student?
+    // Updates should only occur if there's a (single) record in the joining table
+    const updateStudent = await this.databaseService.query(
+      `
+        UPDATE students
+        SET name = $1
+        FROM (
+          SELECT students.student_id AS student_id
+          FROM students
+          JOIN user_students
+          ON students.id = user_students.student_id
+          WHERE students.student_id = $2
+        ) AS subquery
+        WHERE students.student_id = subquery.student_id
+        RETURNING *;
+      `,
+      [student.name, student.studentId],
+    );
+
+    return plainToClass(Student, updateStudent[0]);
+  }
+
   async upsertByEmailAndStudentId(student: NewStudent): Promise<Student> {
     const newUser = await this.usersRepository.upsertByEmail({
       email: student.email,
