@@ -15,6 +15,27 @@ export class StudentsRepository {
     private readonly usersRepository: UsersRepository,
   ) {}
 
+  async getStudentById(id: string): Promise<Student> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          users.id AS id,
+          users.email AS email,
+          students.student_id AS student_id,
+          students.name AS name
+        FROM students
+        JOIN user_students
+          ON students.id = user_students.student_id
+        JOIN users
+          ON user_students.user_id = users.id
+        WHERE students.student_id = $1;
+      `,
+      [id],
+    );
+
+    return plainToClass(Student, rows[0]);
+  }
+
   async upsertByEmailAndStudentId(student: NewStudent): Promise<Student> {
     const newUser = await this.usersRepository.upsertByEmail({
       email: student.email,
