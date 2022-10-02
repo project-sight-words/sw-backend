@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { NewStudent, Student } from "../../entities/student.entities";
 import { UsersRepository } from "../users/users.repository";
 import { StudentDto } from "./students.dto";
@@ -47,6 +51,9 @@ export class StudentsService {
     const updatedStudent = await this.studentsRepository.updateStudent(
       this.dtoToNewStudent(studentDto),
     );
+
+    if (!updatedStudent) throw new BadRequestException();
+
     return this.studentToDto(updatedStudent);
   }
 

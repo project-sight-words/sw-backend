@@ -26,7 +26,6 @@ describe("StudentsRepository", () => {
   });
 
   it("should return Student on upsertByEmailAndStudentId", async () => {
-    // This should perform three INSERTs: to users, students, then user_students
     const insertedStudent = await service.upsertByEmailAndStudentId(
       testNewStudent,
     );
@@ -40,11 +39,13 @@ describe("StudentsRepository", () => {
     const retrievedStudent = await service.getStudentById(
       testNewStudent.studentId,
     );
+    expect(retrievedStudent).toBeInstanceOf(Student);
     expect(retrievedStudent.email).toBe(testNewStudent.email);
     expect(retrievedStudent.studentId).toBe(testNewStudent.studentId);
     expect(retrievedStudent.name).toBe(testNewStudent.name);
   });
 
+  // TODO: The data should be preloaded using mocking to be safer
   it("should return Student on updateStudent", async () => {
     const testStudent = {
       email: "update_student@example.com",
@@ -59,6 +60,7 @@ describe("StudentsRepository", () => {
       name: "Jerry Doe",
     };
     const updatedStudent = await service.updateStudent(testUpdateStudent);
+    expect(updatedStudent).toBeDefined();
     expect(updatedStudent).toBeInstanceOf(Student);
     // Don't test for email as that is not returned with the UPDATE
     expect(updatedStudent.studentId).toBe(testUpdateStudent.studentId);

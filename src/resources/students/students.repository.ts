@@ -12,7 +12,7 @@ import {
 export class StudentsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async getStudentById(id: string): Promise<Student | null> {
+  async getStudentById(id: string): Promise<Student> {
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -29,8 +29,6 @@ export class StudentsRepository {
       `,
       [id],
     );
-
-    if (!rows[0]) return null;
 
     return plainToClass(Student, rows[0]);
   }
@@ -74,7 +72,6 @@ export class StudentsRepository {
       `,
       [student.name, student.studentId],
     );
-
     return plainToClass(Student, updateStudent[0]);
   }
 
