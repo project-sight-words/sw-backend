@@ -1,40 +1,62 @@
-export interface TeacherDatabaseObj {
-  id: string;
-  staff_id: string;
-  name: string;
-  updated_at: Date;
-  updated_by: string;
+import { Expose } from "class-transformer";
+import { IsDate, IsNotEmpty, IsUUID, IsEmail, IsString } from "class-validator";
+
+export class NewTeacher {
+  @Expose({ name: "staff_id" })
+  @IsNotEmpty()
+  @IsString()
+  staffId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
 }
 
-export class TeachersEntity {
-  private constructor(
-    private _staff_id: string,
-    private _name: string,
-    // generated
-    private _id?: string | undefined,
-    private updated_at?: Date,
-    private updated_by?: string | undefined,
-  ) {}
+export class Teacher extends NewTeacher {
+  @IsNotEmpty()
+  @IsUUID()
+  id!: string;
 
-  public get_staff_id(): string {
-    return this._staff_id;
-  }
+  @Expose({ name: "updated_at" })
+  @IsDate()
+  updatedAt!: Date | null;
 
-  public get_name(): string {
-    return this._name;
-  }
+  @Expose({ name: "updated_by" })
+  @IsUUID()
+  updatedBy!: string | null;
+}
 
-  public static createTeacher(staffId: string, name: string): TeachersEntity {
-    return new TeachersEntity(staffId, name);
-  }
+export class NewUserTeacher {
+  @Expose({ name: "user_id" })
+  @IsNotEmpty()
+  @IsUUID()
+  userId!: string;
 
-  public static loadTeacher(response: TeacherDatabaseObj): TeachersEntity {
-    return new TeachersEntity(
-      response.staff_id,
-      response.name,
-      response.id,
-      response.updated_at,
-      response.updated_by,
-    );
-  }
+  @Expose({ name: "teacher_id" })
+  @IsNotEmpty()
+  @IsUUID()
+  teacherId!: string;
+}
+
+export class UserTeacher {
+  @Expose()
+  @IsNotEmpty()
+  @IsUUID()
+  id!: string;
+
+  @Expose({ name: "created_at" })
+  @IsDate()
+  createdAt!: Date | null;
+
+  @Expose({ name: "created_by" })
+  @IsUUID()
+  createdBy!: string | null;
+
+  @Expose({ name: "deleted_at" })
+  @IsDate()
+  deletedAt!: Date | null;
+
+  @Expose({ name: "deleted_by" })
+  @IsUUID()
+  deletedBy!: string | null;
 }

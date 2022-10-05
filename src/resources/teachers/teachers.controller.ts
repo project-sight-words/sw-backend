@@ -1,34 +1,34 @@
 import { Controller, Get, Post, Param, Body, UsePipes } from "@nestjs/common";
-import { CreateTeacherDto } from "./dto/create.dto";
+import { Authorization } from "decorators/authorization.decorator";
+import { CreateTeacherDto } from "./dto/teachers.dto";
 import { TeachersService } from "./teachers.service";
 import { ValidationPipe } from "@nestjs/common/pipes";
-import { TeachersEntity } from "src/entities/teacher.entities";
+import { Teacher } from "entities/teacher.entities";
 
 @Controller("teachers")
 export class TeachersController {
-  //instantiate a teacher service
-  constructor(private teachersService: TeachersService) {}
+  constructor(private readonly teachersService: TeachersService) {}
 
   @Post()
   @UsePipes(ValidationPipe)
-  createTeacher(
+  async createTeacher(
+    @Authorization() userId: string,
     @Body() teacherData: CreateTeacherDto,
-  ): Promise<TeachersEntity> {
-    return this.teachersService.createTeacher(teacherData);
+  ): Promise<Teacher> {
+    return await this.teachersService.createTeacher(userId, teacherData);
   }
 
-  // @Get()
-  // getTeachers(): string {
-  //teacher array
-  // return this.teachersService.getTeacher();
-  // return "Find All teachers";
-  // }
+  @Get()
+  async getTeachers(@Authorization() userId: string): Promise<Teacher[]> {
+    return await this.teachersService.getTeachers();
+  }
 
   @Get(":id")
-  getTeacher(@Param("id") id: number): Promise<TeachersEntity> {
-    //returns a teacher
-    return this.teachersService.getTeacher(id);
-    // return "Return a {params.id} teacher";
+  async getTeacher(
+    @Authorization() userId: string,
+    @Param("id") id: string,
+  ): Promise<Teacher> {
+    return await this.teachersService.getTeacher(id);
   }
 
   // @Put(":id")

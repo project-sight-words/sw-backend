@@ -1,31 +1,44 @@
 import { Injectable } from "@nestjs/common";
-import { CreateTeacherDto } from "./dto/create.dto";
-import { TeachersEntity } from "src/entities/teacher.entities";
+import { CreateTeacherDto } from "./dto/teachers.dto";
+import { NewTeacher, Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
+import { UsersRepository } from "resources/users/users.repository";
+import { NewUser } from "entities/user.entities";
 
 @Injectable()
 export class TeachersService {
-  constructor(private teachersRepository: TeachersRepository) {}
+  constructor(
+    private readonly teachersRepository: TeachersRepository,
+    private readonly usersRepository: UsersRepository,
+  ) {}
 
-  createTeacher(teacherData: CreateTeacherDto): Promise<TeachersEntity> {
-    // returns nothing
-    const teachersEntity = TeachersEntity.createTeacher(
-      teacherData.staff_id,
-      teacherData.name,
+  async createTeacher(
+    created_by: string,
+    teacherData: CreateTeacherDto,
+  ): Promise<Teacher> {
+    const userData: NewUser = {
+      email: teacherData.email,
+      lastLoggedIn: new Date(),
+    };
+    const linkUserTeacher = await this.usersRepository.upsertByEmail(userData);
+
+    const data: NewTeacher = {
+      staffId: teacherData.staffId,
+      name: CreateTeacherDto.name,
+    };
+    return await this.teachersRepository.insertTeacher(
+      linkUserTeacher.id,
+      created_by,
+      data,
     );
-    return this.teachersRepository.insertTeacher(teachersEntity);
   }
 
-  // getTeachers(): string {
-  // return an array of teacher object
-  // return selectAllTeachers();
-  // return "Get all teachers";
-  // }
+  async getTeachers(): Promise<Teacher[]> {
+    return await this.teachersRepository.getTeachers();
+  }
 
-  getTeacher(id: number): Promise<TeachersEntity> {
-    // return a teacher object
+  getTeacher(id: string): Promise<Teacher> {
     return this.teachersRepository.getTeacher(id);
-    // return "Get Single Teacher";
   }
 
   // updateTeacher(id: number, staff_id: string, name: string): void {

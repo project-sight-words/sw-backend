@@ -1,26 +1,43 @@
 import { InternalServerErrorException, Logger } from "@nestjs/common";
-import { DatabaseService } from "src/database/database.service";
-import { TeachersEntity } from "src/entities/teacher.entities";
-import { TeacherDatabaseObj } from "src/entities/teacher.entities";
+import { plainToInstance } from "class-transformer";
+import { DatabaseService } from "database/database.service";
+import { NewTeacher, Teacher } from "entities/teacher.entities";
 
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
   private readonly loggerService = new Logger("Database Service");
 
-  async insertTeacher(teachers: TeachersEntity): Promise<TeachersEntity> {
-    const query = `
-    INSERT INTO teachers(staff_id, name)
-    VALUES($1, $2)
-    RETURNING *
-    `;
+  async insertTeacher(
+    userId: string,
+    createdBy: string,
+    teacher: NewTeacher,
+  ): Promise<Teacher> {
     try {
-      const request = await this.databaseService.query(query, [
-        teachers.get_staff_id(),
-        teachers.get_name(),
-      ]);
+      const teacherRows = await this.databaseService.query(
+        `
+      INSERT INTO teachers(staff_id, name)
+      VALUES($1, $2)
+      RETURNING *
+      `,
+        [teacher.staffId, teacher.name],
+      );
+      const newTeacher = plainToInstance(Teacher, teacherRows[0]);
+      const teacherId = newTeacher.id;
 
-      const response = request[0] as TeacherDatabaseObj;
-      return TeachersEntity.loadTeacher(response);
+      await this.databaseService.query(
+        `
+          INSERT INTO user_teacher (user_id, teacher_id, created_at, created_by)
+          VALUES ($1, $2, NOW(), $3)
+          INNER JOIN users
+            ON user_teacher.user_id=users.id
+          INNER JOIN admins 
+            ON user_teacher.teacher_id=teachers.id
+          RETURNING *;
+        `,
+        [userId, teacherId, createdBy],
+      );
+
+      return newTeacher;
     } catch (error) {
       if (error instanceof Error) {
         this.loggerService.error(error);
@@ -29,20 +46,52 @@ export class TeachersRepository {
     }
   }
 
-  async getTeacher(id: number): Promise<TeachersEntity> {
-    const query = `
-    SELECT id
-    FROM teachers
-    WHERE (id = $1)
-    `;
+  async getTeachers(): Promise<Teacher[]> {
     try {
-      const request = await this.databaseService.query(query, [id]);
-      const response = request[0] as TeacherDatabaseObj;
-      return TeachersEntity.loadTeacher(response);
+      const rows = await this.databaseService.query(
+        `
+        SELECT
+          users.id AS id,
+          users.email AS email,
+          teachers.teacher_id AS teacher_id,
+          teacher.name AS name
+        FROM teachers
+        JOIN user_teacher
+          ON teacher.id = user_teacher.teacher_id
+        JOIN users
+          ON user_teacher.user_id = users.id;
+      `,
+      );
+
+      return plainToInstance(Teacher, rows);
     } catch (error) {
-      if (error instanceof Error) {
-        this.loggerService.error(error);
-      }
+      this.loggerService.error(error);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async getTeacher(id: string): Promise<Teacher> {
+    try {
+      const rows = await this.databaseService.query(
+        `
+        SELECT
+          users.id AS id,
+          users.email AS email,
+          teachers.teacher_id AS teacher_id,
+          teacher.name AS name
+        FROM teachers
+        JOIN user_teacher
+          ON teacher.id = user_teacher.teacher_id
+        JOIN users
+          ON user_teacher.user_id = users.id;
+        WHERE teachers.teacher_id = ($1)
+      `,
+        [id],
+      );
+
+      return plainToInstance(Teacher, rows[0]);
+    } catch (error) {
+      this.loggerService.error(error);
       throw new InternalServerErrorException();
     }
   }
