@@ -22,14 +22,14 @@ export class TeachersService {
     };
     const linkUserTeacher = await this.usersRepository.upsertByEmail(userData);
 
-    const data: NewTeacher = {
+    const newTeacher: NewTeacher = {
       staffId: teacherData.staffId,
-      name: CreateTeacherDto.name,
+      name: teacherData.name,
     };
     return await this.teachersRepository.insertTeacher(
       linkUserTeacher.id,
       created_by,
-      data,
+      newTeacher,
     );
   }
 
@@ -37,17 +37,22 @@ export class TeachersService {
     return await this.teachersRepository.getTeachers();
   }
 
-  getTeacher(id: string): Promise<Teacher> {
-    return this.teachersRepository.getTeacher(id);
+  async getTeacher(id: string): Promise<Teacher> {
+    return await this.teachersRepository.getTeacher(id);
   }
 
-  // updateTeacher(id: number, staff_id: string, name: string): void {
-  // dunnid return anyth
-  // return changeTeacher(id);
-  // }
+  async updateTeacher(
+    updated_by: string,
+    teacherData: CreateTeacherDto,
+  ): Promise<Teacher> {
+    const newTeacher: NewTeacher = {
+      staffId: teacherData.staffId,
+      name: teacherData.name,
+    };
+    return await this.teachersRepository.updateTeacher(updated_by, newTeacher);
+  }
 
-  // deleteTeacher(id: number): void {
-  //dunnid return anything
-  // return removeTeacher( id);
-  // }
+  async deleteTeacher(id: string, deleted_by: string): Promise<Teacher> {
+    return await this.teachersRepository.deleteTeacher(id, deleted_by);
+  }
 }

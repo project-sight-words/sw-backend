@@ -95,4 +95,55 @@ export class TeachersRepository {
       throw new InternalServerErrorException();
     }
   }
+
+  async updateTeacher(
+    updated_by: string,
+    teacher: NewTeacher,
+  ): Promise<Teacher> {
+    try {
+      const rows = await this.databaseService.query(
+        `
+        UPDATE teachers
+        SET name = $1
+        FROM (
+          SELECT teachers.teacher_id AS teacher_id
+          FROM teachers
+          JOIN user_teacher
+          ON teachers.id = user_teacher.teacher_id
+          WHERE teachers.teacher_id = $2
+        ) AS subquery
+        WHERE teachers.teacher_id = subquery.teacher_id
+        RETURNING *;
+        `,
+        [teacher.name, teacher.staffId],
+      );
+      return plainToInstance(Teacher, rows[0]);
+    } catch (error) {
+      this.loggerService.error(error);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async deleteTeacher(id: string, deleted_by: string): Promise<Teacher> {
+    try {
+      const rows = await this.databaseService.query(
+        `
+        UPDATE user_teacher
+        SET teacher_id = NULL,
+            deleted_at = NOW(),
+            deleted_by = ($1)
+        INNER JOIN users ON user_teacher.user_id=users.id
+        INNER JOIN teachers ON user_teacher.teacher_id=teacher.id
+        WHERE teacher_id = ($2)
+        RETURNING *;
+      `,
+        [deleted_by, id],
+      );
+
+      return plainToInstance(Teacher, rows[0]);
+    } catch (error) {
+      this.loggerService.error(error);
+      throw new InternalServerErrorException();
+    }
+  }
 }
