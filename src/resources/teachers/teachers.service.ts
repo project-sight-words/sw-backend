@@ -15,44 +15,68 @@ export class TeachersService {
   async createTeacher(
     created_by: string,
     teacherData: CreateTeacherDto,
-  ): Promise<Teacher> {
+  ): Promise<CreateTeacherDto> {
     const userData: NewUser = {
       email: teacherData.email,
       lastLoggedIn: new Date(),
     };
-    const linkUserTeacher = await this.usersRepository.upsertByEmail(userData);
+    const newUser = await this.usersRepository.upsertByEmail(userData);
 
     const newTeacher: NewTeacher = {
+      email: teacherData.email,
       staffId: teacherData.staffId,
       name: teacherData.name,
     };
-    return await this.teachersRepository.insertTeacher(
-      linkUserTeacher.id,
+    const teacher = await this.teachersRepository.insertTeacher(
+      newUser.id,
       created_by,
       newTeacher,
     );
+    return this.teacherToDto(teacher);
   }
 
-  async getTeachers(): Promise<Teacher[]> {
-    return await this.teachersRepository.getTeachers();
+  async getTeachers(): Promise<CreateTeacherDto[]> {
+    const teacherArr = await this.teachersRepository.getTeachers();
+    return teacherArr.map((teacher) => this.teacherToDto(teacher));
   }
 
-  async getTeacher(id: string): Promise<Teacher> {
-    return await this.teachersRepository.getTeacher(id);
+  async getTeacher(id: string): Promise<CreateTeacherDto> {
+    const teacher = await this.teachersRepository.getTeacher(id);
+    return this.teacherToDto(teacher);
   }
 
   async updateTeacher(
     updated_by: string,
     teacherData: CreateTeacherDto,
-  ): Promise<Teacher> {
+  ): Promise<CreateTeacherDto> {
     const newTeacher: NewTeacher = {
+      email: teacherData.email,
       staffId: teacherData.staffId,
       name: teacherData.name,
     };
-    return await this.teachersRepository.updateTeacher(updated_by, newTeacher);
+    const updatedTeacher = await this.teachersRepository.updateTeacher(
+      updated_by,
+      newTeacher,
+    );
+    return this.teacherToDto(updatedTeacher);
   }
 
-  async deleteTeacher(id: string, deleted_by: string): Promise<Teacher> {
-    return await this.teachersRepository.deleteTeacher(id, deleted_by);
+  async deleteTeacher(
+    id: string,
+    deleted_by: string,
+  ): Promise<CreateTeacherDto> {
+    const deletedTeacher = await this.teachersRepository.deleteTeacher(
+      id,
+      deleted_by,
+    );
+    return this.teacherToDto(deletedTeacher);
+  }
+
+  private teacherToDto(teacher: Teacher): CreateTeacherDto {
+    return {
+      email: teacher.email,
+      staffId: teacher.staffId,
+      name: teacher.name,
+    };
   }
 }

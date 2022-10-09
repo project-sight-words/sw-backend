@@ -12,7 +12,6 @@ import { Authorization } from "decorators/authorization.decorator";
 import { CreateTeacherDto } from "./dto/teachers.dto";
 import { TeachersService } from "./teachers.service";
 import { ValidationPipe } from "@nestjs/common/pipes";
-import { Teacher } from "entities/teacher.entities";
 
 @Controller("teachers")
 export class TeachersController {
@@ -23,12 +22,14 @@ export class TeachersController {
   async createTeacher(
     @Authorization() userId: string,
     @Body() teacherData: CreateTeacherDto,
-  ): Promise<Teacher> {
+  ): Promise<CreateTeacherDto> {
     return await this.teachersService.createTeacher(userId, teacherData);
   }
 
   @Get()
-  async getTeachers(@Authorization() userId: string): Promise<Teacher[]> {
+  async getTeachers(
+    @Authorization() userId: string,
+  ): Promise<CreateTeacherDto[]> {
     return await this.teachersService.getTeachers();
   }
 
@@ -36,7 +37,7 @@ export class TeachersController {
   async getTeacher(
     @Authorization() userId: string,
     @Param("id") id: string,
-  ): Promise<Teacher> {
+  ): Promise<CreateTeacherDto> {
     return await this.teachersService.getTeacher(id);
   }
 
@@ -44,7 +45,7 @@ export class TeachersController {
   async updateTeacher(
     @Authorization() userId: string,
     @Body() teacherData: CreateTeacherDto,
-  ): Promise<Teacher> {
+  ): Promise<CreateTeacherDto> {
     return await this.teachersService.updateTeacher(userId, teacherData);
   }
 
@@ -52,7 +53,7 @@ export class TeachersController {
   async deleteTeacher(
     @Authorization() userId: string,
     @Param("id") id: string,
-  ): Promise<Teacher> {
+  ): Promise<CreateTeacherDto> {
     return await this.teachersService.deleteTeacher(id, userId);
   }
 }

@@ -1,7 +1,11 @@
 import { Expose } from "class-transformer";
-import { IsDate, IsNotEmpty, IsUUID, IsEmail, IsString } from "class-validator";
+import { IsDate, IsNotEmpty, IsUUID, IsString, IsEmail } from "class-validator";
 
 export class NewTeacher {
+  @IsNotEmpty()
+  @IsEmail()
+  email!: string;
+
   @Expose({ name: "staff_id" })
   @IsNotEmpty()
   @IsString()
