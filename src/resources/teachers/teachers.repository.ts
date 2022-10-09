@@ -1,7 +1,7 @@
 import { InternalServerErrorException, Logger } from "@nestjs/common";
-import { plainToClass, plainToInstance } from "class-transformer";
+import { plainToInstance } from "class-transformer";
 import { DatabaseService } from "database/database.service";
-import { NewTeacher, Teacher } from "entities/teacher.entities";
+import { NewTeacher, Teacher, UserTeacher } from "entities/teacher.entities";
 
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -28,7 +28,7 @@ export class TeachersRepository {
         `
           INSERT INTO user_teacher (user_id, teacher_id, created_at, created_by)
           VALUES ($1, $2, NOW(), $3)
-          RETURNING *;
+          RETURNING *
         `,
         [userId, teacherId, createdBy],
       );
@@ -46,20 +46,27 @@ export class TeachersRepository {
     try {
       const rows = await this.databaseService.query(
         `
-        SELECT
-          users.id AS id,
-          users.email AS email,
-          teachers.teacher_id AS teacher_id,
-          teacher.name AS name
-        FROM teachers
-        JOIN user_teacher
-          ON teacher.id = user_teacher.teacher_id
-        JOIN users
-          ON user_teacher.user_id = users.id;
+        SELECT * FROM user_teacher
+        INNER JOIN users
+          ON user_teacher.user_id = user.id
+        INNER JOIN teachers
+          ON user_teacher.teacher_id = teachers.id
+          WHERE user_teacher.deleted_at IS NULL
       `,
       );
-
-      return plainToInstance(Teacher, rows);
+      const userTeacherArr = plainToInstance(UserTeacher, rows);
+      const teacherRows = await Promise.all(
+        userTeacherArr.map((userTeacher) =>
+          this.databaseService.query(
+            `
+            SELECT * FROM teachers
+            where teachers.id = $1
+            `,
+            [userTeacher.id],
+          ),
+        ),
+      );
+      return plainToInstance(Teacher, teacherRows);
     } catch (error) {
       this.loggerService.error(error);
       throw new InternalServerErrorException();
@@ -70,22 +77,25 @@ export class TeachersRepository {
     try {
       const rows = await this.databaseService.query(
         `
-        SELECT
-          users.id AS id,
-          users.email AS email,
-          teachers.teacher_id AS teacher_id,
-          teacher.name AS name
-        FROM teachers
-        JOIN user_teacher
-          ON teacher.id = user_teacher.teacher_id
-        JOIN users
-          ON user_teacher.user_id = users.id;
-        WHERE teachers.teacher_id = ($1)
+        SELECT * FROM user_teacher
+        INNER JOIN users
+          ON user_teacher.user_id = user.id
+        INNER JOIN teachers
+          ON user_teacher.teacher_id = teachers.id
+        WHERE user_teacher.teacher_id = ($1) AND user_teacher.deleted_at IS NULL
       `,
         [id],
       );
 
-      return plainToClass(Teacher, rows[0]);
+      const userTeacher = plainToInstance(UserTeacher, rows[0]);
+      const teacherRows = await this.databaseService.query(
+        `
+        SELECT * FROM teachers
+        WHERE teachers.id = $1
+        `,
+        [userTeacher.id],
+      );
+      return plainToInstance(Teacher, teacherRows[0]);
     } catch (error) {
       this.loggerService.error(error);
       throw new InternalServerErrorException();
