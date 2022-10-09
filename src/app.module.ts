@@ -4,9 +4,15 @@ import { AuthenticationModule } from "./resources/authentication/authentication.
 import { ConfigModule } from "@nestjs/config";
 import { Module } from "@nestjs/common";
 import { UsersModule } from "./resources/users/users.module";
+import { AdminsModule } from "./resources/admins/admins.module";
 
 @Module({
-  imports: [ConfigModule.forRoot(), AuthenticationModule, UsersModule],
+  imports: [
+    ConfigModule.forRoot(),
+    AuthenticationModule,
+    UsersModule,
+    AdminsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

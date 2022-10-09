@@ -1,7 +1,7 @@
-import { DatabaseService } from "database/database.service";
+import { DatabaseService } from "../../database/database.service";
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
-import { NewUser, User } from "entities/user.entities";
+import { NewUser, User } from "../../entities/user.entities";
 import { plainToClass } from "class-transformer";
 
 @Injectable()
