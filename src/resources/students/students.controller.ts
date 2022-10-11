@@ -13,7 +13,7 @@ import { StudentsService } from "./students.service";
 
 @Controller("students")
 export class StudentsController {
-  constructor(private readonly studentsService: StudentsService) { }
+  constructor(private readonly studentsService: StudentsService) {}
 
   @Get()
   async getStudents(): Promise<StudentDto[]> {

@@ -13,7 +13,7 @@ export class StudentsService {
   constructor(
     private readonly studentsRepository: StudentsRepository,
     private readonly usersRepository: UsersRepository,
-  ) { }
+  ) {}
 
   async getStudents(): Promise<StudentDto[]> {
     const students = await this.studentsRepository.getAllStudents();
