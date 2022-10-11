@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common";
 import { NewStudent, Student } from "../../entities/student.entities";
 import { UsersRepository } from "../users/users.repository";
-import { StudentDto } from "./students.dto";
+import { StudentDto } from "./dto/students.dto";
 import { StudentsRepository } from "./students.repository";
 
 @Injectable()
@@ -13,7 +13,7 @@ export class StudentsService {
   constructor(
     private readonly studentsRepository: StudentsRepository,
     private readonly usersRepository: UsersRepository,
-  ) {}
+  ) { }
 
   async getStudents(): Promise<StudentDto[]> {
     const students = await this.studentsRepository.getAllStudents();

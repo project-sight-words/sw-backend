@@ -8,12 +8,12 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { StudentDto } from "./students.dto";
+import { StudentDto } from "./dto/students.dto";
 import { StudentsService } from "./students.service";
 
 @Controller("students")
 export class StudentsController {
-  constructor(private readonly studentsService: StudentsService) {}
+  constructor(private readonly studentsService: StudentsService) { }
 
   @Get()
   async getStudents(): Promise<StudentDto[]> {
