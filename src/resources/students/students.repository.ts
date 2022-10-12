@@ -99,13 +99,14 @@ export class StudentsRepository {
     student: Student,
   ): Promise<Student> {
     // Do nothing ON CONFLICT for now as nothing can be updated
+    // Since it does nothing ON CONFLICT, no need to return as no UserStudent
+    //  will be returned ON CONFLICT
     const upsertUserStudent = await this.databaseService.query(
       `
         INSERT INTO user_students (user_id, student_id)
         VALUES ($1, $2)
         ON CONFLICT (user_id, student_id)
-        DO NOTHING
-        RETURNING *;
+        DO NOTHING;
       `,
       [userStudent.userId, userStudent.studentId],
     );
