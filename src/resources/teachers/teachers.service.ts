@@ -13,7 +13,7 @@ export class TeachersService {
   ) {}
 
   async createTeacher(
-    created_by: string,
+    createdBy: string,
     teacherData: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
     const userData: NewUser = {
@@ -21,7 +21,7 @@ export class TeachersService {
       lastLoggedIn: new Date(),
     };
     const newUser = await this.usersRepository.upsertByEmail(userData);
-
+    console.log(newUser);
     const newTeacher: NewTeacher = {
       email: teacherData.email,
       staffId: teacherData.staffId,
@@ -29,7 +29,7 @@ export class TeachersService {
     };
     const teacher = await this.teachersRepository.insertTeacher(
       newUser.id,
-      created_by,
+      createdBy,
       newTeacher,
     );
     return this.teacherToDto(teacher);
@@ -42,7 +42,15 @@ export class TeachersService {
 
   async getTeacher(id: string): Promise<CreateTeacherDto> {
     const teacher = await this.teachersRepository.getTeacher(id);
-    return this.teacherToDto(teacher);
+    if (teacher) {
+      return this.teacherToDto(teacher);
+    } else {
+      return {
+        email: "",
+        staffId: "",
+        name: "",
+      };
+    }
   }
 
   async updateTeacher(
@@ -63,11 +71,11 @@ export class TeachersService {
 
   async deleteTeacher(
     id: string,
-    deleted_by: string,
+    deletedBy: string,
   ): Promise<CreateTeacherDto> {
     const deletedTeacher = await this.teachersRepository.deleteTeacher(
       id,
-      deleted_by,
+      deletedBy,
     );
     return this.teacherToDto(deletedTeacher);
   }

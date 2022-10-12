@@ -1,8 +1,13 @@
-import { InternalServerErrorException, Logger } from "@nestjs/common";
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
 import { DatabaseService } from "database/database.service";
 import { NewTeacher, Teacher, UserTeacher } from "entities/teacher.entities";
 
+@Injectable()
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
   private readonly loggerService = new Logger("Database Service");
@@ -22,17 +27,18 @@ export class TeachersRepository {
         [teacher.staffId, teacher.name],
       );
       const newTeacher = plainToInstance(Teacher, teacherRows[0]);
+      console.log(newTeacher);
+      newTeacher.email = teacher.email;
       const teacherId = newTeacher.id;
-
-      await this.databaseService.query(
+      const rows = await this.databaseService.query(
         `
           INSERT INTO user_teacher (user_id, teacher_id, created_at, created_by)
-          VALUES ($1, $2, NOW(), $3)
+          VALUES ($1, $2, NOW(), NULL)
           RETURNING *
         `,
-        [userId, teacherId, createdBy],
+        [userId, teacherId],
       );
-
+      console.log(rows);
       return newTeacher;
     } catch (error) {
       if (error instanceof Error) {
@@ -46,27 +52,14 @@ export class TeachersRepository {
     try {
       const rows = await this.databaseService.query(
         `
-        SELECT * FROM user_teacher
-        INNER JOIN users
-          ON user_teacher.user_id = user.id
-        INNER JOIN teachers
-          ON user_teacher.teacher_id = teachers.id
-          WHERE user_teacher.deleted_at IS NULL
-      `,
+        SELECT * FROM teachers
+        JOIN user_teacher ON teachers.id = user_teacher.teacher_id
+        JOIN users ON user_teacher.user_id = users.id
+        WHERE user_teacher.deleted_at IS NULL
+        `,
       );
-      const userTeacherArr = plainToInstance(UserTeacher, rows);
-      const teacherRows = await Promise.all(
-        userTeacherArr.map((userTeacher) =>
-          this.databaseService.query(
-            `
-            SELECT * FROM teachers
-            where teachers.id = $1
-            `,
-            [userTeacher.id],
-          ),
-        ),
-      );
-      return plainToInstance(Teacher, teacherRows);
+      console.log(rows);
+      return plainToInstance(Teacher, rows);
     } catch (error) {
       this.loggerService.error(error);
       throw new InternalServerErrorException();
@@ -77,25 +70,15 @@ export class TeachersRepository {
     try {
       const rows = await this.databaseService.query(
         `
-        SELECT * FROM user_teacher
-        INNER JOIN users
-          ON user_teacher.user_id = user.id
-        INNER JOIN teachers
-          ON user_teacher.teacher_id = teachers.id
-        WHERE user_teacher.teacher_id = ($1) AND user_teacher.deleted_at IS NULL
-      `,
+        SELECT * FROM teachers
+        INNER JOIN user_teacher ON teachers.id = user_teacher.teacher_id
+        INNER JOIN users ON user_teacher.user_id = users.id
+        WHERE teachers.staff_id = $1 AND user_teacher.deleted_at IS NULL
+        `,
         [id],
       );
-
-      const userTeacher = plainToInstance(UserTeacher, rows[0]);
-      const teacherRows = await this.databaseService.query(
-        `
-        SELECT * FROM teachers
-        WHERE teachers.id = $1
-        `,
-        [userTeacher.id],
-      );
-      return plainToInstance(Teacher, teacherRows[0]);
+      console.log(plainToInstance(Teacher, rows[0]));
+      return plainToInstance(Teacher, rows[0]);
     } catch (error) {
       this.loggerService.error(error);
       throw new InternalServerErrorException();
@@ -112,11 +95,11 @@ export class TeachersRepository {
         UPDATE teachers
         SET name = $1
         FROM (
-          SELECT teachers.teacher_id AS teacher_id
+          SELECT *
           FROM teachers
-          JOIN user_teacher
+          INNER JOIN user_teacher
           ON teachers.id = user_teacher.teacher_id
-          WHERE teachers.teacher_id = $2
+          WHERE staff_id = $2
         ) AS subquery
         WHERE teachers.teacher_id = subquery.teacher_id
         RETURNING *;
@@ -130,23 +113,29 @@ export class TeachersRepository {
     }
   }
 
-  async deleteTeacher(id: string, deleted_by: string): Promise<Teacher> {
+  async deleteTeacher(id: string, deletedBy: string): Promise<Teacher> {
     try {
+      const deletedTeacherRows = await this.databaseService.query(
+        `
+        SELECT * FROM teachers
+        WHERE teachers.staff_id = $1
+        `,
+        [id],
+      );
+      const deletedTeacher = plainToInstance(Teacher, deletedTeacherRows[0]);
+      const deletedTeacherId = deletedTeacher.id;
+      console.log(deletedTeacherRows[0]);
       const rows = await this.databaseService.query(
         `
         UPDATE user_teacher
-        SET teacher_id = NULL,
-            deleted_at = NOW(),
-            deleted_by = ($1)
-        INNER JOIN users ON user_teacher.user_id=users.id
-        INNER JOIN teachers ON user_teacher.teacher_id=teacher.id
-        WHERE teacher_id = ($2)
-        RETURNING *;
+        SET deleted_at = NOW(), deleted_by= NULL
+        WHERE user_teacher.teacher_id = $1
+        RETURNING *
       `,
-        [deleted_by, id],
+        [deletedTeacherId],
       );
-
-      return plainToInstance(Teacher, rows[0]);
+      console.log(rows);
+      return deletedTeacher;
     } catch (error) {
       this.loggerService.error(error);
       throw new InternalServerErrorException();

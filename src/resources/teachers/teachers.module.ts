@@ -9,11 +9,6 @@ import { TeachersService } from "./teachers.service";
 @Module({
   imports: [DatabaseModule],
   controllers: [TeachersController],
-  providers: [
-    TeachersService,
-    DatabaseService,
-    UsersRepository,
-    TeachersRepository,
-  ],
+  providers: [TeachersRepository, TeachersService, UsersRepository],
 })
 export class TeachersModule {}

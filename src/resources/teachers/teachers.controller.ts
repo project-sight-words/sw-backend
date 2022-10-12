@@ -20,40 +20,33 @@ export class TeachersController {
   @Post()
   @UsePipes(ValidationPipe)
   async createTeacher(
-    @Authorization() userId: string,
     @Body() teacherData: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
-    return await this.teachersService.createTeacher(userId, teacherData);
+    const user_id = "user_id";
+    return await this.teachersService.createTeacher(user_id, teacherData);
   }
 
   @Get()
-  async getTeachers(
-    @Authorization() userId: string,
-  ): Promise<CreateTeacherDto[]> {
+  async getTeachers(): Promise<CreateTeacherDto[]> {
     return await this.teachersService.getTeachers();
   }
 
   @Get(":id")
-  async getTeacher(
-    @Authorization() userId: string,
-    @Param("id") id: string,
-  ): Promise<CreateTeacherDto> {
+  async getTeacher(@Param("id") id: string): Promise<CreateTeacherDto> {
     return await this.teachersService.getTeacher(id);
   }
 
   @Put(":id")
   async updateTeacher(
-    @Authorization() userId: string,
     @Body() teacherData: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
-    return await this.teachersService.updateTeacher(userId, teacherData);
+    const user_id = "user_id";
+    return await this.teachersService.updateTeacher(user_id, teacherData);
   }
 
   @Delete(":id")
-  async deleteTeacher(
-    @Authorization() userId: string,
-    @Param("id") id: string,
-  ): Promise<CreateTeacherDto> {
-    return await this.teachersService.deleteTeacher(id, userId);
+  async deleteTeacher(@Param("id") id: string): Promise<CreateTeacherDto> {
+    const user_id = "user_id";
+    return await this.teachersService.deleteTeacher(id, user_id);
   }
 }

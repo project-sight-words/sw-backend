@@ -10,8 +10,8 @@ import { TeachersModule } from "./resources/teachers/teachers.module";
   imports: [
     ConfigModule.forRoot(),
     AuthenticationModule,
-    UsersModule,
     TeachersModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

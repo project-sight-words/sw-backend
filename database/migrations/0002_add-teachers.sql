@@ -7,9 +7,9 @@ CREATE TABLE teachers (
 );
 
 CREATE TABLE user_teacher (
-  user_id         UUID        NOT NULL,
-  teacher_id      UUID        NOT NULL,
-  created_at      TIMESTAMPTZ,
+  user_id         UUID,
+  teacher_id      UUID,
+  created_at      TIMESTAMPTZ NOT NULL,
   created_by      UUID,
   deleted_at      TIMESTAMPTZ,
   deleted_by      UUID,
