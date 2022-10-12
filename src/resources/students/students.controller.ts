@@ -8,7 +8,7 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { StudentDto } from "./dto/students.dto";
+import { StudentDto, UpdateStudentDto } from "./dto/students.dto";
 import { StudentsService } from "./students.service";
 
 @Controller("students")
@@ -34,9 +34,8 @@ export class StudentsController {
   @Put(":id")
   async updateStudentById(
     @Param("id") id: string,
-    @Body() studentDto: StudentDto,
+    @Body() updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    if (id != studentDto.studentId) throw new BadRequestException();
-    return await this.studentsService.updateStudent(studentDto);
+    return await this.studentsService.updateStudent(id, updateStudentDto.name);
   }
 }

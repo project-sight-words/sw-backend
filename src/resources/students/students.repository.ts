@@ -10,7 +10,7 @@ import {
 
 @Injectable()
 export class StudentsRepository {
-  constructor(private readonly databaseService: DatabaseService) { }
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async getStudentById(id: string): Promise<Student> {
     const rows = await this.databaseService.query(
@@ -53,7 +53,7 @@ export class StudentsRepository {
     return plainToInstance(Student, rows);
   }
 
-  async updateStudent(student: NewStudent): Promise<Student> {
+  async updateStudent(studentId: string, newName: string): Promise<Student> {
     // TODO: Allow updating of email from student?
     // Updates should only occur if there's a (single) record in the joining table
     const updateStudent = await this.databaseService.query(
@@ -61,16 +61,21 @@ export class StudentsRepository {
         UPDATE students
         SET name = $1
         FROM (
-          SELECT students.student_id AS student_id
+          SELECT students.student_id AS student_id, users.email AS email
           FROM students
           JOIN user_students
-          ON students.id = user_students.student_id
+            ON students.id = user_students.student_id
+          JOIN users
+            ON user_students.user_id = users.id
           WHERE students.student_id = $2
         ) AS subquery
         WHERE students.student_id = subquery.student_id
-        RETURNING *;
+        RETURNING
+          students.student_id AS student_id,
+          students.name AS name,
+          subquery.email AS email;
       `,
-      [student.name, student.studentId],
+      [newName, studentId],
     );
     return plainToInstance(Student, updateStudent[0]);
   }
