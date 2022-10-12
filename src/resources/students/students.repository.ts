@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { plainToClass, plainToInstance } from "class-transformer";
+import { plainToInstance } from "class-transformer";
 import { DatabaseService } from "../../database/database.service";
 import {
   NewStudent,
@@ -10,7 +10,7 @@ import {
 
 @Injectable()
 export class StudentsRepository {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly databaseService: DatabaseService) { }
 
   async getStudentById(id: string): Promise<Student> {
     const rows = await this.databaseService.query(
@@ -30,7 +30,7 @@ export class StudentsRepository {
       [id],
     );
 
-    return plainToClass(Student, rows[0]);
+    return plainToInstance(Student, rows[0]);
   }
 
   async getAllStudents(): Promise<Student[]> {
@@ -72,7 +72,7 @@ export class StudentsRepository {
       `,
       [student.name, student.studentId],
     );
-    return plainToClass(Student, updateStudent[0]);
+    return plainToInstance(Student, updateStudent[0]);
   }
 
   async upsertByEmailAndStudentId(student: NewStudent): Promise<Student> {
@@ -89,7 +89,7 @@ export class StudentsRepository {
       `,
       [student.studentId, student.name],
     );
-    const newStudent = plainToClass(Student, upsertStudent[0]);
+    const newStudent = plainToInstance(Student, upsertStudent[0]);
     newStudent.email = student.email;
     return newStudent;
   }
@@ -110,7 +110,7 @@ export class StudentsRepository {
       `,
       [userStudent.userId, userStudent.studentId],
     );
-    const newUserStudent = plainToClass(UserStudent, upsertUserStudent[0]);
+    const newUserStudent = plainToInstance(UserStudent, upsertUserStudent[0]);
     student.userStudent = newUserStudent;
 
     return student;

@@ -14,7 +14,7 @@ export class StudentsService {
   constructor(
     private readonly studentsRepository: StudentsRepository,
     private readonly usersRepository: UsersRepository,
-  ) {}
+  ) { }
 
   async getStudents(): Promise<StudentDto[]> {
     const students = await this.studentsRepository.getAllStudents();
@@ -48,9 +48,9 @@ export class StudentsService {
     return this.studentToDto(linkedStudent);
   }
 
-  async updateStudent(studentDto: StudentDto): Promise<StudentDto> {
+  async updateStudent(studentId: string, newName: string): Promise<StudentDto> {
     const updatedStudent = await this.studentsRepository.updateStudent(
-      this.dtoToNewStudent(studentDto),
+      studentId, newName
     );
 
     if (!updatedStudent) throw new BadRequestException();
