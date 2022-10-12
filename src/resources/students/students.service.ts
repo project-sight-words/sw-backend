@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { instanceToPlain, plainToInstance } from "class-transformer";
 import { NewStudent, Student } from "../../entities/student.entities";
 import { UsersRepository } from "../users/users.repository";
 import { StudentDto } from "./dto/students.dto";
@@ -58,18 +59,10 @@ export class StudentsService {
   }
 
   private studentToDto(student: Student): StudentDto {
-    return {
-      email: student.email,
-      studentId: student.studentId,
-      name: student.name,
-    };
+    return plainToInstance(StudentDto, instanceToPlain(student));
   }
 
   private dtoToNewStudent(studentDto: StudentDto): NewStudent {
-    return {
-      email: studentDto.email,
-      studentId: studentDto.studentId,
-      name: studentDto.name,
-    };
+    return plainToInstance(NewStudent, instanceToPlain(studentDto));
   }
 }
