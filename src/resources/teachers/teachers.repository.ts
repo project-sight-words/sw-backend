@@ -27,7 +27,6 @@ export class TeachersRepository {
         [teacher.staffId, teacher.name],
       );
       const newTeacher = plainToInstance(Teacher, teacherRows[0]);
-      console.log(newTeacher);
       newTeacher.email = teacher.email;
       const teacherId = newTeacher.id;
       const rows = await this.databaseService.query(
@@ -38,7 +37,6 @@ export class TeachersRepository {
         `,
         [userId, teacherId],
       );
-      console.log(rows);
       return newTeacher;
     } catch (error) {
       if (error instanceof Error) {
@@ -58,7 +56,6 @@ export class TeachersRepository {
         WHERE user_teacher.deleted_at IS NULL
         `,
       );
-      console.log(rows);
       return plainToInstance(Teacher, rows);
     } catch (error) {
       this.loggerService.error(error);
@@ -77,7 +74,6 @@ export class TeachersRepository {
         `,
         [id],
       );
-      console.log(plainToInstance(Teacher, rows[0]));
       return plainToInstance(Teacher, rows[0]);
     } catch (error) {
       this.loggerService.error(error);
@@ -86,6 +82,7 @@ export class TeachersRepository {
   }
 
   async updateTeacher(
+    id: string,
     updated_by: string,
     teacher: NewTeacher,
   ): Promise<Teacher> {
@@ -93,18 +90,11 @@ export class TeachersRepository {
       const rows = await this.databaseService.query(
         `
         UPDATE teachers
-        SET name = $1
-        FROM (
-          SELECT *
-          FROM teachers
-          INNER JOIN user_teacher
-          ON teachers.id = user_teacher.teacher_id
-          WHERE staff_id = $2
-        ) AS subquery
-        WHERE teachers.teacher_id = subquery.teacher_id
-        RETURNING *;
+        SET name = $1, staff_id = $2, updated_at = NOW()
+        WHERE staff_id = $3
+        RETURNING *
         `,
-        [teacher.name, teacher.staffId],
+        [teacher.name, teacher.staffId, id],
       );
       return plainToInstance(Teacher, rows[0]);
     } catch (error) {
@@ -124,7 +114,6 @@ export class TeachersRepository {
       );
       const deletedTeacher = plainToInstance(Teacher, deletedTeacherRows[0]);
       const deletedTeacherId = deletedTeacher.id;
-      console.log(deletedTeacherRows[0]);
       const rows = await this.databaseService.query(
         `
         UPDATE user_teacher
@@ -134,7 +123,6 @@ export class TeachersRepository {
       `,
         [deletedTeacherId],
       );
-      console.log(rows);
       return deletedTeacher;
     } catch (error) {
       this.loggerService.error(error);

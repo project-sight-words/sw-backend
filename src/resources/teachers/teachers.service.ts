@@ -21,7 +21,6 @@ export class TeachersService {
       lastLoggedIn: new Date(),
     };
     const newUser = await this.usersRepository.upsertByEmail(userData);
-    console.log(newUser);
     const newTeacher: NewTeacher = {
       email: teacherData.email,
       staffId: teacherData.staffId,
@@ -54,6 +53,7 @@ export class TeachersService {
   }
 
   async updateTeacher(
+    id: string,
     updated_by: string,
     teacherData: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
@@ -63,6 +63,7 @@ export class TeachersService {
       name: teacherData.name,
     };
     const updatedTeacher = await this.teachersRepository.updateTeacher(
+      id,
       updated_by,
       newTeacher,
     );

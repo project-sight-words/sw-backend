@@ -1,10 +1,11 @@
 import {
-  Controller,
-  Get,
-  Delete,
-  Post,
-  Param,
+  BadRequestException,
   Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
   Put,
   UsePipes,
 } from "@nestjs/common";
@@ -38,10 +39,11 @@ export class TeachersController {
 
   @Put(":id")
   async updateTeacher(
+    @Param("id") id: string,
     @Body() teacherData: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
     const user_id = "user_id";
-    return await this.teachersService.updateTeacher(user_id, teacherData);
+    return await this.teachersService.updateTeacher(id, user_id, teacherData);
   }
 
   @Delete(":id")
