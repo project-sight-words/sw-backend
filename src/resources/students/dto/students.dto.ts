@@ -1,18 +1,20 @@
 import { Exclude, Expose } from "class-transformer";
 import { IsEmail, IsNotEmpty } from "class-validator";
 
-@Exclude()
-export class StudentDto {
+export class UpdateStudentDto {
   @IsNotEmpty()
-  @IsEmail()
   @Expose()
-  email!: string;
+  name!: string;
+}
 
+@Exclude()
+export class StudentDto extends UpdateStudentDto {
   @IsNotEmpty()
   @Expose({ name: "student_id" })
   studentId!: string;
 
   @IsNotEmpty()
+  @IsEmail()
   @Expose()
-  name!: string;
+  email!: string;
 }
