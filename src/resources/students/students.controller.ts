@@ -26,7 +26,7 @@ export class StudentsController {
   }
 
   @Post()
-  @HttpCode(204)
+  @HttpCode(201)
   async createStudent(@Body() studentDto: StudentDto): Promise<StudentDto> {
     return await this.studentsService.createStudent(studentDto);
   }
