@@ -23,14 +23,14 @@ export class Teacher extends NewTeacher {
 
   @Expose({ name: "updated_at" })
   @IsDate()
-  updatedAt!: Date | null;
+  updatedAt!: Date;
 
   @Expose({ name: "updated_by" })
   @IsUUID()
   updatedBy!: string | null;
 }
 
-export class NewUserTeacher {
+export class NewTeacherUser {
   @Expose({ name: "user_id" })
   @IsNotEmpty()
   @IsUUID()
@@ -42,7 +42,7 @@ export class NewUserTeacher {
   teacherId!: string;
 }
 
-export class UserTeacher {
+export class TeacherUser extends NewTeacherUser {
   @Expose()
   @IsNotEmpty()
   @IsUUID()
@@ -50,7 +50,7 @@ export class UserTeacher {
 
   @Expose({ name: "created_at" })
   @IsDate()
-  createdAt!: Date | null;
+  createdAt!: Date;
 
   @Expose({ name: "created_by" })
   @IsUUID()

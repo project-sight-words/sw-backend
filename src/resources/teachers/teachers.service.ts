@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { CreateTeacherDto } from "./dto/teachers.dto";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { CreateTeacherDto, UpdateTeacherDto } from "./dto/teachers.dto";
 import { NewTeacher, Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
 import { UsersRepository } from "resources/users/users.repository";
@@ -14,55 +14,53 @@ export class TeachersService {
 
   async createTeacher(
     createdBy: string,
-    teacherData: CreateTeacherDto,
+    data: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
-    const userData: NewUser = {
-      email: teacherData.email,
+    const newUser = await this.usersRepository.upsertByEmail({
+      email: data.email,
       lastLoggedIn: new Date(),
-    };
-    const newUser = await this.usersRepository.upsertByEmail(userData);
-    const newTeacher: NewTeacher = {
-      email: teacherData.email,
-      staffId: teacherData.staffId,
-      name: teacherData.name,
-    };
-    const teacher = await this.teachersRepository.insertTeacher(
+    });
+
+    const teacher = await this.teachersRepository.insert({
+      email: data.email,
+      staffId: data.staffId,
+      name: data.name,
+    });
+
+    const teacherId = teacher.id;
+    await this.teachersRepository.linkTeacherUser(
       newUser.id,
       createdBy,
-      newTeacher,
+      teacherId,
     );
     return this.teacherToDto(teacher);
   }
 
   async getTeachers(): Promise<CreateTeacherDto[]> {
-    const teacherArr = await this.teachersRepository.getTeachers();
-    return teacherArr.map((teacher) => this.teacherToDto(teacher));
+    const teachers = await this.teachersRepository.getAll();
+    return teachers.map((teacher) => this.teacherToDto(teacher));
   }
 
   async getTeacher(id: string): Promise<CreateTeacherDto> {
-    const teacher = await this.teachersRepository.getTeacher(id);
+    const teacher = await this.teachersRepository.get(id);
     if (teacher) {
       return this.teacherToDto(teacher);
     } else {
-      return {
-        email: "",
-        staffId: "",
-        name: "",
-      };
+      throw new BadRequestException();
     }
   }
 
   async updateTeacher(
     id: string,
     updated_by: string,
-    teacherData: CreateTeacherDto,
+    data: UpdateTeacherDto,
   ): Promise<CreateTeacherDto> {
     const newTeacher: NewTeacher = {
-      email: teacherData.email,
-      staffId: teacherData.staffId,
-      name: teacherData.name,
+      email: data.email,
+      staffId: data.staffId,
+      name: data.name,
     };
-    const updatedTeacher = await this.teachersRepository.updateTeacher(
+    const updatedTeacher = await this.teachersRepository.update(
       id,
       updated_by,
       newTeacher,
@@ -74,10 +72,7 @@ export class TeachersService {
     id: string,
     deletedBy: string,
   ): Promise<CreateTeacherDto> {
-    const deletedTeacher = await this.teachersRepository.deleteTeacher(
-      id,
-      deletedBy,
-    );
+    const deletedTeacher = await this.teachersRepository.delete(id, deletedBy);
     return this.teacherToDto(deletedTeacher);
   }
 

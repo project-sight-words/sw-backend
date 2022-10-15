@@ -5,10 +5,19 @@ export class CreateTeacherDto {
   @IsNotEmpty()
   email!: string;
 
+  @IsString()
   @IsNotEmpty()
   staffId!: string;
 
   @IsString()
   @IsNotEmpty()
+  name!: string;
+}
+
+export class UpdateTeacherDto {
+  @IsString()
+  staffId!: string;
+
+  @IsString()
   name!: string;
 }
