@@ -28,7 +28,7 @@ export class TeachersRepository {
   ): Promise<void> {
     await this.databaseService.query(
       `
-        INSERT INTO user_teacher (user_id, teacher_id, created_at, created_by)
+        INSERT INTO teacher_users (user_id, teacher_id, created_at, created_by)
         VALUES ($1, $2, NOW(), $3)
         RETURNING *
       `,
@@ -40,9 +40,9 @@ export class TeachersRepository {
     const rows = await this.databaseService.query(
       `
       SELECT * FROM teachers
-      JOIN user_teacher ON teachers.id = user_teacher.teacher_id
-      JOIN users ON user_teacher.user_id = users.id
-      WHERE user_teacher.deleted_at IS NULL
+      JOIN teacher_users ON teachers.id = teacher_users.teacher_id
+      JOIN users ON teacher_users.user_id = users.id
+      WHERE teacher_users.deleted_at IS NULL
       `,
     );
     return plainToInstance(Teacher, rows);
@@ -52,9 +52,9 @@ export class TeachersRepository {
     const rows = await this.databaseService.query(
       `
       SELECT * FROM teachers
-      INNER JOIN user_teacher ON teachers.id = user_teacher.teacher_id
-      INNER JOIN users ON user_teacher.user_id = users.id
-      WHERE teachers.staff_id = $1 AND user_teacher.deleted_at IS NULL
+      INNER JOIN teacher_users ON teachers.id = teacher_users.teacher_id
+      INNER JOIN users ON teacher_users.user_id = users.id
+      WHERE teachers.staff_id = $1 AND teacher_users.deleted_at IS NULL
       `,
       [id],
     );
@@ -90,9 +90,9 @@ export class TeachersRepository {
     const deletedTeacherId = deletedTeacher.id;
     const rows = await this.databaseService.query(
       `
-      UPDATE user_teacher
+      UPDATE teacher_users
       SET deleted_at = NOW(), deleted_by= NULL
-      WHERE user_teacher.teacher_id = $1
+      WHERE teacher_users.teacher_id = $1
       RETURNING *
     `,
       [deletedTeacherId],
