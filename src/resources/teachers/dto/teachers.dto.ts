@@ -14,10 +14,10 @@ export class CreateTeacherDto {
   name!: string;
 }
 
-export class UpdateTeacherDto {
-  @IsString()
-  staffId!: string;
+// export class UpdateTeacherDto {
+//   @IsString()
+//   staffId!: string;
 
-  @IsString()
-  name!: string;
-}
+//   @IsString()
+//   name!: string;
+// }

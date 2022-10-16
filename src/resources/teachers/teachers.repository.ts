@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
 import { DatabaseService } from "database/database.service";
-import { NewTeacher, Teacher, TeacherUser } from "entities/teacher.entities";
+import { NewTeacher, Teacher } from "entities/teacher.entities";
 
 @Injectable()
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async insert(teacher: NewTeacher): Promise<Teacher> {
-    const teacherRows = await this.databaseService.query(
+    const rows = await this.databaseService.query(
       `
       INSERT INTO teachers (staff_id, name)
       VALUES($1, $2)
@@ -16,14 +16,14 @@ export class TeachersRepository {
       `,
       [teacher.staffId, teacher.name],
     );
-    const newTeacher = plainToInstance(Teacher, teacherRows[0]);
+    const newTeacher = plainToInstance(Teacher, rows[0]);
     newTeacher.email = teacher.email;
     return newTeacher;
   }
 
   async linkTeacherUser(
     userId: string,
-    createdBy: string,
+    createdBy: string | null,
     teacherId: string,
   ): Promise<void> {
     await this.databaseService.query(
@@ -48,7 +48,7 @@ export class TeachersRepository {
     return plainToInstance(Teacher, rows);
   }
 
-  async get(id: string): Promise<Teacher> {
+  async get(id: string | null): Promise<Teacher> {
     const rows = await this.databaseService.query(
       `
       SELECT * FROM teachers
@@ -62,8 +62,8 @@ export class TeachersRepository {
   }
 
   async update(
-    id: string,
-    updated_by: string,
+    id: string | null,
+    updatedBy: string | null,
     teacher: NewTeacher,
   ): Promise<Teacher> {
     const rows = await this.databaseService.query(
@@ -78,24 +78,24 @@ export class TeachersRepository {
     return plainToInstance(Teacher, rows[0]);
   }
 
-  async delete(id: string, deletedBy: string): Promise<Teacher> {
-    const deletedTeacherRows = await this.databaseService.query(
+  async delete(staffId: string, deletedBy: string | null): Promise<Teacher> {
+    const teacherRows = await this.databaseService.query(
       `
       SELECT * FROM teachers
       WHERE teachers.staff_id = $1
       `,
-      [id],
+      [staffId],
     );
-    const deletedTeacher = plainToInstance(Teacher, deletedTeacherRows[0]);
+    const deletedTeacher = plainToInstance(Teacher, teacherRows[0]);
     const deletedTeacherId = deletedTeacher.id;
     const rows = await this.databaseService.query(
       `
       UPDATE teacher_users
-      SET deleted_at = NOW(), deleted_by= NULL
+      SET deleted_at = NOW(), deleted_by = $2
       WHERE teacher_users.teacher_id = $1
       RETURNING *
     `,
-      [deletedTeacherId],
+      [deletedTeacherId, deletedBy],
     );
     return deletedTeacher;
   }

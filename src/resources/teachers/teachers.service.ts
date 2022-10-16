@@ -1,9 +1,8 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateTeacherDto, UpdateTeacherDto } from "./dto/teachers.dto";
+import { CreateTeacherDto } from "./dto/teachers.dto";
 import { NewTeacher, Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
 import { UsersRepository } from "resources/users/users.repository";
-import { NewUser } from "entities/user.entities";
 
 @Injectable()
 export class TeachersService {
@@ -12,8 +11,8 @@ export class TeachersService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async createTeacher(
-    createdBy: string,
+  async create(
+    createdBy: string | null,
     data: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
     const newUser = await this.usersRepository.upsertByEmail({
@@ -36,13 +35,13 @@ export class TeachersService {
     return this.teacherToDto(teacher);
   }
 
-  async getTeachers(): Promise<CreateTeacherDto[]> {
+  async getAll(): Promise<CreateTeacherDto[]> {
     const teachers = await this.teachersRepository.getAll();
     return teachers.map((teacher) => this.teacherToDto(teacher));
   }
 
-  async getTeacher(id: string): Promise<CreateTeacherDto> {
-    const teacher = await this.teachersRepository.get(id);
+  async get(staffId: string | null): Promise<CreateTeacherDto> {
+    const teacher = await this.teachersRepository.get(staffId);
     if (teacher) {
       return this.teacherToDto(teacher);
     } else {
@@ -50,10 +49,10 @@ export class TeachersService {
     }
   }
 
-  async updateTeacher(
-    id: string,
-    updated_by: string,
-    data: UpdateTeacherDto,
+  async update(
+    staffId: string,
+    updatedBy: string | null,
+    data: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
     const newTeacher: NewTeacher = {
       email: data.email,
@@ -61,18 +60,21 @@ export class TeachersService {
       name: data.name,
     };
     const updatedTeacher = await this.teachersRepository.update(
-      id,
-      updated_by,
+      staffId,
+      updatedBy,
       newTeacher,
     );
     return this.teacherToDto(updatedTeacher);
   }
 
-  async deleteTeacher(
-    id: string,
-    deletedBy: string,
+  async delete(
+    staffId: string,
+    deletedBy: string | null,
   ): Promise<CreateTeacherDto> {
-    const deletedTeacher = await this.teachersRepository.delete(id, deletedBy);
+    const deletedTeacher = await this.teachersRepository.delete(
+      staffId,
+      deletedBy,
+    );
     return this.teacherToDto(deletedTeacher);
   }
 

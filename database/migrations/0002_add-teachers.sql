@@ -10,10 +10,10 @@ CREATE TABLE teacher_users (
   user_id         UUID,
   teacher_id      UUID,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  created_by      UUID,
+  created_by      UUID REFERENCES users(id),
   deleted_at      TIMESTAMPTZ,
-  deleted_by      UUID,
+  deleted_by      UUID REFERENCES users(id),
   PRIMARY KEY(user_id, teacher_id),
   CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id),
-  CONSTRAINT fk_teacher FOREIGN KEY(teacher_id) REFERENCES teachers(id),
+  CONSTRAINT fk_teacher FOREIGN KEY(teacher_id) REFERENCES teachers(id)
 );

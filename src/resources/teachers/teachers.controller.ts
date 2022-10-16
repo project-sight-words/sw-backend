@@ -9,7 +9,7 @@ import {
   Put,
 } from "@nestjs/common";
 import { Authorization } from "decorators/authorization.decorator";
-import { CreateTeacherDto, UpdateTeacherDto } from "./dto/teachers.dto";
+import { CreateTeacherDto } from "./dto/teachers.dto";
 import { TeachersService } from "./teachers.service";
 
 @Controller("teachers")
@@ -19,33 +19,33 @@ export class TeachersController {
   @Post()
   @HttpCode(201)
   async create(@Body() data: CreateTeacherDto): Promise<CreateTeacherDto> {
-    const user_id = "user_id";
-    const teacher = await this.teachersService.createTeacher(user_id, data);
+    const requestId = null;
+    const teacher = await this.teachersService.create(requestId, data);
     return teacher;
   }
 
   @Get()
   async getAll(): Promise<CreateTeacherDto[]> {
-    return await this.teachersService.getTeachers();
+    return await this.teachersService.getAll();
   }
 
   @Get(":id")
-  async get(@Param("id") id: string): Promise<CreateTeacherDto> {
-    return await this.teachersService.getTeacher(id);
+  async get(@Param("id") staffId: string): Promise<CreateTeacherDto> {
+    return await this.teachersService.get(staffId);
   }
 
   @Put(":id")
   async update(
-    @Param("id") id: string,
-    @Body() data: UpdateTeacherDto,
+    @Param("id") staffId: string,
+    @Body() data: CreateTeacherDto,
   ): Promise<CreateTeacherDto> {
-    const user_id = "user_id";
-    return await this.teachersService.updateTeacher(id, user_id, data);
+    const requestId = null;
+    return await this.teachersService.update(staffId, requestId, data);
   }
 
   @Delete(":id")
-  async delete(@Param("id") id: string): Promise<CreateTeacherDto> {
-    const user_id = "user_id";
-    return await this.teachersService.deleteTeacher(id, user_id);
+  async delete(@Param("id") staffId: string): Promise<CreateTeacherDto> {
+    const requestId = null;
+    return await this.teachersService.delete(staffId, requestId);
   }
 }
