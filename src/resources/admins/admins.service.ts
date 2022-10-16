@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
-import { NewUser } from "../../entities/user.entities";
-import { UsersRepository } from "../users/users.repository";
 import { AdminsRepository } from "./admins.repository";
 import { CreateAdminDto } from "./dto/createAdmin.dto";
+import { Injectable } from "@nestjs/common";
+import { NewUser } from "entities/user.entities";
+import { UsersRepository } from "resources/users/users.repository";
 
 @Injectable()
 export class AdminsService {
