@@ -1,9 +1,9 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { DatabaseService } from "../../database/database.service";
-import { UsersRepository } from "../users/users.repository";
 import { AdminsController } from "./admins.controller";
 import { AdminsRepository } from "./admins.repository";
 import { AdminsService } from "./admins.service";
+import { DatabaseService } from "database/database.service";
+import { Test, TestingModule } from "@nestjs/testing";
+import { UsersRepository } from "resources/users/users.repository";
 
 describe("AdminsController", () => {
   let adminsController: AdminsController;
@@ -12,10 +12,10 @@ describe("AdminsController", () => {
     const admins: TestingModule = await Test.createTestingModule({
       controllers: [AdminsController],
       providers: [
-        AdminsService,
         AdminsRepository,
-        UsersRepository,
+        AdminsService,
         DatabaseService,
+        UsersRepository,
       ],
     }).compile();
 

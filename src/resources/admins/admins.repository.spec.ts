@@ -1,7 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AdminsRepository } from "./admins.repository";
-import { AdminUser } from "../../entities/admin.entity";
-import { DatabaseService } from "../../database/database.service";
+import { DatabaseService } from "database/database.service";
 
 describe("AdminsRepository", () => {
   let adminsRepository: AdminsRepository;

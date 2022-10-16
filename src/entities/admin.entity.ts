@@ -8,6 +8,7 @@ export class Admin {
   @IsUUID()
   id!: string;
 }
+
 export class AdminUser extends User {
   @Expose({ name: "user_id" })
   @IsNotEmpty()

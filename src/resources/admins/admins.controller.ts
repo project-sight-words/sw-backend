@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, Param, Post, Body } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+} from "@nestjs/common";
 import { AdminsService } from "./admins.service";
 import { CreateAdminDto } from "./dto/createAdmin.dto";
 
@@ -7,6 +15,7 @@ export class AdminsController {
   constructor(private readonly adminsService: AdminsService) {}
 
   @Post()
+  @HttpCode(201)
   async create(@Body() data: CreateAdminDto) {
     return await this.adminsService.create(data);
   }

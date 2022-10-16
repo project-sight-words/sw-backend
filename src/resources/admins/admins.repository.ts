@@ -1,7 +1,7 @@
-import { DatabaseService } from "../../database/database.service";
+import { Admin, AdminUser } from "entities/admin.entity";
+import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
-import { Admin, AdminUser } from "../../entities/admin.entity";
 
 @Injectable()
 export class AdminsRepository {
@@ -11,7 +11,7 @@ export class AdminsRepository {
     const createdAdminRows = await this.databaseService.query(
       `
         INSERT INTO admins (id)
-        VALUES (default)
+        VALUES (DEFAULT)
         RETURNING *;
       `,
     );
@@ -20,14 +20,14 @@ export class AdminsRepository {
 
     const rows = await this.databaseService.query(
       `
-        with inserted as (
+        WITH inserted AS (
           INSERT INTO user_admin (user_id, admin_id, created_at, created_by)
           VALUES ($1, $2, NOW(), NULL)
           RETURNING *
         ) 
         SELECT * FROM inserted
-        INNER JOIN users ON user_id=users.id
-        INNER JOIN admins ON admin_id=admins.id;
+        INNER JOIN users ON user_id = users.id
+        INNER JOIN admins ON admin_id = admins.id;
       `,
       [userId, adminId],
     );
@@ -38,8 +38,8 @@ export class AdminsRepository {
     const rows = await this.databaseService.query(
       `
         SELECT * FROM user_admin
-        INNER JOIN users ON user_admin.user_id=users.id
-        INNER JOIN admins ON user_admin.admin_id=admins.id
+        INNER JOIN users ON user_admin.user_id = users.id
+        INNER JOIN admins ON user_admin.admin_id = admins.id
         WHERE user_admin.deleted_at IS NULL;
       `,
     );
@@ -50,8 +50,8 @@ export class AdminsRepository {
     const rows = await this.databaseService.query(
       `
         SELECT * FROM user_admin 
-        INNER JOIN users ON user_admin.user_id=users.id
-        INNER JOIN admins ON user_admin.admin_id=admins.id
+        INNER JOIN users ON user_admin.user_id = users.id
+        INNER JOIN admins ON user_admin.admin_id = admins.id
         WHERE user_admin.deleted_at IS NULL AND user_admin.admin_id = $1;
       `,
       [id],
@@ -62,16 +62,15 @@ export class AdminsRepository {
   async deleteById(id: string): Promise<AdminUser> {
     const rows = await this.databaseService.query(
       `
-        with updated as (
+        WITH updated AS (
           UPDATE user_admin 
-          SET deleted_at = NOW(),
-              deleted_by = NULL 
+          SET deleted_at = NOW(), deleted_by = NULL 
           WHERE admin_id = $1
           RETURNING *
         ) 
         SELECT * FROM updated
-        INNER JOIN users ON user_id=users.id
-        INNER JOIN admins ON admin_id=admins.id;
+        INNER JOIN users ON user_id = users.id
+        INNER JOIN admins ON admin_id = admins.id;
       `,
       [id],
     );
