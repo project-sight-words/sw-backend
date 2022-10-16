@@ -22,7 +22,7 @@ export class StudentsService {
   }
 
   async getStudentById(id: string): Promise<StudentDto> {
-    const student = await this.studentsRepository.getStudentById(id);
+    const student = await this.studentsRepository.getById(id);
     if (!student) throw new NotFoundException();
     return this.studentToDto(student);
   }
