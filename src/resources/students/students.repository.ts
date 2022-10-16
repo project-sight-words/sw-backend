@@ -87,7 +87,7 @@ export class StudentsRepository {
       `
         INSERT INTO students (student_id, name)
         VALUES ($1, $2)
-        ON CONFLICT (student_id)
+        ON CONFLICT (UPPER(student_id))
         DO
         UPDATE SET updated_at = NOW()
         RETURNING *;
