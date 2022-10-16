@@ -1,4 +1,5 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
+import { Querier } from "./database.types";
 import {
   Injectable,
   InternalServerErrorException,
@@ -18,13 +19,38 @@ export class DatabaseService implements OnModuleDestroy {
 
   private readonly loggerService = new Logger("DatabaseService");
 
+  private newQuerier(client: Pool | PoolClient): Querier {
+    const query: Querier = async (SQL, values) => {
+      try {
+        const { rows } = await client.query(SQL, values);
+        return rows as unknown[];
+      } catch (error: unknown) {
+        this.loggerService.error(error);
+        throw new InternalServerErrorException();
+      }
+    };
+    return query;
+  }
+
   async query(SQL: string, values?: unknown[]): Promise<unknown[]> {
+    const query = this.newQuerier(DatabaseService.pool);
+    const rows = await query(SQL, values);
+    return rows;
+  }
+
+  async transaction<T>(callback: (query: Querier) => Promise<T>): Promise<T> {
+    const client = await DatabaseService.pool.connect();
     try {
-      const { rows } = await DatabaseService.pool.query(SQL, values);
-      return rows as unknown[];
+      await client.query("BEGIN");
+      const result = await callback(this.newQuerier(client));
+      await client.query("COMMIT");
+      return result;
     } catch (error: unknown) {
-      this.loggerService.error(error);
-      throw new InternalServerErrorException();
+      this.loggerService.error("Rolling back the transaction");
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
     }
   }
 
