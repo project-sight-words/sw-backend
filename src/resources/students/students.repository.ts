@@ -81,8 +81,6 @@ export class StudentsRepository {
   }
 
   async upsertByEmailAndStudentId(student: NewStudent): Promise<Student> {
-    // TODO: Don't set updated_at?
-    // TODO: Wrap into ORM transaction?
     const upsertStudent = await this.databaseService.query(
       `
         INSERT INTO students (student_id, name)
