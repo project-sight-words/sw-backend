@@ -15,7 +15,7 @@ CREATE TABLE user_students (
   PRIMARY KEY (user_id, student_id),
   CONSTRAINT fk_users FOREIGN KEY (user_id) REFERENCES users (id),
   CONSTRAINT fk_students FOREIGN KEY (student_id) REFERENCES students (id),
-  CONSTRAINT fk_created_by FOREIGN KEY (user_id) REFERENCES users (id)
+  CONSTRAINT fk_created_by FOREIGN KEY (created_by) REFERENCES users (id)
 );
 
 CREATE UNIQUE INDEX student_id_upper_unique ON students (UPPER(student_id));
