@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -17,18 +16,21 @@ export class StudentsController {
 
   @Get()
   async getStudents(): Promise<StudentDto[]> {
-    return await this.studentsService.getStudents();
+    const students = await this.studentsService.getStudents();
+    return students;
   }
 
   @Get(":id")
   async getStudentById(@Param("id") id: string): Promise<StudentDto> {
-    return await this.studentsService.getStudentById(id);
+    const student = await this.studentsService.getStudentById(id);
+    return student;
   }
 
   @Post()
   @HttpCode(201)
   async createStudent(@Body() studentDto: StudentDto): Promise<StudentDto> {
-    return await this.studentsService.createStudent(studentDto);
+    const createdStudent = await this.studentsService.createStudent(studentDto);
+    return createdStudent;
   }
 
   @Put(":id")
@@ -36,6 +38,10 @@ export class StudentsController {
     @Param("id") id: string,
     @Body() updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    return await this.studentsService.updateStudent(id, updateStudentDto.name);
+    const updatedStudent = await this.studentsService.updateStudent(
+      id,
+      updateStudentDto.name,
+    );
+    return updatedStudent;
   }
 }
