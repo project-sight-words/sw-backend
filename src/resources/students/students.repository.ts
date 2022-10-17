@@ -53,7 +53,7 @@ export class StudentsRepository {
     return plainToInstance(Student, rows);
   }
 
-  async updateStudent(studentId: string, newName: string): Promise<Student> {
+  async updateStudent(student: NewStudent): Promise<Student> {
     // TODO: Allow updating of email from student?
     // Updates should only occur if there's a (single) record in the joining table
     const updateStudent = await this.databaseService.query(
@@ -75,7 +75,7 @@ export class StudentsRepository {
           students.name AS name,
           subquery.email AS email;
       `,
-      [newName, studentId],
+      [student.name, student.studentId],
     );
     return plainToInstance(Student, updateStudent[0]);
   }

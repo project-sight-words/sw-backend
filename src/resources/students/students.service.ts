@@ -49,10 +49,11 @@ export class StudentsService {
   }
 
   async updateStudent(studentId: string, newName: string): Promise<StudentDto> {
-    const updatedStudent = await this.studentsRepository.updateStudent(
-      studentId,
-      newName,
-    );
+    const updatedStudent = await this.studentsRepository.updateStudent({
+      name: newName,
+      studentId: studentId,
+      email: "",
+    });
 
     if (!updatedStudent) throw new BadRequestException();
 
