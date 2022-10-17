@@ -40,7 +40,7 @@ export class StudentsController {
   ): Promise<StudentDto> {
     const updatedStudent = await this.studentsService.updateStudent(
       id,
-      updateStudentDto.name,
+      updateStudentDto,
     );
     return updatedStudent;
   }

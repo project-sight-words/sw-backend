@@ -6,7 +6,7 @@ import {
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { NewStudent, Student } from "../../entities/student.entities";
 import { UsersRepository } from "../users/users.repository";
-import { StudentDto } from "./dto/students.dto";
+import { StudentDto, UpdateStudentDto } from "./dto/students.dto";
 import { StudentsRepository } from "./students.repository";
 
 @Injectable()
@@ -48,9 +48,12 @@ export class StudentsService {
     return this.studentToDto(linkedStudent);
   }
 
-  async updateStudent(studentId: string, newName: string): Promise<StudentDto> {
+  async updateStudent(
+    studentId: string,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<StudentDto> {
     const updatedStudent = await this.studentsRepository.updateStudent({
-      name: newName,
+      name: updateStudentDto.name,
       studentId: studentId,
       email: "",
     });
