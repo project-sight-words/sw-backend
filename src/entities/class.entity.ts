@@ -11,7 +11,7 @@ export class Class {
   @IsNotEmpty()
   @IsUUID()
   @Expose()
-  id!: number;
+  id!: string;
 
   @IsNotEmpty()
   @IsDateString()
@@ -23,12 +23,12 @@ export class TeacherToClass {
   @IsNotEmpty()
   @IsUUID()
   @Expose({ name: "teacher_id" })
-  teacherId!: number;
+  teacherId!: string;
 
   @IsNotEmpty()
   @IsUUID()
   @Expose({ name: "class_id" })
-  classId!: number;
+  classId!: string;
 
   @IsNotEmpty()
   @IsBoolean()
@@ -57,12 +57,12 @@ export class StudentToClass {
   @IsNotEmpty()
   @IsUUID()
   @Expose({ name: "student_id" })
-  studentId!: number;
+  studentId!: string;
 
   @IsNotEmpty()
   @IsUUID()
   @Expose({ name: "class_id" })
-  classId!: number;
+  classId!: string;
 
   @IsNotEmpty()
   @Expose({ name: "created_at" })
