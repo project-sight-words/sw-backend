@@ -17,21 +17,25 @@ export class AdminsController {
   @Post()
   @HttpCode(201)
   async create(@Body() data: CreateAdminDto) {
-    return await this.adminsService.create(data);
+    const admin = this.adminsService.create(data);
+    return admin;
   }
 
   @Get()
   async getAll() {
-    return await this.adminsService.getAll();
+    const admins = this.adminsService.getAll();
+    return admins;
   }
 
   @Get(":id")
   async getById(@Param("id") id: string) {
-    return await this.adminsService.getById(id);
+    const admin = this.adminsService.getById(id);
+    return admin;
   }
 
   @Delete(":id")
   async deleteById(@Param("id") id: string) {
-    return await this.adminsService.deleteById(id);
+    const admin = this.adminsService.deleteById(id);
+    return admin;
   }
 }
