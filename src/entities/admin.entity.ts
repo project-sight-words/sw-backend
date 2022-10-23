@@ -1,6 +1,5 @@
 import { Expose } from "class-transformer";
 import { IsDate, IsNotEmpty, IsUUID } from "class-validator";
-import { User } from "./user.entities";
 
 export class Admin {
   @Expose()
@@ -9,7 +8,7 @@ export class Admin {
   id!: string;
 }
 
-export class AdminUser extends User {
+export class AdminUser {
   @Expose({ name: "user_id" })
   @IsNotEmpty()
   @IsUUID()
