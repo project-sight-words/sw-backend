@@ -11,7 +11,3 @@ CREATE TABLE admin_user (
   deleted_by  UUID         REFERENCES users(id),
   CONSTRAINT admin_user_pk PRIMARY KEY (admin_id, user_id)
 );
-
-CREATE UNIQUE INDEX unique_admin_id_user_id 
-ON admin_user (admin_id, user_id)
-WHERE deleted_at IS NULL;
