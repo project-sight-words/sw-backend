@@ -1,24 +1,13 @@
 import { AdminsRepository } from "./admins.repository";
 import { CreateAdminDto } from "./dto/createAdmin.dto";
 import { Injectable } from "@nestjs/common";
-import { NewUser } from "entities/user.entities";
-import { UsersRepository } from "resources/users/users.repository";
 
 @Injectable()
 export class AdminsService {
-  constructor(
-    private readonly adminsRepository: AdminsRepository,
-    private readonly usersRepository: UsersRepository,
-  ) {}
+  constructor(private readonly adminsRepository: AdminsRepository) {}
 
   async create(data: CreateAdminDto) {
-    const userData: NewUser = {
-      email: data.email,
-      lastLoggedIn: new Date(),
-    };
-    const userToMakeAdmin = await this.usersRepository.upsertByEmail(userData);
-
-    return await this.adminsRepository.create(userToMakeAdmin.id);
+    return await this.adminsRepository.create(data);
   }
 
   async getAll() {
