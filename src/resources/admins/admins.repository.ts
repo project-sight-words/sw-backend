@@ -1,13 +1,24 @@
 import { Admin, AdminUser } from "entities/admin.entity";
+import { CreateAdminDto } from "./dto/createAdmin.dto";
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
+import { UsersRepository } from "resources/users/users.repository";
 
 @Injectable()
 export class AdminsRepository {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly usersRepository: UsersRepository,
+  ) {}
 
-  async create(userId: string): Promise<AdminUser> {
+  async create(data: CreateAdminDto): Promise<AdminUser> {
+    const userToMakeAdmin = await this.usersRepository.upsertByEmail({
+      email: data.email,
+      lastLoggedIn: new Date(),
+    });
+    const userId = userToMakeAdmin.id;
+
     const createdAdminRows = await this.databaseService.query(
       `
         INSERT INTO admins (id)
