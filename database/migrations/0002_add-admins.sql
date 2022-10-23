@@ -1,5 +1,7 @@
 CREATE TABLE admins (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid()
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  updated_at  TIMESTAMPTZ,
+  updated_by  UUID         REFERENCES users(id)
 );
 
 CREATE TABLE admin_user (
