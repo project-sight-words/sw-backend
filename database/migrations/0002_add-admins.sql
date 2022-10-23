@@ -2,16 +2,16 @@ CREATE TABLE admins (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid()
 );
 
-CREATE TABLE user_admin (
-  user_id     UUID         REFERENCES users(id),
+CREATE TABLE admin_user (
   admin_id    UUID         REFERENCES admins(id),
-  created_at  TIMESTAMPTZ,
+  user_id     UUID         REFERENCES users(id),
+  created_at  TIMESTAMPTZ  NOT NULL,
   created_by  UUID         REFERENCES users(id),
   deleted_at  TIMESTAMPTZ,
   deleted_by  UUID         REFERENCES users(id),
-  CONSTRAINT user_admin_pk PRIMARY KEY (user_id, admin_id)
+  CONSTRAINT admin_user_pk PRIMARY KEY (admin_id, user_id)
 );
 
-CREATE UNIQUE INDEX unique_user_id_admin_id 
-ON user_admin (user_id, admin_id)
+CREATE UNIQUE INDEX unique_admin_id_user_id 
+ON admin_user (admin_id, user_id)
 WHERE deleted_at IS NULL;
