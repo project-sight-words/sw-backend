@@ -1,6 +1,6 @@
-import { Test, TestingModule } from "@nestjs/testing";
+import { DatabaseService } from "database/database.service";
 import { TeachersRepository } from "./teachers.repository";
-import { DatabaseService } from "../../database/database.service";
+import { Test, TestingModule } from "@nestjs/testing";
 
 describe("TeachersRepository", () => {
   let teachersRepository: TeachersRepository;

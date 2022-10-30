@@ -1,9 +1,9 @@
-import { Module } from "@nestjs/common";
 import { DatabaseModule } from "database/database.module";
-import { UsersRepository } from "resources/users/users.repository";
+import { Module } from "@nestjs/common";
 import { TeachersController } from "./teachers.controller";
 import { TeachersRepository } from "./teachers.repository";
 import { TeachersService } from "./teachers.service";
+import { UsersRepository } from "resources/users/users.repository";
 
 @Module({
   imports: [DatabaseModule],

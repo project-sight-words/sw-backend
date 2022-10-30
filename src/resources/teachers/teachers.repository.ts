@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { plainToInstance } from "class-transformer";
 import { DatabaseService } from "database/database.service";
+import { Injectable } from "@nestjs/common";
 import { NewTeacher, Teacher } from "entities/teacher.entities";
+import { plainToInstance } from "class-transformer";
 
 @Injectable()
 export class TeachersRepository {
