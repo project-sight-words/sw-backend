@@ -22,6 +22,7 @@ export class Teacher extends NewTeacher {
   id!: string;
 
   @Expose({ name: "updated_at" })
+  @IsNotEmpty()
   @IsDate()
   updatedAt!: Date;
 
@@ -49,6 +50,7 @@ export class TeacherUser extends NewTeacherUser {
   id!: string;
 
   @Expose({ name: "created_at" })
+  @IsNotEmpty()
   @IsDate()
   createdAt!: Date;
 
