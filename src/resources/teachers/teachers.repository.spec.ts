@@ -16,4 +16,6 @@ describe("TeachersRepository", () => {
   it("should be defined", () => {
     expect(teachersRepository).toBeDefined();
   });
+
+  // TODO: add tests for teachers repository
 });

@@ -25,5 +25,6 @@ describe("TeachersController", () => {
   it("should be defined", () => {
     expect(teachersController).toBeDefined();
   });
-  //TODO add tests for teachers
+
+  // TODO: add tests for teachers controller
 });

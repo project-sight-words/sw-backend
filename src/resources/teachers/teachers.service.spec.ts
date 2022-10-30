@@ -24,5 +24,5 @@ describe("TeachersService", () => {
     expect(teacherService).toBeDefined();
   });
 
-  // TODO: Add tests for teachers
+  // TODO: add tests for teachers service
 });
