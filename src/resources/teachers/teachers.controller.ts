@@ -1,3 +1,10 @@
+import { TeachersService } from "./teachers.service";
+import {
+  CreateTeacherDto,
+  DeleteTeacherDto,
+  GetTeacherDto,
+  UpdateTeacherDto,
+} from "./dto/teachers.dto";
 import {
   Body,
   Controller,
@@ -8,9 +15,6 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { Authorization } from "decorators/authorization.decorator";
-import { CreateTeacherDto } from "./dto/teachers.dto";
-import { TeachersService } from "./teachers.service";
 
 @Controller("teachers")
 export class TeachersController {
@@ -25,26 +29,26 @@ export class TeachersController {
   }
 
   @Get()
-  async getAll(): Promise<CreateTeacherDto[]> {
+  async getAll(): Promise<GetTeacherDto[]> {
     return await this.teachersService.getAll();
   }
 
   @Get(":id")
-  async get(@Param("id") staffId: string): Promise<CreateTeacherDto> {
+  async get(@Param("id") staffId: string): Promise<GetTeacherDto> {
     return await this.teachersService.get(staffId);
   }
 
   @Put(":id")
   async update(
     @Param("id") staffId: string,
-    @Body() data: CreateTeacherDto,
-  ): Promise<CreateTeacherDto> {
+    @Body() data: UpdateTeacherDto,
+  ): Promise<UpdateTeacherDto> {
     const requestId = null;
     return await this.teachersService.update(staffId, requestId, data);
   }
 
   @Delete(":id")
-  async delete(@Param("id") staffId: string): Promise<CreateTeacherDto> {
+  async delete(@Param("id") staffId: string): Promise<DeleteTeacherDto> {
     const requestId = null;
     return await this.teachersService.delete(staffId, requestId);
   }

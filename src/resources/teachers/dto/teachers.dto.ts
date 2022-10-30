@@ -14,10 +14,8 @@ export class CreateTeacherDto {
   name!: string;
 }
 
-// export class UpdateTeacherDto {
-//   @IsString()
-//   staffId!: string;
+export class GetTeacherDto extends CreateTeacherDto {}
 
-//   @IsString()
-//   name!: string;
-// }
+export class UpdateTeacherDto extends CreateTeacherDto {}
+
+export class DeleteTeacherDto extends CreateTeacherDto {}
