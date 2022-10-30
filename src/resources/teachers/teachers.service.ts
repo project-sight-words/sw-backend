@@ -59,15 +59,14 @@ export class TeachersService {
     updatedBy: string | null,
     data: UpdateTeacherDto,
   ): Promise<UpdateTeacherDto> {
-    const newTeacher: NewTeacher = {
-      email: data.email,
-      staffId: data.staffId,
-      name: data.name,
-    };
     const updatedTeacher = await this.teachersRepository.update(
       staffId,
       updatedBy,
-      newTeacher,
+      {
+        email: data.email,
+        staffId: data.staffId,
+        name: data.name,
+      },
     );
     return this.teacherToDto(updatedTeacher);
   }
