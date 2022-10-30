@@ -1,6 +1,6 @@
 CREATE TABLE teachers (
   id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  staff_id        CITEXT        NOT NULL UNIQUE,
+  staff_id        TEXT        NOT NULL,
   name            TEXT        NOT NULL,
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_by      UUID
@@ -17,3 +17,5 @@ CREATE TABLE teacher_users (
   CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id),
   CONSTRAINT fk_teacher FOREIGN KEY(teacher_id) REFERENCES teachers(id)
 );
+
+CREATE UNIQUE INDEX staff_id_upper_unique ON teachers (UPPER(staff_id));
