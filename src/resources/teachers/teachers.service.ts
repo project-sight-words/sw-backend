@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { NewTeacher, Teacher } from "entities/teacher.entities";
+import { Injectable } from "@nestjs/common";
+import { Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
 import { UsersRepository } from "resources/users/users.repository";
 import {
@@ -47,11 +47,7 @@ export class TeachersService {
 
   async get(staffId: string | null): Promise<GetTeacherDto> {
     const teacher = await this.teachersRepository.get(staffId);
-    if (teacher) {
-      return this.teacherToDto(teacher);
-    } else {
-      throw new BadRequestException();
-    }
+    return this.teacherToDto(teacher);
   }
 
   async update(
