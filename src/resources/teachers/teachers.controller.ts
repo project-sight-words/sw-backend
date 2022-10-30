@@ -30,12 +30,14 @@ export class TeachersController {
 
   @Get()
   async getAll(): Promise<GetTeacherDto[]> {
-    return await this.teachersService.getAll();
+    const teachers = await this.teachersService.getAll();
+    return teachers;
   }
 
   @Get(":id")
   async get(@Param("id") staffId: string): Promise<GetTeacherDto> {
-    return await this.teachersService.get(staffId);
+    const teacher = await this.teachersService.get(staffId);
+    return teacher;
   }
 
   @Put(":id")
@@ -43,13 +45,13 @@ export class TeachersController {
     @Param("id") staffId: string,
     @Body() data: UpdateTeacherDto,
   ): Promise<UpdateTeacherDto> {
-    const requestId = null;
-    return await this.teachersService.update(staffId, requestId, data);
+    const teacher = await this.teachersService.update(staffId, null, data);
+    return teacher;
   }
 
   @Delete(":id")
   async delete(@Param("id") staffId: string): Promise<DeleteTeacherDto> {
-    const requestId = null;
-    return await this.teachersService.delete(staffId, requestId);
+    const teacher = await this.teachersService.delete(staffId, null);
+    return teacher;
   }
 }
