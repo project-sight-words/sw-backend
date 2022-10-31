@@ -15,33 +15,30 @@ export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Get()
-  async getStudents(): Promise<StudentDto[]> {
-    const students = await this.studentsService.getStudents();
+  async get(): Promise<StudentDto[]> {
+    const students = await this.studentsService.get();
     return students;
   }
 
   @Get(":id")
-  async getStudentById(@Param("id") id: string): Promise<StudentDto> {
-    const student = await this.studentsService.getStudentById(id);
+  async getById(@Param("id") id: string): Promise<StudentDto> {
+    const student = await this.studentsService.getById(id);
     return student;
   }
 
   @Post()
   @HttpCode(201)
-  async createStudent(@Body() studentDto: StudentDto): Promise<StudentDto> {
-    const createdStudent = await this.studentsService.createStudent(studentDto);
-    return createdStudent;
+  async create(@Body() studentDto: StudentDto): Promise<StudentDto> {
+    const student = await this.studentsService.create(studentDto);
+    return student;
   }
 
   @Put(":id")
-  async updateStudentById(
+  async updateById(
     @Param("id") id: string,
     @Body() updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    const updatedStudent = await this.studentsService.updateStudent(
-      id,
-      updateStudentDto,
-    );
-    return updatedStudent;
+    const student = await this.studentsService.updateById(id, updateStudentDto);
+    return student;
   }
 }

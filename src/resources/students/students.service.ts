@@ -1,13 +1,9 @@
+import { Injectable } from "@nestjs/common";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { NewStudent, Student } from "entities/student.entities";
 import { StudentDto, UpdateStudentDto } from "./dto/students.dto";
 import { StudentsRepository } from "./students.repository";
 import { UsersRepository } from "resources/users/users.repository";
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
 
 @Injectable()
 export class StudentsService {
@@ -16,49 +12,46 @@ export class StudentsService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async getStudents(): Promise<StudentDto[]> {
-    const students = await this.studentsRepository.getAllStudents();
+  async get(): Promise<StudentDto[]> {
+    const students = await this.studentsRepository.get();
     return students.map((student) => this.studentToDto(student));
   }
 
-  async getStudentById(id: string): Promise<StudentDto> {
+  async getById(id: string): Promise<StudentDto> {
     const student = await this.studentsRepository.getById(id);
-    if (!student) throw new NotFoundException();
     return this.studentToDto(student);
   }
 
-  async createStudent(studentDto: StudentDto): Promise<StudentDto> {
-    const newUser = await this.usersRepository.upsertByEmail({
+  async create(studentDto: StudentDto): Promise<StudentDto> {
+    const user = await this.usersRepository.upsertByEmail({
       email: studentDto.email,
       lastLoggedIn: null,
     });
 
-    const newStudent = await this.studentsRepository.upsertByEmailAndStudentId(
+    const student = await this.studentsRepository.upsertByEmailAndStudentId(
       this.dtoToNewStudent(studentDto),
     );
 
-    const linkedStudent = await this.studentsRepository.linkStudentToUser(
+    const linkedStudent = await this.studentsRepository.linkToUser(
       {
-        userId: newUser.id,
-        studentId: newStudent.id,
+        userId: user.id,
+        studentId: student.id,
       },
-      newStudent,
+      student,
     );
 
     return this.studentToDto(linkedStudent);
   }
 
-  async updateStudent(
+  async updateById(
     studentId: string,
     updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    const updatedStudent = await this.studentsRepository.updateStudent({
+    const updatedStudent = await this.studentsRepository.update({
       name: updateStudentDto.name,
       studentId: studentId,
       email: "",
     });
-
-    if (!updatedStudent) throw new BadRequestException();
 
     return this.studentToDto(updatedStudent);
   }

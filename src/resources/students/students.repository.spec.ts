@@ -57,7 +57,7 @@ describe("StudentsRepository", () => {
       studentId: testStudent.studentId,
       name: "Jerry Doe",
     };
-    const updatedStudent = await service.updateStudent(testUpdateStudent);
+    const updatedStudent = await service.update(testUpdateStudent);
     expect(updatedStudent).toBeDefined();
     expect(updatedStudent).toBeInstanceOf(Student);
     // Don't test for email as that is not returned with the UPDATE
@@ -65,7 +65,7 @@ describe("StudentsRepository", () => {
     expect(updatedStudent.name).toBe(testUpdateStudent.name);
 
     // TODO: Better mock this
-    const failedUpdatedStudent = await service.updateStudent({
+    const failedUpdatedStudent = await service.update({
       email: "something@email.com",
       studentId: "123",
       name: "Jerry Doe",

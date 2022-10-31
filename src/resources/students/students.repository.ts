@@ -33,7 +33,7 @@ export class StudentsRepository {
     return plainToInstance(Student, rows[0]);
   }
 
-  async getAllStudents(): Promise<Student[]> {
+  async get(): Promise<Student[]> {
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -53,10 +53,10 @@ export class StudentsRepository {
     return plainToInstance(Student, rows);
   }
 
-  async updateStudent(student: NewStudent): Promise<Student> {
+  async update(student: NewStudent): Promise<Student> {
     // TODO: Allow updating of email from student?
     // Updates should only occur if there's a (single) record in the joining table
-    const updateStudent = await this.databaseService.query(
+    const rows = await this.databaseService.query(
       `
         UPDATE students
         SET name = $1
@@ -77,11 +77,11 @@ export class StudentsRepository {
       `,
       [student.name, student.studentId],
     );
-    return plainToInstance(Student, updateStudent[0]);
+    return plainToInstance(Student, rows[0]);
   }
 
   async upsertByEmailAndStudentId(student: NewStudent): Promise<Student> {
-    const upsertStudent = await this.databaseService.query(
+    const rows = await this.databaseService.query(
       `
         INSERT INTO students (student_id, name)
         VALUES ($1, $2)
@@ -92,23 +92,23 @@ export class StudentsRepository {
       `,
       [student.studentId, student.name],
     );
-    const newStudent = plainToInstance(Student, upsertStudent[0]);
+    const newStudent = plainToInstance(Student, rows[0]);
     newStudent.email = student.email;
     return newStudent;
   }
 
-  async linkStudentToUser(
+  async linkToUser(
     studentUser: NewStudentUser,
     student: Student,
   ): Promise<Student> {
-    const insertStudentUser = await this.databaseService.query(
+    const rows = await this.databaseService.query(
       `
         INSERT INTO student_users (user_id, student_id)
         VALUES ($1, $2);
       `,
       [studentUser.userId, studentUser.studentId],
     );
-    const newStudentUser = plainToInstance(StudentUser, insertStudentUser[0]);
+    const newStudentUser = plainToInstance(StudentUser, rows[0]);
     student.studentUser = newStudentUser;
 
     return student;
