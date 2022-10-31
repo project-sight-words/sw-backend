@@ -1,7 +1,7 @@
-import { DatabaseService } from "database/database.service";
+import { DatabaseService } from "../../database/database.service";
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
-import { NewUser, User } from "entities/user.entities";
+import { NewUser, User } from "../../entities/user.entities";
 import { plainToClass } from "class-transformer";
 
 @Injectable()
@@ -30,7 +30,7 @@ export class UsersRepository {
         DO
         UPDATE SET last_logged_in = $2
         RETURNING *;
-        `,
+      `,
       [user.email, user.lastLoggedIn],
     );
     return plainToClass(User, rows[0]);

@@ -17,3 +17,5 @@ CREATE TABLE teacher_users (
 );
 
 CREATE UNIQUE INDEX staff_id_upper_unique ON teachers (UPPER(staff_id));
+-- TODO: Add unique constraint for user_id on teacher_users where deleted_at = null;
+-- TODO: Add unique constraint for teacher_id on teacher_users where deleted_at = null;

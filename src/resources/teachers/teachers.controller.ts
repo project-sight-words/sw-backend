@@ -23,35 +23,40 @@ export class TeachersController {
   @Post()
   @HttpCode(201)
   async create(@Body() data: CreateTeacherDto): Promise<CreateTeacherDto> {
-    const requestId = null;
-    const teacher = await this.teachersService.create(requestId, data);
+    const teacher = await this.teachersService.create(null, data);
     return teacher;
   }
 
   @Get()
-  async getAll(): Promise<GetTeacherDto[]> {
-    const teachers = await this.teachersService.getAll();
+  async get(): Promise<GetTeacherDto[]> {
+    const teachers = await this.teachersService.get();
     return teachers;
   }
 
   @Get(":id")
-  async get(@Param("id") staffId: string): Promise<GetTeacherDto> {
-    const teacher = await this.teachersService.get(staffId);
+  async getByStaffId(@Param("id") staffId: string): Promise<GetTeacherDto> {
+    const teacher = await this.teachersService.getByStaffId(staffId);
     return teacher;
   }
 
   @Put(":id")
-  async update(
+  async updateByStaffId(
     @Param("id") staffId: string,
     @Body() data: UpdateTeacherDto,
   ): Promise<UpdateTeacherDto> {
-    const teacher = await this.teachersService.update(staffId, null, data);
+    const teacher = await this.teachersService.updateByStaffId(
+      staffId,
+      null,
+      data,
+    );
     return teacher;
   }
 
   @Delete(":id")
-  async delete(@Param("id") staffId: string): Promise<DeleteTeacherDto> {
-    const teacher = await this.teachersService.delete(staffId, null);
+  async deleteByStaffId(
+    @Param("id") staffId: string,
+  ): Promise<DeleteTeacherDto> {
+    const teacher = await this.teachersService.deleteByStaffId(staffId, null);
     return teacher;
   }
 }

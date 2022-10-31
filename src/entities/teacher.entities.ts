@@ -1,5 +1,5 @@
 import { Expose } from "class-transformer";
-import { IsDate, IsNotEmpty, IsUUID, IsString, IsEmail } from "class-validator";
+import { IsDate, IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class NewTeacher {
   @IsNotEmpty()

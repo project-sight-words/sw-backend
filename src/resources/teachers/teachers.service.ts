@@ -25,7 +25,7 @@ export class TeachersService {
       lastLoggedIn: new Date(),
     });
 
-    const teacher = await this.teachersRepository.insert({
+    const teacher = await this.teachersRepository.create({
       email: data.email,
       staffId: data.staffId,
       name: data.name,
@@ -40,22 +40,22 @@ export class TeachersService {
     return this.teacherToDto(teacher);
   }
 
-  async getAll(): Promise<GetTeacherDto[]> {
-    const teachers = await this.teachersRepository.getAll();
+  async get(): Promise<GetTeacherDto[]> {
+    const teachers = await this.teachersRepository.get();
     return teachers.map((teacher) => this.teacherToDto(teacher));
   }
 
-  async get(staffId: string | null): Promise<GetTeacherDto> {
-    const teacher = await this.teachersRepository.get(staffId);
+  async getByStaffId(staffId: string | null): Promise<GetTeacherDto> {
+    const teacher = await this.teachersRepository.getByStaffId(staffId);
     return this.teacherToDto(teacher);
   }
 
-  async update(
+  async updateByStaffId(
     staffId: string,
     updatedBy: string | null,
     data: UpdateTeacherDto,
   ): Promise<UpdateTeacherDto> {
-    const updatedTeacher = await this.teachersRepository.update(
+    const updatedTeacher = await this.teachersRepository.updateByStaffId(
       staffId,
       updatedBy,
       {
@@ -67,11 +67,11 @@ export class TeachersService {
     return this.teacherToDto(updatedTeacher);
   }
 
-  async delete(
+  async deleteByStaffId(
     staffId: string,
     deletedBy: string | null,
   ): Promise<DeleteTeacherDto> {
-    const deletedTeacher = await this.teachersRepository.delete(
+    const deletedTeacher = await this.teachersRepository.deleteByStaffId(
       staffId,
       deletedBy,
     );
