@@ -7,7 +7,7 @@ CREATE TABLE students (
   CONSTRAINT fk_users FOREIGN KEY (updated_by) REFERENCES users (id)
 );
 
-CREATE TABLE user_students (
+CREATE TABLE student_users (
   user_id UUID NOT NULL,
   student_id UUID NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

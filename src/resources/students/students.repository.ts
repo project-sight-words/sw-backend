@@ -21,10 +21,10 @@ export class StudentsRepository {
           students.student_id AS student_id,
           students.name AS name
         FROM students
-        JOIN user_students
-          ON students.id = user_students.student_id
+        JOIN student_users
+          ON students.id = student_users.student_id
         JOIN users
-          ON user_students.user_id = users.id
+          ON student_users.user_id = users.id
         WHERE students.student_id = $1;
       `,
       [id],
@@ -42,10 +42,10 @@ export class StudentsRepository {
           students.student_id AS student_id,
           students.name AS name
         FROM students
-        JOIN user_students
-          ON students.id = user_students.student_id
+        JOIN student_users
+          ON students.id = student_users.student_id
         JOIN users
-          ON user_students.user_id = users.id;
+          ON student_users.user_id = users.id;
       `,
       [],
     );
@@ -63,10 +63,10 @@ export class StudentsRepository {
         FROM (
           SELECT students.student_id AS student_id, users.email AS email
           FROM students
-          JOIN user_students
-            ON students.id = user_students.student_id
+          JOIN student_users
+            ON students.id = student_users.student_id
           JOIN users
-            ON user_students.user_id = users.id
+            ON student_users.user_id = users.id
           WHERE students.student_id = $2
         ) AS subquery
         WHERE students.student_id = subquery.student_id
@@ -103,7 +103,7 @@ export class StudentsRepository {
   ): Promise<Student> {
     const insertUserStudent = await this.databaseService.query(
       `
-        INSERT INTO user_students (user_id, student_id)
+        INSERT INTO student_users (user_id, student_id)
         VALUES ($1, $2);
       `,
       [userStudent.userId, userStudent.studentId],
