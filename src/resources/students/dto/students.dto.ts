@@ -6,6 +6,8 @@ export class UpdateStudentDto {
   @Expose()
   @IsString()
   name!: string;
+
+  // TODO: Update DTO should include studentId as well
 }
 
 @Exclude()
