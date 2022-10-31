@@ -19,3 +19,5 @@ CREATE TABLE user_students (
 );
 
 CREATE UNIQUE INDEX student_id_upper_unique ON students (UPPER(student_id));
+-- TODO: Add unique constraint for user_id on student_users where deleted_at = null;
+-- TODO: Add unique constraint for student_id on student_users where deleted_at = null;
