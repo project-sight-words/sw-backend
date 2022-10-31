@@ -22,3 +22,7 @@ export class StudentDto extends UpdateStudentDto {
   @Expose()
   email!: string;
 }
+
+// TODO: Create GetStudentsDto for get method in controller
+// TODO: Create GetStudentDto for getById method in controller
+// TODO: Create CreateStudentDto for create method in controller
