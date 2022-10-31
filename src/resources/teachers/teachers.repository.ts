@@ -7,7 +7,7 @@ import { plainToInstance } from "class-transformer";
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async insert(teacher: NewTeacher): Promise<Teacher> {
+  async create(teacher: NewTeacher): Promise<Teacher> {
     const rows = await this.databaseService.query(
       `
       INSERT INTO teachers (staff_id, name)
@@ -36,7 +36,7 @@ export class TeachersRepository {
     );
   }
 
-  async getAll(): Promise<Teacher[]> {
+  async get(): Promise<Teacher[]> {
     const rows = await this.databaseService.query(
       `
       SELECT * FROM teachers
@@ -48,7 +48,7 @@ export class TeachersRepository {
     return plainToInstance(Teacher, rows);
   }
 
-  async get(id: string | null): Promise<Teacher> {
+  async getByStaffId(staffId: string | null): Promise<Teacher> {
     const rows = await this.databaseService.query(
       `
       SELECT * FROM teachers
@@ -56,13 +56,13 @@ export class TeachersRepository {
       INNER JOIN users ON teacher_users.user_id = users.id
       WHERE teachers.staff_id = $1 AND teacher_users.deleted_at IS NULL
       `,
-      [id],
+      [staffId],
     );
     return plainToInstance(Teacher, rows[0]);
   }
 
-  async update(
-    id: string | null,
+  async updateByStaffId(
+    staffId: string | null,
     updatedBy: string | null,
     teacher: NewTeacher,
   ): Promise<Teacher> {
@@ -73,12 +73,15 @@ export class TeachersRepository {
       WHERE staff_id = $3
       RETURNING *
       `,
-      [teacher.name, teacher.staffId, id],
+      [teacher.name, teacher.staffId, staffId],
     );
     return plainToInstance(Teacher, rows[0]);
   }
 
-  async delete(staffId: string, deletedBy: string | null): Promise<Teacher> {
+  async deleteByStaffId(
+    staffId: string,
+    deletedBy: string | null,
+  ): Promise<Teacher> {
     const teacherRows = await this.databaseService.query(
       `
       SELECT * FROM teachers
