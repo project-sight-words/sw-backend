@@ -6,7 +6,7 @@ import {
   NewStudentUser,
   Student,
   StudentUser,
-} from "../../entities/student.entities";
+} from "entities/student.entities";
 
 @Injectable()
 export class StudentsRepository {
