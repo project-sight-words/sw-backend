@@ -1,6 +1,6 @@
+import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
-import { DatabaseService } from "../../database/database.service";
 import {
   NewStudent,
   NewStudentUser,

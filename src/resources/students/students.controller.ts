@@ -1,3 +1,5 @@
+import { StudentDto, UpdateStudentDto } from "./dto/students.dto";
+import { StudentsService } from "./students.service";
 import {
   Body,
   Controller,
@@ -7,8 +9,6 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { StudentDto, UpdateStudentDto } from "./dto/students.dto";
-import { StudentsService } from "./students.service";
 
 @Controller("students")
 export class StudentsController {

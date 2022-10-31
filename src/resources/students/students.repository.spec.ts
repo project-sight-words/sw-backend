@@ -1,8 +1,8 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { NewStudent, Student } from "../../entities/student.entities";
-import { UsersRepository } from "../../resources/users/users.repository";
-import { DatabaseService } from "../../database/database.service";
+import { DatabaseService } from "database/database.service";
+import { NewStudent, Student } from "entities/student.entities";
 import { StudentsRepository } from "./students.repository";
+import { Test, TestingModule } from "@nestjs/testing";
+import { UsersRepository } from "resources/users/users.repository";
 
 // TODO: Setup mock database for yarn test
 describe("StudentsRepository", () => {
