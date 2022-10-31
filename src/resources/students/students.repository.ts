@@ -3,9 +3,9 @@ import { plainToInstance } from "class-transformer";
 import { DatabaseService } from "../../database/database.service";
 import {
   NewStudent,
-  NewUserStudent,
+  NewStudentUser,
   Student,
-  UserStudent,
+  StudentUser,
 } from "../../entities/student.entities";
 
 @Injectable()
@@ -98,18 +98,18 @@ export class StudentsRepository {
   }
 
   async linkStudentToUser(
-    userStudent: NewUserStudent,
+    studentUser: NewStudentUser,
     student: Student,
   ): Promise<Student> {
-    const insertUserStudent = await this.databaseService.query(
+    const insertStudentUser = await this.databaseService.query(
       `
         INSERT INTO student_users (user_id, student_id)
         VALUES ($1, $2);
       `,
-      [userStudent.userId, userStudent.studentId],
+      [studentUser.userId, studentUser.studentId],
     );
-    const newUserStudent = plainToInstance(UserStudent, insertUserStudent[0]);
-    student.userStudent = newUserStudent;
+    const newStudentUser = plainToInstance(StudentUser, insertStudentUser[0]);
+    student.studentUser = newStudentUser;
 
     return student;
   }

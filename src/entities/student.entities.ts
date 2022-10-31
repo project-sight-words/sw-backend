@@ -29,11 +29,11 @@ export class Student extends NewStudent {
   @IsDate()
   updatedAt!: Date;
 
-  @Type(() => UserStudent)
-  userStudent!: UserStudent | null;
+  @Type(() => StudentUser)
+  studentUser!: StudentUser | null;
 }
 
-export class NewUserStudent {
+export class NewStudentUser {
   @Expose({ name: "user_id" })
   @IsNotEmpty()
   @IsUUID()
@@ -45,7 +45,7 @@ export class NewUserStudent {
   studentId!: string;
 }
 
-export class UserStudent {
+export class StudentUser {
   @Expose({ name: "created_by" })
   @IsUUID()
   createdBy!: string | null;
