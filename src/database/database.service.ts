@@ -23,7 +23,10 @@ export class DatabaseService implements OnModuleDestroy {
     const query: Querier = async (SQL, values) => {
       try {
         const { rows } = await client.query(SQL, values);
-        return rows as unknown[];
+        if (!Array.isArray(rows)) throw new Error("Rows should be an array");
+        if (!rows.every((row) => typeof row === "object"))
+          throw new Error("Rows should consist of only objects");
+        return rows as object[];
       } catch (error: unknown) {
         this.loggerService.error(error);
         throw new InternalServerErrorException();
@@ -32,7 +35,7 @@ export class DatabaseService implements OnModuleDestroy {
     return query;
   }
 
-  async query(SQL: string, values?: unknown[]): Promise<unknown[]> {
+  async query(SQL: string, values?: unknown[]): Promise<object[]> {
     const query = this.newQuerier(DatabaseService.pool);
     const rows = await query(SQL, values);
     return rows;
