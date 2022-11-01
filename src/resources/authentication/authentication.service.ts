@@ -15,10 +15,7 @@ export class AuthenticationService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async loginWithGoogle(data: AuthenticateDto) {
-    const { token: googleToken } = data;
-    const ticket = await this.googleService.verifyIdToken(googleToken);
-    const email = this.googleService.getEmailFromTicket(ticket);
+  async login(email: string) {
     const user = await this.usersRepository.upsertByEmail({
       email: email,
       lastLoggedIn: new Date(),
@@ -28,6 +25,13 @@ export class AuthenticationService {
       this.sessionService.createCookieWithToken(jwtToken);
     // TODO: Create refresh token cookie
     return { accessTokenCookie, user };
+  }
+
+  async loginWithGoogle(data: AuthenticateDto) {
+    const { token: googleToken } = data;
+    const ticket = await this.googleService.verifyIdToken(googleToken);
+    const email = this.googleService.getEmailFromTicket(ticket);
+    return this.login(email);
   }
 
   async getRolesByUserId(userId: string): Promise<Roles[]> {
