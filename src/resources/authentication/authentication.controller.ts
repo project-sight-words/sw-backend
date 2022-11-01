@@ -1,4 +1,4 @@
-import { AuthenticateDto } from "./dto/authenticate.dto";
+import { AuthenticateDto, LoggedInDto } from "./dto/authenticate.dto";
 import { AuthenticationService } from "./authentication.service";
 import { Body, Controller, Post, Res } from "@nestjs/common";
 import { Response } from "express";
@@ -11,10 +11,13 @@ export class AuthenticationController {
   async loginWithGoogle(
     @Body() data: AuthenticateDto,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<LoggedInDto> {
     const { accessTokenCookie, user } =
       await this.authenticationService.loginWithGoogle(data);
     response.setHeader("Set-Cookie", accessTokenCookie);
-    return user;
+    return {
+      user,
+      roles: [],
+    };
   }
 }
