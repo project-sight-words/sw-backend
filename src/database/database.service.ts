@@ -1,3 +1,4 @@
+import { ConfigService } from "@nestjs/config";
 import { Pool, PoolClient } from "pg";
 import { Querier } from "./database.types";
 import {
@@ -9,13 +10,17 @@ import {
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
-  static readonly pool = new Pool({
-    host: process.env.DB_HOST ?? "sw-db",
-    port: parseInt(process.env.DB_PORT ?? "5432"),
-    user: process.env.DB_USER ?? "postgres",
-    password: process.env.DB_PASSWORD ?? "postgres",
-    database: process.env.DB_NAME ?? "sw-db",
-  });
+  private readonly pool: Pool;
+
+  constructor(private readonly configService: ConfigService) {
+    this.pool = new Pool({
+      database: this.configService.getOrThrow("DB_NAME"),
+      host: this.configService.getOrThrow("DB_HOST"),
+      password: this.configService.getOrThrow("DB_PASSWORD"),
+      port: this.configService.getOrThrow("DB_PORT"),
+      user: this.configService.getOrThrow("DB_USER"),
+    });
+  }
 
   private readonly loggerService = new Logger("DatabaseService");
 
@@ -36,13 +41,13 @@ export class DatabaseService implements OnModuleDestroy {
   }
 
   async query(SQL: string, values?: unknown[]): Promise<object[]> {
-    const query = this.newQuerier(DatabaseService.pool);
+    const query = this.newQuerier(this.pool);
     const rows = await query(SQL, values);
     return rows;
   }
 
   async transaction<T>(callback: (query: Querier) => Promise<T>): Promise<T> {
-    const client = await DatabaseService.pool.connect();
+    const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
       const result = await callback(this.newQuerier(client));
@@ -59,7 +64,7 @@ export class DatabaseService implements OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     try {
-      await DatabaseService.pool.end();
+      await this.pool.end();
     } catch (error: unknown) {
       this.loggerService.error(error);
       throw new InternalServerErrorException();

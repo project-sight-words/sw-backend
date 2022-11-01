@@ -1,5 +1,6 @@
 import { AuthenticationController } from "./authentication.controller";
 import { AuthenticationService } from "./authentication.service";
+import { ConfigService } from "@nestjs/config";
 import { DatabaseModule } from "database/database.module";
 import { GoogleService } from "./google.service";
 import { JwtModule } from "@nestjs/jwt";
@@ -13,12 +14,19 @@ import { UsersModule } from "resources/users/users.module";
     DatabaseModule,
     UsersModule,
     JwtModule.registerAsync({
-      useFactory: () => ({
-        secret: process.env.JWT_SECRET ?? "",
-        signOptions: {
-          expiresIn: `${process.env.JWT_EXPIRATION_SECONDS ?? "300"}s`,
-        },
-      }),
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.getOrThrow<string>("JWT_SECRET");
+        const expirationSeconds = configService.getOrThrow<number>(
+          "JWT_EXPIRATION_SECONDS",
+        );
+        return {
+          secret,
+          signOptions: {
+            expiresIn: `${expirationSeconds}s`,
+          },
+        };
+      },
     }),
   ],
   providers: [

@@ -6,18 +6,22 @@ import {
   LoggedInDto,
   LoginInDevelopmentDto,
 } from "./dto/authenticate.dto";
+import { ConfigService } from "@nestjs/config";
 
 @Controller("authentication")
 export class AuthenticationController {
-  constructor(private readonly authenticationService: AuthenticationService) {}
+  constructor(
+    private readonly authenticationService: AuthenticationService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post("development")
   async loginInDevelopment(
     @Body() data: LoginInDevelopmentDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<LoggedInDto> {
-    if (!process.env.NODE_ENV || process.env.NODE_ENV !== "development")
-      throw new NotFoundException();
+    const environment = this.configService.getOrThrow<string>("NODE_ENV");
+    if (environment !== "development") throw new NotFoundException();
     const session = await this.authenticationService.login(data.email);
     const { accessTokenCookie, user } = session;
     response.setHeader("Set-Cookie", accessTokenCookie);
