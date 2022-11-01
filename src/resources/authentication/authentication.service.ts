@@ -1,4 +1,4 @@
-import { AuthenticateDto } from "./dto/authenticate.dto";
+import { LoginWithGoogleDto } from "./dto/authenticate.dto";
 import { GoogleService } from "./google.service";
 import { Injectable } from "@nestjs/common";
 import { Roles } from "entities/roles.entities";
@@ -27,7 +27,7 @@ export class AuthenticationService {
     return { accessTokenCookie, user };
   }
 
-  async loginWithGoogle(data: AuthenticateDto) {
+  async loginWithGoogle(data: LoginWithGoogleDto) {
     const { token: googleToken } = data;
     const ticket = await this.googleService.verifyIdToken(googleToken);
     const email = this.googleService.getEmailFromTicket(ticket);

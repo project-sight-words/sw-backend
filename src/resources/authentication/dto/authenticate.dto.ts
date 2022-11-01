@@ -3,6 +3,7 @@ import { Roles } from "entities/roles.entities";
 import { Type } from "class-transformer";
 import {
   IsDefined,
+  IsEmail,
   IsEnum,
   IsNotEmpty,
   IsNotEmptyObject,
@@ -11,7 +12,13 @@ import {
   ValidateNested,
 } from "class-validator";
 
-export class AuthenticateDto {
+export class LoginInDevelopmentDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
+}
+
+export class LoginWithGoogleDto {
   @IsString()
   @IsNotEmpty()
   token!: string;
