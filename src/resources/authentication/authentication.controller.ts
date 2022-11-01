@@ -15,9 +15,7 @@ export class AuthenticationController {
     const { accessTokenCookie, user } =
       await this.authenticationService.loginWithGoogle(data);
     response.setHeader("Set-Cookie", accessTokenCookie);
-    return {
-      user,
-      roles: [],
-    };
+    const roles = await this.authenticationService.getRolesByUserId(user.id);
+    return { user, roles };
   }
 }

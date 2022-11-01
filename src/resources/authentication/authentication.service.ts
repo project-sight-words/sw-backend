@@ -1,6 +1,8 @@
 import { AuthenticateDto } from "./dto/authenticate.dto";
 import { GoogleService } from "./google.service";
 import { Injectable } from "@nestjs/common";
+import { Roles } from "entities/roles.entities";
+import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
 import { UsersRepository } from "resources/users/users.repository";
 
@@ -8,6 +10,7 @@ import { UsersRepository } from "resources/users/users.repository";
 export class AuthenticationService {
   constructor(
     private readonly googleService: GoogleService,
+    private readonly rolesRepository: RolesRepository,
     private readonly sessionService: SessionService,
     private readonly usersRepository: UsersRepository,
   ) {}
@@ -21,11 +24,14 @@ export class AuthenticationService {
       lastLoggedIn: new Date(),
     });
     const jwtToken = this.sessionService.sign(user);
-    const cookie = this.sessionService.createCookieWithToken(jwtToken);
+    const accessTokenCookie =
+      this.sessionService.createCookieWithToken(jwtToken);
     // TODO: Create refresh token cookie
-    return {
-      accessTokenCookie: cookie,
-      user: user,
-    };
+    return { accessTokenCookie, user };
+  }
+
+  async getRolesByUserId(userId: string): Promise<Roles[]> {
+    const roles = await this.rolesRepository.getByUserId(userId);
+    return roles;
   }
 }

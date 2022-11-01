@@ -1,5 +1,5 @@
 import { GetUserDto } from "resources/users/dto/users.dto";
-import { Roles } from "resources/authentication/authentication.types";
+import { Roles } from "entities/roles.entities";
 import { Type } from "class-transformer";
 import {
   IsDefined,
