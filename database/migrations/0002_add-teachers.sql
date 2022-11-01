@@ -3,7 +3,7 @@ CREATE TABLE teachers (
   staff_id        TEXT          NOT NULL,
   name            TEXT          NOT NULL,
   updated_at      TIMESTAMPTZ   NOT NULL                DEFAULT NOW(),
-  updated_by      UUID          REFERENCES users(id),
+  updated_by      UUID          REFERENCES users(id)
 );
 
 CREATE TABLE teacher_users (
