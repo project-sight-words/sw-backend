@@ -22,16 +22,16 @@ export class CentresRepository {
     return plainToInstance(Centre, rows[0]);
   }
 
-  async addClassToCentre(centre_id: string, class_id: string) {
+  async addClassToCentre(centreId: string, classId: string) {
     const rows = await this.databaseService.query(
       "INSERT INTO class_to_centre (centre_id, class_id, created_by, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *;",
-      [centre_id, class_id, null],
+      [centreId, classId, null],
     );
 
     return plainToInstance(ClassToCentre, rows[0]);
   }
 
-  async getClassesFromCentre(centre_id: string) {
+  async getClassesFromCentre(centreId: string) {
     const rows = await this.databaseService.query(
       `
       SELECT 
@@ -43,16 +43,16 @@ export class CentresRepository {
         centre_id = $1 
         AND class_to_centre.deleted_at IS NULL;
       `,
-      [centre_id],
+      [centreId],
     );
 
     return plainToInstance(ClassToCentre, rows);
   }
 
-  async removeClassFromCentre(centre_id: string, class_id: string) {
+  async removeClassFromCentre(centreId: string, classId: string) {
     const rows = await this.databaseService.query(
       "UPDATE class_to_centre SET deleted_at = NOW() WHERE centre_id = $1 AND class_id = $2 RETURNING *;",
-      [centre_id, class_id],
+      [centreId, classId],
     );
 
     this.databaseService.checkIfResultNotEmpty(rows);

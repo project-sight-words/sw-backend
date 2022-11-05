@@ -45,50 +45,50 @@ export class ClassesController {
 
   @Post(":id/teachers")
   addTeacherToClass(
-    @Param("id") class_id: string,
+    @Param("id") classId: string,
     @Body() addTeacherToClassDto: AddTeacherToClassDto,
   ) {
     return this.classesService.addTeacherToClass(
-      class_id,
+      classId,
       addTeacherToClassDto.teacherId,
       addTeacherToClassDto.isFormTeacher ?? false,
     );
   }
 
   @Get(":id/teachers")
-  getTeachersFromClass(@Param("id") class_id: string) {
-    return this.classesService.getTeachersFromClass(class_id);
+  getTeachersFromClass(@Param("id") classId: string) {
+    return this.classesService.getTeachersFromClass(classId);
   }
 
   @Delete(":id/teachers/:teacherId")
   removeTeacherFromClass(
-    @Param("id") class_id: string,
-    @Param("teacherId") teacher_id: string,
+    @Param("id") classId: string,
+    @Param("teacherId") teacherId: string,
   ) {
-    return this.classesService.removeTeacherFromClass(class_id, teacher_id);
+    return this.classesService.removeTeacherFromClass(classId, teacherId);
   }
 
   @Post(":id/students")
   addStudentToClass(
-    @Param("id") class_id: string,
+    @Param("id") classId: string,
     @Body() addStudentToClassDto: AddStudentToClassDto,
   ) {
     return this.classesService.addStudentToClass(
-      class_id,
+      classId,
       addStudentToClassDto.studentId,
     );
   }
 
   @Get(":id/students")
-  getStudentsFromClass(@Param("id") class_id: string) {
-    return this.classesService.getStudentsFromClass(class_id);
+  getStudentsFromClass(@Param("id") classId: string) {
+    return this.classesService.getStudentsFromClass(classId);
   }
 
   @Delete(":id/students/:studentId")
   removeStudentFromClass(
-    @Param("id") class_id: string,
-    @Param("studentId") student_id: string,
+    @Param("id") classId: string,
+    @Param("studentId") studentId: string,
   ) {
-    return this.classesService.removeStudentFromClass(class_id, student_id);
+    return this.classesService.removeStudentFromClass(classId, studentId);
   }
 }
