@@ -61,18 +61,18 @@ export class ClassesRepository {
   }
 
   async addTeacherToClass(
-    class_id: string,
-    teacher_id: string,
-    is_form_teacher: boolean,
+    classId: string,
+    teacherId: string,
+    isFormTeacher: boolean,
   ) {
     const rows = await this.databaseService.query(
       "INSERT INTO teacher_to_class (class_id, teacher_id, is_form_teacher, created_by, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
-      [class_id, teacher_id, is_form_teacher, null],
+      [classId, teacherId, isFormTeacher, null],
     );
     return plainToInstance(TeacherToClass, rows[0]);
   }
 
-  async getTeachersFromClass(class_id: string) {
+  async getTeachersFromClass(classId: string) {
     const rows = await this.databaseService.query(
       `
       SELECT 
@@ -84,13 +84,13 @@ export class ClassesRepository {
         class_id = $1 
         AND teacher_to_class.deleted_at IS NULL
       `,
-      [class_id],
+      [classId],
     );
 
     return plainToInstance(Teacher, rows);
   }
 
-  async removeTeacherFromClass(class_id: string, teacher_id: string) {
+  async removeTeacherFromClass(classId: string, teacherId: string) {
     const rows = await this.databaseService.query(
       `
       UPDATE 
@@ -101,23 +101,23 @@ export class ClassesRepository {
       WHERE 
         class_id = $1 
         AND teacher_id = $2 RETURNING *`,
-      [class_id, teacher_id, null],
+      [classId, teacherId, null],
     );
 
     this.databaseService.checkIfResultNotEmpty(rows);
     return plainToInstance(TeacherToClass, rows[0]);
   }
 
-  async addStudentToClass(class_id: string, student_id: string) {
+  async addStudentToClass(classId: string, studentId: string) {
     const rows = await this.databaseService.query(
       "INSERT INTO student_to_class (class_id, student_id, created_by, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *",
-      [class_id, student_id, null],
+      [classId, studentId, null],
     );
 
     return plainToInstance(StudentToClass, rows[0]);
   }
 
-  async getStudentsFromClass(class_id: string) {
+  async getStudentsFromClass(classId: string) {
     const rows = await this.databaseService.query(
       `
       SELECT 
@@ -129,13 +129,13 @@ export class ClassesRepository {
         class_id = $1 
         AND student_to_class.deleted_at IS NULL
       `,
-      [class_id],
+      [classId],
     );
 
     return plainToInstance(StudentToClass, rows);
   }
 
-  async removeStudentFromClass(class_id: string, student_id: string) {
+  async removeStudentFromClass(classId: string, studentId: string) {
     const rows = await this.databaseService.query(
       `
       UPDATE 
@@ -147,7 +147,7 @@ export class ClassesRepository {
         class_id = $1 
         AND student_id = $2 RETURNING *
       `,
-      [class_id, student_id, null],
+      [classId, studentId, null],
     );
 
     this.databaseService.checkIfResultNotEmpty(rows);

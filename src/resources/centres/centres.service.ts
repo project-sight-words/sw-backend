@@ -13,15 +13,15 @@ export class CentresService {
     return this.centreRepository.findOne(id);
   }
 
-  async addClassToCentre(centre_id: string, class_id: string) {
-    return this.centreRepository.addClassToCentre(centre_id, class_id);
+  async addClassToCentre(centreId: string, classId: string) {
+    return this.centreRepository.addClassToCentre(centreId, classId);
   }
 
-  async getClassesFromCentre(centre_id: string) {
-    return this.centreRepository.getClassesFromCentre(centre_id);
+  async getClassesFromCentre(centreId: string) {
+    return this.centreRepository.getClassesFromCentre(centreId);
   }
 
-  async removeClassFromCentre(centre_id: string, class_id: string) {
-    return this.centreRepository.removeClassFromCentre(centre_id, class_id);
+  async removeClassFromCentre(centreId: string, classId: string) {
+    return this.centreRepository.removeClassFromCentre(centreId, classId);
   }
 }

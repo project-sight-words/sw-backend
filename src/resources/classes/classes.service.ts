@@ -27,34 +27,34 @@ export class ClassesService {
   }
 
   async addTeacherToClass(
-    class_id: string,
-    teacher_id: string,
-    is_form_teacher: boolean,
+    classId: string,
+    teacherId: string,
+    isFormTeacher: boolean,
   ) {
     return this.classesRepository.addTeacherToClass(
-      class_id,
-      teacher_id,
-      is_form_teacher,
+      classId,
+      teacherId,
+      isFormTeacher,
     );
   }
 
-  async getTeachersFromClass(class_id: string) {
-    return this.classesRepository.getTeachersFromClass(class_id);
+  async getTeachersFromClass(classId: string) {
+    return this.classesRepository.getTeachersFromClass(classId);
   }
 
-  async removeTeacherFromClass(class_id: string, teacher_id: string) {
-    return this.classesRepository.removeTeacherFromClass(class_id, teacher_id);
+  async removeTeacherFromClass(classId: string, teacherId: string) {
+    return this.classesRepository.removeTeacherFromClass(classId, teacherId);
   }
 
-  async addStudentToClass(class_id: string, student_id: string) {
-    return this.classesRepository.addStudentToClass(class_id, student_id);
+  async addStudentToClass(classId: string, studentId: string) {
+    return this.classesRepository.addStudentToClass(classId, studentId);
   }
 
-  async getStudentsFromClass(class_id: string) {
-    return this.classesRepository.getStudentsFromClass(class_id);
+  async getStudentsFromClass(classId: string) {
+    return this.classesRepository.getStudentsFromClass(classId);
   }
 
-  async removeStudentFromClass(class_id: string, student_id: string) {
-    return this.classesRepository.removeStudentFromClass(class_id, student_id);
+  async removeStudentFromClass(classId: string, studentId: string) {
+    return this.classesRepository.removeStudentFromClass(classId, studentId);
   }
 }
