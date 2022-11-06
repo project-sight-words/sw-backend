@@ -1,4 +1,4 @@
-import { Expose, Type } from "class-transformer";
+import { Expose } from "class-transformer";
 import { IsDate, IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class NewStudent {
@@ -28,9 +28,6 @@ export class Student extends NewStudent {
   @Expose({ name: "updated_at" })
   @IsDate()
   updatedAt!: Date;
-
-  @Type(() => StudentUser)
-  studentUser!: StudentUser | null;
 }
 
 export class NewStudentUser {
