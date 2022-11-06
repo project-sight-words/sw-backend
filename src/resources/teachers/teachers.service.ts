@@ -16,6 +16,17 @@ export class TeachersService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
+  async bulkCreate(
+    createdBy: string | null,
+    data: CreateTeacherDto[],
+  ): Promise<CreateTeacherDto[]> {
+    console.log(data);
+    const dataArr = await Promise.all(
+      data.map(async (teacher) => this.create(createdBy, teacher)),
+    );
+    return dataArr;
+  }
+
   async create(
     createdBy: string | null,
     data: CreateTeacherDto,
@@ -37,17 +48,17 @@ export class TeachersService {
       createdBy,
       teacherId,
     );
-    return this.teacherToDto(teacher);
+    return this.teacherToCreateDto(teacher);
   }
 
   async get(): Promise<GetTeacherDto[]> {
     const teachers = await this.teachersRepository.get();
-    return teachers.map((teacher) => this.teacherToDto(teacher));
+    return teachers.map((teacher) => this.teacherToGetDto(teacher));
   }
 
-  async getByStaffId(staffId: string | null): Promise<GetTeacherDto> {
-    const teacher = await this.teachersRepository.getByStaffId(staffId);
-    return this.teacherToDto(teacher);
+  async getByTeacherId(teacherId: string | null): Promise<GetTeacherDto> {
+    const teacher = await this.teachersRepository.getByTeacherId(teacherId);
+    return this.teacherToGetDto(teacher);
   }
 
   async updateByStaffId(
@@ -64,7 +75,7 @@ export class TeachersService {
         name: data.name,
       },
     );
-    return this.teacherToDto(updatedTeacher);
+    return this.teacherToUpdateDto(updatedTeacher);
   }
 
   async deleteByStaffId(
@@ -75,11 +86,30 @@ export class TeachersService {
       staffId,
       deletedBy,
     );
-    return this.teacherToDto(deletedTeacher);
+    return this.teacherToCreateDto(deletedTeacher);
   }
 
-  private teacherToDto(teacher: Teacher): CreateTeacherDto {
+  private teacherToCreateDto(teacher: Teacher): CreateTeacherDto {
     return {
+      id: teacher.id,
+      email: teacher.email,
+      staffId: teacher.staffId,
+      name: teacher.name,
+    };
+  }
+
+  private teacherToGetDto(teacher: Teacher): GetTeacherDto {
+    return {
+      id: teacher.id,
+      email: teacher.email,
+      staffId: teacher.staffId,
+      name: teacher.name,
+    };
+  }
+
+  private teacherToUpdateDto(teacher: Teacher): UpdateTeacherDto {
+    return {
+      id: teacher.id,
       email: teacher.email,
       staffId: teacher.staffId,
       name: teacher.name,

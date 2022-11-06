@@ -48,17 +48,20 @@ export class TeachersRepository {
     return plainToInstance(Teacher, rows);
   }
 
-  async getByStaffId(staffId: string | null): Promise<Teacher> {
-    const rows = await this.databaseService.query(
-      `
+  async getByTeacherId(teacherId: string | null): Promise<Teacher> {
+    const teacher = await this.databaseService.transaction(async (query) => {
+      const rows = await query(
+        `
       SELECT * FROM teachers
       INNER JOIN teacher_users ON teachers.id = teacher_users.teacher_id
       INNER JOIN users ON teacher_users.user_id = users.id
       WHERE teachers.staff_id = $1 AND teacher_users.deleted_at IS NULL
       `,
-      [staffId],
-    );
-    return plainToInstance(Teacher, rows[0]);
+        [teacherId],
+      );
+      return plainToInstance(Teacher, rows[0]);
+    });
+    return teacher;
   }
 
   async updateByStaffId(

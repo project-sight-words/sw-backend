@@ -22,9 +22,9 @@ export class TeachersController {
 
   @Post()
   @HttpCode(201)
-  async create(@Body() data: CreateTeacherDto): Promise<CreateTeacherDto> {
-    const teacher = await this.teachersService.create(null, data);
-    return teacher;
+  async create(@Body() data: CreateTeacherDto[]): Promise<CreateTeacherDto[]> {
+    const teachers = await this.teachersService.bulkCreate(null, data);
+    return teachers;
   }
 
   @Get()
@@ -34,18 +34,18 @@ export class TeachersController {
   }
 
   @Get(":id")
-  async getByStaffId(@Param("id") staffId: string): Promise<GetTeacherDto> {
-    const teacher = await this.teachersService.getByStaffId(staffId);
+  async getByStaffId(@Param("id") teacherId: string): Promise<GetTeacherDto> {
+    const teacher = await this.teachersService.getByTeacherId(teacherId);
     return teacher;
   }
 
   @Put(":id")
   async updateByStaffId(
-    @Param("id") staffId: string,
+    @Param("id") teacherId: string,
     @Body() data: UpdateTeacherDto,
   ): Promise<UpdateTeacherDto> {
     const teacher = await this.teachersService.updateByStaffId(
-      staffId,
+      teacherId,
       null,
       data,
     );
@@ -54,9 +54,9 @@ export class TeachersController {
 
   @Delete(":id")
   async deleteByStaffId(
-    @Param("id") staffId: string,
+    @Param("id") teacherId: string,
   ): Promise<DeleteTeacherDto> {
-    const teacher = await this.teachersService.deleteByStaffId(staffId, null);
+    const teacher = await this.teachersService.deleteByStaffId(teacherId, null);
     return teacher;
   }
 }
