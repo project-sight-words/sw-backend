@@ -1,7 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { NewStudent, Student } from "entities/student.entities";
-import { StudentDto, UpdateStudentDto } from "./dto/students.dto";
+import {
+  CreateStudentDto,
+  StudentDto,
+  UpdateStudentDto,
+} from "./dto/students.dto";
 import { StudentsRepository } from "./students.repository";
 import { UsersRepository } from "resources/users/users.repository";
 
@@ -19,10 +23,16 @@ export class StudentsService {
 
   async getById(id: string): Promise<StudentDto> {
     const student = await this.studentsRepository.getById(id);
+
+    // TODO: To raise this exception?
+    if (!student) {
+      throw new NotFoundException();
+    }
+
     return this.studentToDto(student);
   }
 
-  async create(studentDto: StudentDto): Promise<StudentDto> {
+  async create(studentDto: CreateStudentDto): Promise<StudentDto> {
     const user = await this.usersRepository.upsertByEmail({
       email: studentDto.email,
       lastLoggedIn: null,
@@ -60,7 +70,7 @@ export class StudentsService {
     return plainToInstance(StudentDto, instanceToPlain(student));
   }
 
-  private dtoToNewStudent(studentDto: StudentDto): NewStudent {
+  private dtoToNewStudent(studentDto: CreateStudentDto): NewStudent {
     return plainToInstance(NewStudent, instanceToPlain(studentDto));
   }
 }

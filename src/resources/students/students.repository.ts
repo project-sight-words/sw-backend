@@ -1,17 +1,13 @@
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
-import {
-  NewStudent,
-  NewStudentUser,
-  Student,
-  StudentUser,
-} from "entities/student.entities";
+import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
 
 @Injectable()
 export class StudentsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  // TODO: To use raw UUID or student_id
   async getById(id: string): Promise<Student> {
     const rows = await this.databaseService.query(
       `
@@ -101,15 +97,13 @@ export class StudentsRepository {
     studentUser: NewStudentUser,
     student: Student,
   ): Promise<Student> {
-    const rows = await this.databaseService.query(
+    await this.databaseService.query(
       `
         INSERT INTO student_users (user_id, student_id)
         VALUES ($1, $2);
       `,
       [studentUser.userId, studentUser.studentId],
     );
-    const newStudentUser = plainToInstance(StudentUser, rows[0]);
-    student.studentUser = newStudentUser;
 
     return student;
   }

@@ -1,4 +1,8 @@
-import { StudentDto, UpdateStudentDto } from "./dto/students.dto";
+import {
+  CreateStudentDto,
+  StudentDto,
+  UpdateStudentDto,
+} from "./dto/students.dto";
 import { StudentsService } from "./students.service";
 import {
   Body,
@@ -28,7 +32,7 @@ export class StudentsController {
 
   @Post()
   @HttpCode(201)
-  async create(@Body() studentDto: StudentDto): Promise<StudentDto> {
+  async create(@Body() studentDto: CreateStudentDto): Promise<StudentDto> {
     const student = await this.studentsService.create(studentDto);
     return student;
   }

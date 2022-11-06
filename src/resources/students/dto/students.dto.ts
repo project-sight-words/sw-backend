@@ -1,5 +1,5 @@
 import { Exclude, Expose } from "class-transformer";
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class UpdateStudentDto {
   @IsNotEmpty()
@@ -7,20 +7,25 @@ export class UpdateStudentDto {
   @IsString()
   name!: string;
 
-  // TODO: Update DTO should include studentId as well
-}
-
-@Exclude()
-export class StudentDto extends UpdateStudentDto {
   @IsNotEmpty()
   @Expose({ name: "student_id" })
   @IsString()
   studentId!: string;
+}
 
+export class CreateStudentDto extends UpdateStudentDto {
   @IsNotEmpty()
   @IsEmail()
   @Expose()
   email!: string;
+}
+
+@Exclude()
+export class StudentDto extends CreateStudentDto {
+  @IsNotEmpty()
+  @Expose({ name: "id" })
+  @IsUUID()
+  id!: string;
 }
 
 // TODO: Create GetStudentsDto for get method in controller
