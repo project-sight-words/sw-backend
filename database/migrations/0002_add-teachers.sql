@@ -13,7 +13,10 @@ CREATE TABLE teacher_users (
   created_by      UUID          REFERENCES users(id),
   deleted_at      TIMESTAMPTZ,
   deleted_by      UUID          REFERENCES users(id),
-  PRIMARY KEY (user_id, teacher_id)
+  PRIMARY KEY (user_id, teacher_id),
+  CONSTRAINT fk_users FOREIGN KEY (user_id) REFERENCES users (id),
+  CONSTRAINT fk_teachers FOREIGN KEY (teacher_id) REFERENCES teachers (id),
+  CONSTRAINT fk_created_by FOREIGN KEY (created_by) REFERENCES users (id)
 );
 
 CREATE UNIQUE INDEX staff_id_upper_unique ON teachers (UPPER(staff_id));
