@@ -37,28 +37,13 @@ export class TeachersRepository {
   }
 
   async get(): Promise<Teacher[]> {
-    // const rows = await this.databaseService.query(
-    //   `
-    //   SELECT * FROM teachers
-    //   JOIN teacher_users ON teachers.id = teacher_users.teacher_id
-    //   JOIN users ON teacher_users.user_id = users.id
-    //   WHERE teacher_users.deleted_at IS NULL
-    //   `,
-    // );
     const rows = await this.databaseService.query(
       `
-        SELECT
-          users.id AS id,
-          users.email AS email,
-          teachers.staff_id AS staff_id,
-          teachers.name AS name
-        FROM teachers
-        JOIN teacher_users
-          ON teachers.id = teacher_users.teacher_id
-        JOIN users
-          ON teacher_users.user_id = users.id;
+      SELECT teachers.id, users.email, teachers.staff_id, teachers.name from teachers
+      join teacher_users ON teachers.id = teacher_users.teacher_id
+      join users on teacher_users.user_id = users.id
+      where teacher_users.deleted_at IS NULL
       `,
-      [],
     );
     console.log(rows);
     return plainToInstance(Teacher, rows);
@@ -68,10 +53,10 @@ export class TeachersRepository {
     const teacher = await this.databaseService.transaction(async (query) => {
       const rows = await query(
         `
-      SELECT * FROM teachers
-      INNER JOIN teacher_users ON teachers.id = teacher_users.teacher_id
-      INNER JOIN users ON teacher_users.user_id = users.id
-      WHERE teachers.id = $1 AND teacher_users.deleted_at IS NULL
+        SELECT teachers.id, users.email, teachers.staff_id, teachers.name from teachers
+        join teacher_users ON teachers.id = teacher_users.teacher_id
+        join users on teacher_users.user_id = users.id
+        WHERE teachers.id = $1 and teacher_users.deleted_at IS NULL
       `,
         [teacherId],
       );

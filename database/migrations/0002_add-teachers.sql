@@ -7,8 +7,8 @@ CREATE TABLE teachers (
 );
 
 CREATE TABLE teacher_users (
-  user_id         UUID          NOT NULL                REFERENCES users(id),
-  teacher_id      UUID          NOT NULL                REFERENCES teachers(id),
+  user_id         UUID          NOT NULL,
+  teacher_id      UUID          NOT NULL,
   created_at      TIMESTAMPTZ   NOT NULL                DEFAULT NOW(),
   created_by      UUID          REFERENCES users(id),
   deleted_at      TIMESTAMPTZ,
@@ -20,5 +20,6 @@ CREATE TABLE teacher_users (
 );
 
 CREATE UNIQUE INDEX staff_id_upper_unique ON teachers (UPPER(staff_id));
--- TODO: Add unique constraint for user_id on teacher_users where deleted_at = null;
--- TODO: Add unique constraint for teacher_id on teacher_users where deleted_at = null;
+CREATE UNIQUE INDEX ON user_id WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX ON teacher_id WHERE deleted_at IS NULL;
+

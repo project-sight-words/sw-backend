@@ -35,13 +35,13 @@ export class TeachersService {
       email: data.email,
       lastLoggedIn: new Date(),
     });
-
+    console.log(newUser.id);
     const teacher = await this.teachersRepository.create({
       email: data.email,
       staffId: data.staffId,
       name: data.name,
     });
-
+    console.log(teacher.id);
     const teacherId = teacher.id;
     await this.teachersRepository.linkTeacherUser(
       newUser.id,
