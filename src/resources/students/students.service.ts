@@ -1,19 +1,25 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { instanceToPlain, plainToInstance } from "class-transformer";
-import { NewStudent, Student } from "entities/student.entities";
+import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
+import { UsersRepository } from "resources/users/users.repository";
+import { DatabaseService } from "../../database/database.service";
 import {
   CreateStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
 import { StudentsRepository } from "./students.repository";
-import { UsersRepository } from "resources/users/users.repository";
 
 @Injectable()
 export class StudentsService {
   constructor(
     private readonly studentsRepository: StudentsRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly databaseService: DatabaseService,
   ) {}
 
   async get(): Promise<StudentDto[]> {
@@ -33,24 +39,45 @@ export class StudentsService {
   }
 
   async create(studentDto: CreateStudentDto): Promise<StudentDto> {
-    const user = await this.usersRepository.upsertByEmail({
-      email: studentDto.email,
-      lastLoggedIn: null,
-    });
+    return await this.databaseService.transaction(async (_) => {
+      let user = await this.usersRepository.getByEmail(studentDto.email);
 
-    const student = await this.studentsRepository.upsertByEmailAndStudentId(
-      this.dtoToNewStudent(studentDto),
-    );
+      if (!user) {
+        user = await this.usersRepository.insertByEmail({
+          email: studentDto.email,
+          lastLoggedIn: null,
+        });
+      }
 
-    const linkedStudent = await this.studentsRepository.linkToUser(
-      {
+      let student = await this.studentsRepository.getById(studentDto.studentId);
+
+      if (!student) {
+        student = await this.studentsRepository.upsertByStudentId(
+          this.dtoToNewStudent(studentDto),
+        );
+      } else {
+        if (student.name !== studentDto.name) {
+          throw new BadRequestException(
+            "Student's recorded name does not match given name.",
+          );
+        }
+      }
+
+      const studentUser: NewStudentUser = {
         userId: user.id,
         studentId: student.id,
-      },
-      student,
-    );
+      };
 
-    return this.studentToDto(linkedStudent);
+      const isLinked = await this.studentsRepository.isLinked(studentUser);
+      let linkedStudent = student;
+
+      if (!isLinked) {
+        linkedStudent = await this.studentsRepository.linkToUser(
+          studentUser,
+          student,
+        );
+      }
+
   }
 
   async updateById(

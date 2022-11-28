@@ -2,7 +2,7 @@ import { DatabaseService } from "../../database/database.service";
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
 import { NewUser, User } from "../../entities/user.entities";
-import { plainToClass } from "class-transformer";
+import { plainToClass, plainToInstance } from "class-transformer";
 
 @Injectable()
 export class UsersRepository {
@@ -34,5 +34,17 @@ export class UsersRepository {
       [user.email, user.lastLoggedIn],
     );
     return plainToClass(User, rows[0]);
+  }
+
+  async insertByEmail(user: NewUser): Promise<User> {
+    const rows = await this.databaseService.query(
+      `
+        INSERT INTO users (email, last_logged_in)
+        VALUES ($1, $2);
+      `,
+      [user.email, user.lastLoggedIn],
+    );
+
+    return plainToInstance(User, rows[0]);
   }
 }

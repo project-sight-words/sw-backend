@@ -2,6 +2,7 @@ import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
 import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
+import { User } from "../../entities/user.entities";
 
 @Injectable()
 export class StudentsRepository {
@@ -76,7 +77,7 @@ export class StudentsRepository {
     return plainToInstance(Student, rows[0]);
   }
 
-  async upsertByEmailAndStudentId(student: NewStudent): Promise<Student> {
+  async upsertByStudentId(student: NewStudent): Promise<Student> {
     const rows = await this.databaseService.query(
       `
         INSERT INTO students (student_id, name)
@@ -106,5 +107,21 @@ export class StudentsRepository {
     );
 
     return student;
+  }
+
+  async isLinked(studentUser: NewStudentUser): Promise<boolean> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT *
+        FROM users
+          INNER JOIN student_users ON users.id = student_users.user_id
+          INNER JOIN students ON student_users.student_id = students.id
+        WHERE users.id = $1 AND students.id = $2;
+      `,
+      [studentUser.userId, studentUser.studentId],
+    );
+    console.log(rows);
+
+    return rows.length > 0;
   }
 }
