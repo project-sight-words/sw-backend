@@ -38,6 +38,71 @@ export class StudentsService {
     return this.studentToDto(student);
   }
 
+  async createStudents(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
+    return await this.databaseService.transaction(async (_) => {
+      const createdStudents = [];
+      for (const studentDto of studentDtos) {
+        try {
+          createdStudents.push(await this.createStudent(studentDto));
+        } catch (e) {
+          // If an error occurs (which only happens if the given student's name does not match the original student's name in the database)
+          // Proceed with validating everything else
+          throw new BadRequestException(await this.validateAll(studentDtos));
+        }
+      }
+
+      return createdStudents;
+    });
+  }
+
+  async updateById(
+    studentUUID: string,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<StudentDto> {
+    const updatedStudent = await this.studentsRepository.update(studentUUID, {
+      name: updateStudentDto.name,
+      studentId: updateStudentDto.studentId,
+      email: "",
+    });
+
+    return this.studentToDto(updatedStudent);
+  }
+
+  private studentToDto(student: Student): StudentDto {
+    return plainToInstance(StudentDto, instanceToPlain(student));
+  }
+
+  private dtoToNewStudent(studentDto: CreateStudentDto): NewStudent {
+    return plainToInstance(NewStudent, instanceToPlain(studentDto));
+  }
+
+  private async validateAll(studentDtos: CreateStudentDto[]) {
+    const invalidStudents = [];
+
+    for (let i = 0; i < studentDtos.length; i++) {
+      const studentDto = studentDtos[i];
+
+      const student = await this.studentsRepository.getById(
+        studentDto.studentId,
+        false,
+      );
+
+      if (!student) continue;
+
+      if (student.name !== studentDto.name) {
+        invalidStudents.push(
+          `Attempted insert ${
+            studentDto.name
+          } conflicts with existing student's name ${student.name} at row ${
+            i + 1
+          }`,
+        );
+      }
+    }
+
+    return invalidStudents;
+  }
+
   private async createStudent(
     studentDto: CreateStudentDto,
   ): Promise<StudentDto> {
@@ -83,38 +148,6 @@ export class StudentsService {
     }
 
     return this.studentToDto(linkedStudent);
-  }
-
-  async createStudents(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
-    return await this.databaseService.transaction(async (_) => {
-      const createdStudents = [];
-      for (const studentDto of studentDtos) {
-        createdStudents.push(await this.createStudent(studentDto));
-      }
-
-      return createdStudents;
-    });
-  }
-
-  async updateById(
-    studentUUID: string,
-    updateStudentDto: UpdateStudentDto,
-  ): Promise<StudentDto> {
-    const updatedStudent = await this.studentsRepository.update(studentUUID, {
-      name: updateStudentDto.name,
-      studentId: updateStudentDto.studentId,
-      email: "",
-    });
-
-    return this.studentToDto(updatedStudent);
-  }
-
-  private studentToDto(student: Student): StudentDto {
-    return plainToInstance(StudentDto, instanceToPlain(student));
-  }
-
-  private dtoToNewStudent(studentDto: CreateStudentDto): NewStudent {
-    return plainToInstance(NewStudent, instanceToPlain(studentDto));
   }
 
   // TODO: run this to check for the following cases:
