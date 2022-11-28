@@ -11,6 +11,7 @@ import {
   Get,
   HttpCode,
   Param,
+  ParseArrayPipe,
   Post,
   Put,
 } from "@nestjs/common";
@@ -34,12 +35,14 @@ export class StudentsController {
     return await this.studentsService.getById(id, this.uuidRegexExp.test(id));
   }
 
-  // TODO: Accept JSON array
   @Post()
   @HttpCode(201)
-  async create(@Body() studentDto: CreateStudentDto): Promise<StudentDto> {
-    const student = await this.studentsService.create(studentDto);
-    return student;
+  async create(
+    @Body(new ParseArrayPipe({ items: CreateStudentDto }))
+    studentDtos: CreateStudentDto[],
+  ): Promise<StudentDto[]> {
+    const students = await this.studentsService.createStudents(studentDtos);
+    return students;
   }
 
   @Put(":id")

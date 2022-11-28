@@ -38,50 +38,61 @@ export class StudentsService {
     return this.studentToDto(student);
   }
 
-  async create(studentDto: CreateStudentDto): Promise<StudentDto> {
-    return await this.databaseService.transaction(async (_) => {
-      let user = await this.usersRepository.getByEmail(studentDto.email);
+  private async createStudent(
+    studentDto: CreateStudentDto,
+  ): Promise<StudentDto> {
+    let user = await this.usersRepository.getByEmail(studentDto.email);
 
-      if (!user) {
-        user = await this.usersRepository.insertByEmail({
-          email: studentDto.email,
-          lastLoggedIn: null,
-        });
-      }
+    if (!user) {
+      user = await this.usersRepository.insertByEmail({
+        email: studentDto.email,
+        lastLoggedIn: null,
+      });
+    }
 
-      let student = await this.studentsRepository.getById(
-        studentDto.studentId,
-        false,
+    let student = await this.studentsRepository.getById(
+      studentDto.studentId,
+      false,
+    );
+
+    if (!student) {
+      student = await this.studentsRepository.upsertByStudentId(
+        this.dtoToNewStudent(studentDto),
       );
-
-      if (!student) {
-        student = await this.studentsRepository.upsertByStudentId(
-          this.dtoToNewStudent(studentDto),
-        );
-      } else {
-        if (student.name !== studentDto.name) {
-          throw new BadRequestException(
-            "Student's recorded name does not match given name.",
-          );
-        }
-      }
-
-      const studentUser: NewStudentUser = {
-        userId: user.id,
-        studentId: student.id,
-      };
-
-      const isLinked = await this.studentsRepository.isLinked(studentUser);
-      let linkedStudent = student;
-
-      if (!isLinked) {
-        linkedStudent = await this.studentsRepository.linkToUser(
-          studentUser,
-          student,
+    } else {
+      if (student.name !== studentDto.name) {
+        throw new BadRequestException(
+          "Student's recorded name does not match given name.",
         );
       }
+    }
 
-      return this.studentToDto(linkedStudent);
+    const studentUser: NewStudentUser = {
+      userId: user.id,
+      studentId: student.id,
+    };
+
+    const isLinked = await this.studentsRepository.isLinked(studentUser);
+    let linkedStudent = student;
+
+    if (!isLinked) {
+      linkedStudent = await this.studentsRepository.linkToUser(
+        studentUser,
+        student,
+      );
+    }
+
+    return this.studentToDto(linkedStudent);
+  }
+
+  async createStudents(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
+    return await this.databaseService.transaction(async (_) => {
+      const createdStudents = [];
+      for (const studentDto of studentDtos) {
+        createdStudents.push(await this.createStudent(studentDto));
+      }
+
+      return createdStudents;
     });
   }
 

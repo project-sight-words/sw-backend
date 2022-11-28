@@ -1,8 +1,7 @@
-import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
+import { DatabaseService } from "database/database.service";
 import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
-import { User } from "../../entities/user.entities";
 
 @Injectable()
 export class StudentsRepository {
@@ -123,7 +122,6 @@ export class StudentsRepository {
       `,
       [studentUser.userId, studentUser.studentId],
     );
-    console.log(rows);
 
     return rows.length > 0;
   }
