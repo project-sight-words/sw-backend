@@ -13,7 +13,7 @@ export class StudentsRepository {
     const rows = await this.databaseService.query(
       `
         SELECT
-          users.id AS id,
+          students.id AS id,
           users.email AS email,
           students.student_id AS student_id,
           students.name AS name
@@ -34,7 +34,7 @@ export class StudentsRepository {
     const rows = await this.databaseService.query(
       `
         SELECT
-          users.id AS id,
+          students.id AS id,
           users.email AS email,
           students.student_id AS student_id,
           students.name AS name
