@@ -30,10 +30,7 @@ export class StudentsService {
   async getById(id: string, isUUID: boolean) {
     const student = await this.studentsRepository.getById(id, isUUID);
 
-    // TODO: To raise this exception?
-    if (!student) {
-      throw new NotFoundException();
-    }
+    if (!student) throw new NotFoundException();
 
     return this.studentToDto(student);
   }
@@ -149,8 +146,4 @@ export class StudentsService {
 
     return this.studentToDto(linkedStudent);
   }
-
-  // TODO: run this to check for the following cases:
-  // 1. cannot have the same student_id attached to the same user_id
-  // async validateStudentsArray(arr: CreateStudentDto[]) {}
 }

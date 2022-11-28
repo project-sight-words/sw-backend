@@ -50,7 +50,6 @@ export class StudentsRepository {
 
   async update(studentUUID: string, student: NewStudent): Promise<Student> {
     // Updates should only occur if there's a (single) record in the joining table
-    // TODO: Return 404 if the UUID used is invalid
     const rows = await this.databaseService.query(
       `
         UPDATE students

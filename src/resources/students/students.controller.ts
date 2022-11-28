@@ -1,10 +1,4 @@
 import {
-  CreateStudentDto,
-  StudentDto,
-  UpdateStudentDto,
-} from "./dto/students.dto";
-import { StudentsService } from "./students.service";
-import {
   BadRequestException,
   Body,
   Controller,
@@ -15,7 +9,12 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { IsUUID } from "class-validator";
+import {
+  CreateStudentDto,
+  StudentDto,
+  UpdateStudentDto,
+} from "./dto/students.dto";
+import { StudentsService } from "./students.service";
 
 @Controller("students")
 export class StudentsController {
