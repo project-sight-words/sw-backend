@@ -27,8 +27,8 @@ export class StudentsService {
     return students.map((student) => this.studentToDto(student));
   }
 
-  async getById(id: string): Promise<StudentDto> {
-    const student = await this.studentsRepository.getById(id);
+  async getById(id: string, isUUID: boolean) {
+    const student = await this.studentsRepository.getById(id, isUUID);
 
     // TODO: To raise this exception?
     if (!student) {
@@ -49,7 +49,10 @@ export class StudentsService {
         });
       }
 
-      let student = await this.studentsRepository.getById(studentDto.studentId);
+      let student = await this.studentsRepository.getById(
+        studentDto.studentId,
+        false,
+      );
 
       if (!student) {
         student = await this.studentsRepository.upsertByStudentId(

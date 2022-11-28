@@ -18,6 +18,9 @@ import { IsUUID } from "class-validator";
 
 @Controller("students")
 export class StudentsController {
+  private readonly uuidRegexExp =
+    /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
   constructor(private readonly studentsService: StudentsService) {}
 
   @Get()
@@ -28,8 +31,7 @@ export class StudentsController {
 
   @Get(":id")
   async getById(@Param("id") id: string): Promise<StudentDto> {
-    const student = await this.studentsService.getById(id);
-    return student;
+    return await this.studentsService.getById(id, this.uuidRegexExp.test(id));
   }
 
   // TODO: Accept JSON array
@@ -45,9 +47,7 @@ export class StudentsController {
     @Param("id") id: string,
     @Body() updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    const regexExp =
-      /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
-    if (!regexExp.test(id)) {
+    if (!this.uuidRegexExp.test(id)) {
       throw new BadRequestException("Invalid student UUID provided.");
     }
 

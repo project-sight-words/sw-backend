@@ -8,8 +8,7 @@ import { User } from "../../entities/user.entities";
 export class StudentsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  // TODO: To use raw UUID or student_id
-  async getById(id: string): Promise<Student> {
+  async getById(id: string, isUUID: boolean) {
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -22,7 +21,7 @@ export class StudentsRepository {
           ON students.id = student_users.student_id
         JOIN users
           ON student_users.user_id = users.id
-        WHERE students.student_id = $1;
+        WHERE students.${!isUUID ? "student_id" : "id"} = $1;
       `,
       [id],
     );
