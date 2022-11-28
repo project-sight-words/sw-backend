@@ -78,15 +78,17 @@ export class StudentsService {
         );
       }
 
+      return this.studentToDto(linkedStudent);
+    });
   }
 
   async updateById(
-    studentId: string,
+    studentUUID: string,
     updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    const updatedStudent = await this.studentsRepository.update({
+    const updatedStudent = await this.studentsRepository.update(studentUUID, {
       name: updateStudentDto.name,
-      studentId: studentId,
+      studentId: updateStudentDto.studentId,
       email: "",
     });
 
@@ -100,4 +102,8 @@ export class StudentsService {
   private dtoToNewStudent(studentDto: CreateStudentDto): NewStudent {
     return plainToInstance(NewStudent, instanceToPlain(studentDto));
   }
+
+  // TODO: run this to check for the following cases:
+  // 1. cannot have the same student_id attached to the same user_id
+  // async validateStudentsArray(arr: CreateStudentDto[]) {}
 }

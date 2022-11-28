@@ -50,29 +50,33 @@ export class StudentsRepository {
     return plainToInstance(Student, rows);
   }
 
-  async update(student: NewStudent): Promise<Student> {
-    // TODO: Allow updating of email from student?
+  async update(studentUUID: string, student: NewStudent): Promise<Student> {
     // Updates should only occur if there's a (single) record in the joining table
+    // TODO: Return 404 if the UUID used is invalid
     const rows = await this.databaseService.query(
       `
         UPDATE students
-        SET name = $1
+        SET name = $1, student_id = $2
         FROM (
-          SELECT students.student_id AS student_id, users.email AS email
+          SELECT
+            students.id as student_uuid,
+            students.student_id AS student_id,
+            users.email AS email
           FROM students
           JOIN student_users
             ON students.id = student_users.student_id
           JOIN users
             ON student_users.user_id = users.id
-          WHERE students.student_id = $2
+          WHERE students.id = $3
         ) AS subquery
-        WHERE students.student_id = subquery.student_id
+        WHERE students.id = subquery.student_uuid
         RETURNING
+          students.id AS id,
           students.student_id AS student_id,
           students.name AS name,
           subquery.email AS email;
       `,
-      [student.name, student.studentId],
+      [student.name, student.studentId, studentUUID],
     );
     return plainToInstance(Student, rows[0]);
   }

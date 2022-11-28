@@ -5,6 +5,7 @@ import {
 } from "./dto/students.dto";
 import { StudentsService } from "./students.service";
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -13,6 +14,7 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
+import { IsUUID } from "class-validator";
 
 @Controller("students")
 export class StudentsController {
@@ -30,6 +32,7 @@ export class StudentsController {
     return student;
   }
 
+  // TODO: Accept JSON array
   @Post()
   @HttpCode(201)
   async create(@Body() studentDto: CreateStudentDto): Promise<StudentDto> {
@@ -42,6 +45,12 @@ export class StudentsController {
     @Param("id") id: string,
     @Body() updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
+    const regexExp =
+      /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+    if (!regexExp.test(id)) {
+      throw new BadRequestException("Invalid student UUID provided.");
+    }
+
     const student = await this.studentsService.updateById(id, updateStudentDto);
     return student;
   }
