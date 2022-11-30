@@ -19,7 +19,7 @@ export class Class {
   dayTime!: Date;
 }
 
-export class TeacherToClass {
+export class ClassTeacher {
   @IsNotEmpty()
   @IsUUID()
   @Expose({ name: "teacher_id" })
@@ -53,7 +53,7 @@ export class TeacherToClass {
   deletedBy!: string | null;
 }
 
-export class StudentToClass {
+export class ClassStudent {
   @IsNotEmpty()
   @IsUUID()
   @Expose({ name: "student_id" })

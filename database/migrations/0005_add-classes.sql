@@ -5,7 +5,7 @@ CREATE TABLE classes (
   day_time      TIMESTAMPTZ  NOT NULL
 );
 
-CREATE TABLE student_to_class (
+CREATE TABLE class_students (
   class_id        UUID            NOT NULL,
   student_id      UUID            NOT NULL,
   created_at      TIMESTAMPTZ     NOT NULL   DEFAULT NOW(),
@@ -17,7 +17,7 @@ CREATE TABLE student_to_class (
   FOREIGN KEY (student_id)        REFERENCES students(id) ON DELETE CASCADE
 );
 
-CREATE TABLE teacher_to_class (
+CREATE TABLE class_teachers (
   class_id        UUID            NOT NULL,
   teacher_id      UUID            NOT NULL,
   is_form_teacher BOOLEAN         NOT NULL   DEFAULT FALSE, 
@@ -35,7 +35,7 @@ CREATE TABLE centres (
   name       CITEXT      NOT NULL
 );
 
-CREATE TABLE class_to_centre (
+CREATE TABLE centre_classes (
   centre_id       UUID            NOT NULL,
   class_id        UUID            NOT NULL,
   created_at      TIMESTAMPTZ     NOT NULL   DEFAULT NOW(),

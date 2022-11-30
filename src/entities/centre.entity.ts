@@ -13,7 +13,7 @@ export class Centre {
   name!: string;
 }
 
-export class ClassToCentre {
+export class CentreClass {
   @IsNotEmpty()
   @IsUUID()
   @Expose({ name: "centre_id" })
