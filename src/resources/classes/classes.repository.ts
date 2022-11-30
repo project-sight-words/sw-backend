@@ -2,11 +2,7 @@ import { Injectable, Param } from "@nestjs/common";
 import { DatabaseService } from "database/database.service";
 import { UpdateClassDto } from "./dto/classes.dto";
 import { plainToInstance } from "class-transformer";
-import {
-  Class,
-  StudentToClass,
-  TeacherToClass,
-} from "../../entities/class.entity";
+import { Class, ClassStudent, ClassTeacher } from "../../entities/class.entity";
 import { Teacher } from "entities/teacher.entities";
 
 @Injectable()
@@ -66,10 +62,10 @@ export class ClassesRepository {
     isFormTeacher: boolean,
   ) {
     const rows = await this.databaseService.query(
-      "INSERT INTO teacher_to_class (class_id, teacher_id, is_form_teacher, created_by, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
+      "INSERT INTO class_teachers (class_id, teacher_id, is_form_teacher, created_by, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
       [classId, teacherId, isFormTeacher, null],
     );
-    return plainToInstance(TeacherToClass, rows[0]);
+    return plainToInstance(ClassTeacher, rows[0]);
   }
 
   async getTeachersFromClass(classId: string) {
@@ -78,11 +74,11 @@ export class ClassesRepository {
       SELECT 
         * 
       FROM 
-        teacher_to_class 
-        INNER JOIN teachers ON teacher_to_class.teacher_id = teachers.id 
+        class_teachers 
+        INNER JOIN teachers ON class_teachers.teacher_id = teachers.id 
       WHERE 
         class_id = $1 
-        AND teacher_to_class.deleted_at IS NULL
+        AND class_teachers.deleted_at IS NULL
       `,
       [classId],
     );
@@ -94,7 +90,7 @@ export class ClassesRepository {
     const rows = await this.databaseService.query(
       `
       UPDATE 
-        teacher_to_class 
+        class_teachers 
       SET 
         deleted_at = NOW(), 
         deleted_by = $3 
@@ -105,16 +101,16 @@ export class ClassesRepository {
     );
 
     this.databaseService.checkIfResultNotEmpty(rows);
-    return plainToInstance(TeacherToClass, rows[0]);
+    return plainToInstance(ClassTeacher, rows[0]);
   }
 
   async addStudentToClass(classId: string, studentId: string) {
     const rows = await this.databaseService.query(
-      "INSERT INTO student_to_class (class_id, student_id, created_by, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *",
+      "INSERT INTO class_students (class_id, student_id, created_by, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *",
       [classId, studentId, null],
     );
 
-    return plainToInstance(StudentToClass, rows[0]);
+    return plainToInstance(ClassStudent, rows[0]);
   }
 
   async getStudentsFromClass(classId: string) {
@@ -123,23 +119,23 @@ export class ClassesRepository {
       SELECT 
         * 
       FROM 
-        student_to_class 
-        INNER JOIN students ON student_to_class.student_id = students.id 
+        class_students 
+        INNER JOIN students ON class_students.student_id = students.id 
       WHERE 
         class_id = $1 
-        AND student_to_class.deleted_at IS NULL
+        AND class_students.deleted_at IS NULL
       `,
       [classId],
     );
 
-    return plainToInstance(StudentToClass, rows);
+    return plainToInstance(ClassStudent, rows);
   }
 
   async removeStudentFromClass(classId: string, studentId: string) {
     const rows = await this.databaseService.query(
       `
       UPDATE 
-        student_to_class 
+        class_students 
       SET 
         deleted_at = NOW(), 
         deleted_by = $3 
@@ -151,6 +147,6 @@ export class ClassesRepository {
     );
 
     this.databaseService.checkIfResultNotEmpty(rows);
-    return plainToInstance(StudentToClass, rows[0]);
+    return plainToInstance(ClassStudent, rows[0]);
   }
 }

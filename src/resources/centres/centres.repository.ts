@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
 import { DatabaseService } from "database/database.service";
-import { Centre, ClassToCentre } from "entities/centre.entity";
+import { Centre, CentreClass } from "entities/centre.entity";
 
 @Injectable()
 export class CentresRepository {
@@ -24,11 +24,11 @@ export class CentresRepository {
 
   async addClassToCentre(centreId: string, classId: string) {
     const rows = await this.databaseService.query(
-      "INSERT INTO class_to_centre (centre_id, class_id, created_by, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *;",
+      "INSERT INTO centre_classes (centre_id, class_id, created_by, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *;",
       [centreId, classId, null],
     );
 
-    return plainToInstance(ClassToCentre, rows[0]);
+    return plainToInstance(CentreClass, rows[0]);
   }
 
   async getClassesFromCentre(centreId: string) {
@@ -37,25 +37,25 @@ export class CentresRepository {
       SELECT 
         * 
       FROM 
-        class_to_centre 
-      INNER JOIN classes ON classes.id = class_to_centre.class_id 
+        centre_classes 
+      INNER JOIN classes ON classes.id = centre_classes.class_id 
       WHERE 
         centre_id = $1 
-        AND class_to_centre.deleted_at IS NULL;
+        AND centre_classes.deleted_at IS NULL;
       `,
       [centreId],
     );
 
-    return plainToInstance(ClassToCentre, rows);
+    return plainToInstance(CentreClass, rows);
   }
 
   async removeClassFromCentre(centreId: string, classId: string) {
     const rows = await this.databaseService.query(
-      "UPDATE class_to_centre SET deleted_at = NOW() WHERE centre_id = $1 AND class_id = $2 RETURNING *;",
+      "UPDATE centre_classes SET deleted_at = NOW() WHERE centre_id = $1 AND class_id = $2 RETURNING *;",
       [centreId, classId],
     );
 
     this.databaseService.checkIfResultNotEmpty(rows);
-    return plainToInstance(ClassToCentre, rows[0]);
+    return plainToInstance(CentreClass, rows[0]);
   }
 }
