@@ -1,8 +1,8 @@
-CREATE EXTENSION IF NOT EXISTS citext;
-
 CREATE TABLE classes (
   id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  day_time      TIMESTAMPTZ  NOT NULL
+  day_time      TIMESTAMPTZ  NOT NULL,
+  updated_at    TIMESTAMPTZ,
+  updated_by    UUID         REFERENCES users(id)
 );
 
 CREATE TABLE class_students (
@@ -13,8 +13,8 @@ CREATE TABLE class_students (
   deleted_at      TIMESTAMPTZ,
   deleted_by      UUID            REFERENCES users(id),
   PRIMARY KEY (class_id, student_id),
-  FOREIGN KEY (class_id)          REFERENCES classes(id) ON DELETE CASCADE,
-  FOREIGN KEY (student_id)        REFERENCES students(id) ON DELETE CASCADE
+  FOREIGN KEY (class_id)          REFERENCES classes(id),
+  FOREIGN KEY (student_id)        REFERENCES students(id)
 );
 
 CREATE TABLE class_teachers (
@@ -26,16 +26,18 @@ CREATE TABLE class_teachers (
   deleted_at      TIMESTAMPTZ,
   deleted_by      UUID            REFERENCES users(id),
   PRIMARY KEY (class_id, teacher_id),
-  FOREIGN KEY (class_id)          REFERENCES classes(id) ON DELETE CASCADE,
-  FOREIGN KEY (teacher_id)        REFERENCES teachers(id) ON DELETE CASCADE
+  FOREIGN KEY (class_id)          REFERENCES classes(id),
+  FOREIGN KEY (teacher_id)        REFERENCES teachers(id)
 );
 
 CREATE TABLE centres (
   id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  name       CITEXT      NOT NULL
+  name       CITEXT      NOT NULL,
+  updated_at    TIMESTAMPTZ,
+  updated_by    UUID         REFERENCES users(id)
 );
 
-CREATE TABLE centre_classes (
+CREATE TABLE class_centres (
   centre_id       UUID            NOT NULL,
   class_id        UUID            NOT NULL,
   created_at      TIMESTAMPTZ     NOT NULL   DEFAULT NOW(),
@@ -43,6 +45,6 @@ CREATE TABLE centre_classes (
   deleted_at      TIMESTAMPTZ,
   deleted_by      UUID            REFERENCES users(id),
   PRIMARY KEY (centre_id, class_id),
-  FOREIGN KEY (centre_id)         REFERENCES centres(id) ON DELETE CASCADE,
-  FOREIGN KEY (class_id)          REFERENCES classes(id) ON DELETE CASCADE
+  FOREIGN KEY (centre_id)         REFERENCES centres(id),
+  FOREIGN KEY (class_id)          REFERENCES classes(id)
 );
