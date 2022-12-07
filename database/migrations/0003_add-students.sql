@@ -8,8 +8,8 @@ CREATE TABLE students (
 );
 
 CREATE TABLE student_users (
-  user_id UUID NOT NULL,
-  student_id UUID NOT NULL,
+  user_id UUID NOT NULL UNIQUE,
+  student_id UUID NOT NULL UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by UUID,
   PRIMARY KEY (user_id, student_id),
