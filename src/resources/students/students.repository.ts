@@ -35,7 +35,9 @@ export class StudentsRepository {
           students.id AS id,
           users.email AS email,
           students.student_id AS student_id,
-          students.name AS name
+          students.name AS name,
+          students.updated_at as updated_at,
+          students.updated_by as updated_by
         FROM students
         JOIN student_users
           ON students.id = student_users.student_id
