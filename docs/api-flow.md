@@ -71,8 +71,8 @@ flowchart TD
     get[[GET /students/:id]] --> check{{Check given id is valid UUID}}
     check -- Invalid UUID --> error[/Return 400 Bad Request Exception/]
     check -- Valid UUID --> retrieve{{Attempt to search for the student given the index}}
-    retrieve -- Found & active --> success[/Return 200 OK with resulting student/]
-    retrieve -- Found & not active --> not_found[/Return 404 Not Found Exception/]
+    retrieve -- Found & Has User --> success[/Return 200 OK with resulting student/]
+    retrieve -- Found & No User --> not_found[/Return 404 Not Found Exception/]
     retrieve -- Not found --> not_found
   end
 ```
@@ -125,9 +125,9 @@ flowchart TD
     put[[PUT /students/:id]] --> check{{Check given id is valid UUID}}
     check -- Invalid UUID --> error[/Return 400 Bad Request Exception/]
     check -- Valid UUID --> retrieve{{Attempt to search for the student given the index}}
-    retrieve -- Found & not active --> not_found[/Return 404 Not Found Exception/]
+    retrieve -- Found & No User --> not_found[/Return 404 Not Found Exception/]
     retrieve -- Not found --> not_found
-    retrieve -- Found & active --> update{{Attempt to update the student}}
+    retrieve -- Found & Has User --> update{{Attempt to update the student}}
     update -- Student ID conflict --> error
     update -- No conflict --> success[/Return 200 OK with updated student/]
   end
