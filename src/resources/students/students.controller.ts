@@ -31,7 +31,11 @@ export class StudentsController {
 
   @Get(":id")
   async getById(@Param("id") id: string): Promise<StudentDto> {
-    return await this.studentsService.getById(id, this.uuidRegexExp.test(id));
+    const student = await this.studentsService.getById(
+      id,
+      this.uuidRegexExp.test(id),
+    );
+    return student;
   }
 
   @Post()
