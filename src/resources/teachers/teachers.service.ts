@@ -1,7 +1,8 @@
-import { Injectable } from "@nestjs/common";
-import { Teacher } from "entities/teacher.entities";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { NewTeacherUser, Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
 import { UsersRepository } from "resources/users/users.repository";
+import { DatabaseService } from "../../database/database.service";
 import {
   CreateTeacherDto,
   TeacherDto,
@@ -12,40 +13,70 @@ export class TeachersService {
   constructor(
     private readonly teachersRepository: TeachersRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly databaseService: DatabaseService,
   ) {}
 
   async bulkCreate(
     createdBy: string | null,
     data: CreateTeacherDto[],
-  ): Promise<CreateTeacherDto[]> {
+  ): Promise<TeacherDto[]> {
     console.log(data);
-    const dataArr = await Promise.all(
-      data.map(async (teacher) => this.create(createdBy, teacher)),
-    );
-    return dataArr;
+    const teachersDto = await this.databaseService.transaction(async (_) => {
+      const createdTeachers = [];
+      for (const teacherDto of data) {
+        try {
+          createdTeachers.push(await this.create(createdBy, teacherDto));
+        } catch (e) {
+          throw new BadRequestException(await this.validateAll(data));
+        }
+      }
+      return createdTeachers;
+    });
+    return teachersDto;
   }
 
   async create(
     createdBy: string | null,
     data: CreateTeacherDto,
-  ): Promise<CreateTeacherDto> {
-    const newUser = await this.usersRepository.upsertByEmail({
-      email: data.email,
-      lastLoggedIn: new Date(),
-    });
-    console.log(newUser.id);
-    const teacher = await this.teachersRepository.create({
-      email: data.email,
-      staffId: data.staffId,
-      name: data.name,
-    });
-    console.log(teacher.id);
+  ): Promise<TeacherDto> {
+    let newUser = await this.usersRepository.getByEmail(data.email);
+
+    if (!newUser) {
+      newUser = await this.usersRepository.upsertByEmail({
+        email: data.email,
+        lastLoggedIn: new Date(),
+      });
+    }
+    let teacher = await this.teachersRepository.getByTeacherId(data.staffId);
+
+    if (!teacher) {
+      teacher = await this.teachersRepository.create({
+        email: data.email,
+        staffId: data.staffId,
+        name: data.name,
+      });
+    } else {
+      if (teacher.name != data.name) {
+        throw new BadRequestException("Teacher's recorded name does not match");
+      }
+    }
+
     const teacherId = teacher.id;
-    await this.teachersRepository.linkTeacherUser(
-      newUser.id,
-      createdBy,
-      teacherId,
-    );
+
+    const teacherUser: NewTeacherUser = {
+      userId: newUser.id,
+      teacherId: teacherId,
+    };
+
+    const isLinked = await this.teachersRepository.isLinked(teacherUser);
+
+    if (!isLinked) {
+      await this.teachersRepository.linkTeacherUser(
+        newUser.id,
+        createdBy,
+        teacherId,
+      );
+    }
     return this.teacherToDto(teacher);
   }
 
@@ -93,5 +124,21 @@ export class TeachersService {
       staffId: teacher.staffId,
       name: teacher.name,
     };
+  }
+
+  private async validateAll(data: CreateTeacherDto[]) {
+    const invalidTeachers = [];
+    for (const teacherDto of data) {
+      const teacher = await this.teachersRepository.getByTeacherId(
+        teacherDto.staffId,
+      );
+
+      if (teacher.name !== teacherDto.name) {
+        invalidTeachers.push(
+          `Attempted Insert ${teacherDto.name} conflicts with ${teacher.name}`,
+        );
+      }
+    }
+    return invalidTeachers;
   }
 }

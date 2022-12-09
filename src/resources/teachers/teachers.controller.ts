@@ -21,7 +21,7 @@ export class TeachersController {
 
   @Post()
   @HttpCode(201)
-  async create(@Body() data: CreateTeacherDto[]): Promise<CreateTeacherDto[]> {
+  async create(@Body() data: CreateTeacherDto[]): Promise<TeacherDto[]> {
     const teachers = await this.teachersService.bulkCreate(null, data);
     return teachers;
   }
