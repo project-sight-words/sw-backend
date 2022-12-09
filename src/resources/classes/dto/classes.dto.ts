@@ -1,11 +1,5 @@
 import { Expose } from "class-transformer";
-import {
-  IsBoolean,
-  IsDateString,
-  IsNotEmpty,
-  IsOptional,
-  IsUUID,
-} from "class-validator";
+import { IsBoolean, IsDateString, IsNotEmpty, IsUUID } from "class-validator";
 
 export class UpdateClassDto {
   @IsNotEmpty()
@@ -19,10 +13,10 @@ export class AddTeacherToClassDto {
   @Expose({ name: "teacher_id" })
   teacherId!: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsBoolean()
   @Expose({ name: "is_form_teacher" })
-  isFormTeacher?: boolean;
+  isFormTeacher!: boolean;
 }
 
 export class AddStudentToClassDto {

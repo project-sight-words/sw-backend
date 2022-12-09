@@ -51,7 +51,7 @@ export class ClassesController {
     return this.classesService.addTeacherToClass(
       classId,
       addTeacherToClassDto.teacherId,
-      addTeacherToClassDto.isFormTeacher ?? false,
+      addTeacherToClassDto.isFormTeacher,
     );
   }
 
