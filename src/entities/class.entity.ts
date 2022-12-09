@@ -2,9 +2,12 @@ import { Expose } from "class-transformer";
 import {
   IsBoolean,
   IsDate,
-  IsDateString,
+  IsMilitaryTime,
   IsNotEmpty,
+  IsNumber,
   IsUUID,
+  Max,
+  Min,
 } from "class-validator";
 
 export class Class {
@@ -14,9 +17,16 @@ export class Class {
   id!: string;
 
   @IsNotEmpty()
-  @IsDateString()
-  @Expose({ name: "day_time" })
-  dayTime!: Date;
+  @IsNumber()
+  @Min(1)
+  @Max(7)
+  @Expose({ name: "day" })
+  day!: number;
+
+  @IsNotEmpty()
+  @IsMilitaryTime()
+  @Expose({ name: "time" })
+  time!: string;
 }
 
 export class ClassTeacher {

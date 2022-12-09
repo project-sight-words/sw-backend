@@ -11,8 +11,8 @@ export class ClassesRepository {
 
   async createClass(createClassDto: UpdateClassDto): Promise<Class> {
     const rows = await this.databaseService.query(
-      "INSERT INTO classes (day_time) VALUES ($1) RETURNING *",
-      [createClassDto.dayTime],
+      "INSERT INTO classes (day, time) VALUES ($1, $2) RETURNING *",
+      [createClassDto.day, createClassDto.time],
     );
 
     return plainToInstance(Class, rows[0]);
@@ -38,8 +38,8 @@ export class ClassesRepository {
     updateClassDto: UpdateClassDto,
   ): Promise<Class> {
     const rows = await this.databaseService.query(
-      "UPDATE classes SET day_time = $1 WHERE id = $2 RETURNING *",
-      [updateClassDto.dayTime, id],
+      "UPDATE classes SET day = $1, time = $2 WHERE id = $3 RETURNING *",
+      [updateClassDto.day, updateClassDto.time, id],
     );
 
     this.databaseService.checkIfResultNotEmpty(rows);

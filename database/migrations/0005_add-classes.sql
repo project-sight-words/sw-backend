@@ -1,8 +1,10 @@
 CREATE TABLE classes (
   id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  day_time      TIMESTAMPTZ  NOT NULL,
+  day           INTEGER      NOT NULL,
+  time          TIME         NOT NULL,
   updated_at    TIMESTAMPTZ,
-  updated_by    UUID         REFERENCES users(id)
+  updated_by    UUID         REFERENCES users(id),
+  CHECK (day >= 1 AND day <= 7)
 );
 
 CREATE TABLE class_students (
