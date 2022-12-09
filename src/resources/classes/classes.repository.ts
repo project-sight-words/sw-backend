@@ -38,7 +38,7 @@ export class ClassesRepository {
     updateClassDto: UpdateClassDto,
   ): Promise<Class> {
     const rows = await this.databaseService.query(
-      "UPDATE classes SET day = $1, time = $2 WHERE id = $3 RETURNING *",
+      "UPDATE classes SET day = $1, time = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
       [updateClassDto.day, updateClassDto.time, id],
     );
 
