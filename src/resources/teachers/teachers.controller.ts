@@ -14,6 +14,7 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
+import { Authorization } from "decorators/authorization.decorator";
 
 @Controller("teachers")
 export class TeachersController {
@@ -21,8 +22,11 @@ export class TeachersController {
 
   @Post()
   @HttpCode(201)
-  async create(@Body() data: CreateTeacherDto[]): Promise<TeacherDto[]> {
-    const teachers = await this.teachersService.bulkCreate(null, data);
+  async create(
+    @Body() data: CreateTeacherDto[],
+    @Authorization() userId: string,
+  ): Promise<TeacherDto[]> {
+    const teachers = await this.teachersService.bulkCreate(userId, data);
     return teachers;
   }
 
@@ -38,26 +42,28 @@ export class TeachersController {
     return teacher;
   }
 
-  //TODO: Accept authentication usage and requester's userID
   @Put(":id")
   async updateByTeacherId(
     @Param("id") teacherId: string,
     @Body() data: UpdateTeacherDto,
+    @Authorization() userId: string,
   ): Promise<TeacherDto> {
     const teacher = await this.teachersService.updateByTeacherId(
       teacherId,
-      null,
+      userId,
       data,
     );
     return teacher;
   }
 
-  //TODO: accept authentication usage and requester's userID
   @Delete(":id")
-  async deleteByTeacherId(@Param("id") teacherId: string): Promise<TeacherDto> {
+  async deleteByTeacherId(
+    @Param("id") teacherId: string,
+    @Authorization() userId: string,
+  ): Promise<TeacherDto> {
     const teacher = await this.teachersService.deleteByTeacherId(
       teacherId,
-      null,
+      userId,
     );
     return teacher;
   }
