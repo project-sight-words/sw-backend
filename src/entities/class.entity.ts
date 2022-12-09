@@ -38,7 +38,7 @@ export class ClassTeacher {
   @IsNotEmpty()
   @Expose({ name: "created_at" })
   @IsDate()
-  createdAt!: Date | null;
+  createdAt!: Date;
 
   @Expose({ name: "created_by" })
   @IsUUID()
@@ -67,7 +67,7 @@ export class ClassStudent {
   @IsNotEmpty()
   @Expose({ name: "created_at" })
   @IsDate()
-  createdAt!: Date | null;
+  createdAt!: Date;
 
   @Expose({ name: "created_by" })
   @IsUUID()
