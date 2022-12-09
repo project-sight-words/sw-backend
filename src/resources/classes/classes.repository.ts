@@ -2,7 +2,7 @@ import { Injectable, Param } from "@nestjs/common";
 import { DatabaseService } from "database/database.service";
 import { UpdateClassDto } from "./dto/classes.dto";
 import { plainToInstance } from "class-transformer";
-import { Class, ClassStudent, ClassTeacher } from "../../entities/class.entity";
+import { Class, ClassStudent, ClassTeacher } from "entities/class.entity";
 import { Teacher } from "entities/teacher.entities";
 
 @Injectable()
