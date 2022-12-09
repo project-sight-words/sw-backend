@@ -1,8 +1,7 @@
 import { TeachersService } from "./teachers.service";
 import {
   CreateTeacherDto,
-  DeleteTeacherDto,
-  GetTeacherDto,
+  TeacherDto,
   UpdateTeacherDto,
 } from "./dto/teachers.dto";
 import {
@@ -28,23 +27,24 @@ export class TeachersController {
   }
 
   @Get()
-  async get(): Promise<GetTeacherDto[]> {
+  async get(): Promise<TeacherDto[]> {
     const teachers = await this.teachersService.get();
     return teachers;
   }
 
   @Get(":id")
-  async getByStaffId(@Param("id") teacherId: string): Promise<GetTeacherDto> {
+  async getByTeacherId(@Param("id") teacherId: string): Promise<TeacherDto> {
     const teacher = await this.teachersService.getByTeacherId(teacherId);
     return teacher;
   }
 
+  //TODO: Accept authentication usage and requester's userID
   @Put(":id")
-  async updateByStaffId(
+  async updateByTeacherId(
     @Param("id") teacherId: string,
     @Body() data: UpdateTeacherDto,
-  ): Promise<UpdateTeacherDto> {
-    const teacher = await this.teachersService.updateByStaffId(
+  ): Promise<TeacherDto> {
+    const teacher = await this.teachersService.updateByTeacherId(
       teacherId,
       null,
       data,
@@ -52,11 +52,13 @@ export class TeachersController {
     return teacher;
   }
 
+  //TODO: accept authentication usage and requester's userID
   @Delete(":id")
-  async deleteByStaffId(
-    @Param("id") teacherId: string,
-  ): Promise<DeleteTeacherDto> {
-    const teacher = await this.teachersService.deleteByStaffId(teacherId, null);
+  async deleteByTeacherId(@Param("id") teacherId: string): Promise<TeacherDto> {
+    const teacher = await this.teachersService.deleteByTeacherId(
+      teacherId,
+      null,
+    );
     return teacher;
   }
 }

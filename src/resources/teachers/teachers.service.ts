@@ -4,11 +4,9 @@ import { TeachersRepository } from "./teachers.repository";
 import { UsersRepository } from "resources/users/users.repository";
 import {
   CreateTeacherDto,
-  DeleteTeacherDto,
-  GetTeacherDto,
+  TeacherDto,
   UpdateTeacherDto,
 } from "./dto/teachers.dto";
-
 @Injectable()
 export class TeachersService {
   constructor(
@@ -48,66 +46,47 @@ export class TeachersService {
       createdBy,
       teacherId,
     );
-    return this.teacherToCreateDto(teacher);
+    return this.teacherToDto(teacher);
   }
 
-  async get(): Promise<GetTeacherDto[]> {
+  async get(): Promise<TeacherDto[]> {
     const teachers = await this.teachersRepository.get();
-    return teachers.map((teacher) => this.teacherToGetDto(teacher));
+    return teachers.map((teacher) => this.teacherToDto(teacher));
   }
 
-  async getByTeacherId(teacherId: string | null): Promise<GetTeacherDto> {
+  async getByTeacherId(teacherId: string | null): Promise<TeacherDto> {
     const teacher = await this.teachersRepository.getByTeacherId(teacherId);
-    return this.teacherToGetDto(teacher);
+    return this.teacherToDto(teacher);
   }
 
-  async updateByStaffId(
+  async updateByTeacherId(
     staffId: string,
     updatedBy: string | null,
     data: UpdateTeacherDto,
-  ): Promise<UpdateTeacherDto> {
-    const updatedTeacher = await this.teachersRepository.updateByStaffId(
+  ): Promise<TeacherDto> {
+    const updatedTeacher = await this.teachersRepository.updateByTeacherId(
       staffId,
       updatedBy,
       {
-        email: data.email,
         staffId: data.staffId,
         name: data.name,
       },
     );
-    return this.teacherToUpdateDto(updatedTeacher);
+    return this.teacherToDto(updatedTeacher);
   }
 
-  async deleteByStaffId(
+  async deleteByTeacherId(
     staffId: string,
     deletedBy: string | null,
-  ): Promise<DeleteTeacherDto> {
-    const deletedTeacher = await this.teachersRepository.deleteByStaffId(
+  ): Promise<TeacherDto> {
+    const deletedTeacher = await this.teachersRepository.deleteByTeacherId(
       staffId,
       deletedBy,
     );
-    return this.teacherToCreateDto(deletedTeacher);
+    return this.teacherToDto(deletedTeacher);
   }
 
-  private teacherToCreateDto(teacher: Teacher): CreateTeacherDto {
-    return {
-      id: teacher.id,
-      email: teacher.email,
-      staffId: teacher.staffId,
-      name: teacher.name,
-    };
-  }
-
-  private teacherToGetDto(teacher: Teacher): GetTeacherDto {
-    return {
-      id: teacher.id,
-      email: teacher.email,
-      staffId: teacher.staffId,
-      name: teacher.name,
-    };
-  }
-
-  private teacherToUpdateDto(teacher: Teacher): UpdateTeacherDto {
+  private teacherToDto(teacher: Teacher): TeacherDto {
     return {
       id: teacher.id,
       email: teacher.email,

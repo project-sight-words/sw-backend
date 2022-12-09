@@ -1,15 +1,7 @@
+import { Expose } from "class-transformer";
 import { IsString, IsNotEmpty, IsEmail, IsUUID } from "class-validator";
 
-export class CreateTeacherDto {
-  @IsUUID()
-  @IsString()
-  @IsNotEmpty()
-  id!: string;
-
-  @IsEmail()
-  @IsNotEmpty()
-  email!: string;
-
+export class UpdateTeacherDto {
   @IsString()
   @IsNotEmpty()
   staffId!: string;
@@ -19,8 +11,15 @@ export class CreateTeacherDto {
   name!: string;
 }
 
-export class GetTeacherDto extends CreateTeacherDto {}
+export class CreateTeacherDto extends UpdateTeacherDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
+}
 
-export class UpdateTeacherDto extends CreateTeacherDto {}
-
-export class DeleteTeacherDto extends CreateTeacherDto {}
+export class TeacherDto extends CreateTeacherDto {
+  @IsUUID()
+  @IsString()
+  @IsNotEmpty()
+  id!: string;
+}
