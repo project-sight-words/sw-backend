@@ -1,3 +1,4 @@
+import { StudentsService } from "./students.service";
 import {
   BadRequestException,
   Body,
@@ -14,7 +15,6 @@ import {
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
-import { StudentsService } from "./students.service";
 
 @Controller("students")
 export class StudentsController {

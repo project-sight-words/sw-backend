@@ -1,18 +1,18 @@
+import { DatabaseService } from "../../database/database.service";
+import { instanceToPlain, plainToInstance } from "class-transformer";
+import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
+import { StudentsRepository } from "./students.repository";
+import { UsersRepository } from "resources/users/users.repository";
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { instanceToPlain, plainToInstance } from "class-transformer";
-import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
-import { UsersRepository } from "resources/users/users.repository";
-import { DatabaseService } from "../../database/database.service";
 import {
   CreateStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
-import { StudentsRepository } from "./students.repository";
 
 @Injectable()
 export class StudentsService {
