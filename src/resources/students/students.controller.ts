@@ -1,11 +1,11 @@
 import * as Uuid from "utils/uuid";
 import { StudentsService } from "./students.service";
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   ParseArrayPipe,
   Post,
@@ -29,6 +29,8 @@ export class StudentsController {
 
   @Get(":id")
   async getById(@Param("id") id: string): Promise<StudentDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
     const student = await this.studentsService.getById(id);
     return student;
   }
@@ -49,8 +51,7 @@ export class StudentsController {
     @Body() body: UpdateStudentDto,
   ): Promise<StudentDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid)
-      throw new BadRequestException("Invalid student UUID provided.");
+    if (!isUuid) throw new NotFoundException();
     const student = await this.studentsService.updateById(id, body);
     return student;
   }

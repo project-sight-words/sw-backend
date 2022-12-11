@@ -22,8 +22,7 @@ flowchart LR
 
 ## Core design decisions
 
-- Returning `404 Bad Request` when an invalid UUID is given as a path parameter
-  (maybe change to just `400 Not Found`?)
+- Returning `404 Not Found` when an invalid UUID is given as a path parameter
 
 ## Students endpoint
 
