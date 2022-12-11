@@ -26,9 +26,7 @@ describe("StudentsRepository", () => {
   });
 
   it("should return Student on upsertByEmailAndStudentId", async () => {
-    const insertedStudent = await service.upsertByEmailAndStudentId(
-      testNewStudent,
-    );
+    const insertedStudent = await service.upsertByStudentId(testNewStudent);
     expect(insertedStudent).toBeInstanceOf(Student);
     expect(insertedStudent.email).toBe(testNewStudent.email);
     expect(insertedStudent.studentId).toBe(testNewStudent.studentId);
@@ -36,7 +34,8 @@ describe("StudentsRepository", () => {
   });
 
   it("should return Student on getStudentById", async () => {
-    const retrievedStudent = await service.getById(testNewStudent.studentId);
+    const retrievedStudents = await service.getById(testNewStudent.studentId);
+    const retrievedStudent = retrievedStudents[0];
     expect(retrievedStudent).toBeInstanceOf(Student);
     expect(retrievedStudent.email).toBe(testNewStudent.email);
     expect(retrievedStudent.studentId).toBe(testNewStudent.studentId);
@@ -50,7 +49,7 @@ describe("StudentsRepository", () => {
       studentId: "S17",
       name: "Mary Jane",
     };
-    await service.upsertByEmailAndStudentId(testStudent);
+    await service.upsertByStudentId(testStudent);
 
     const testUpdateStudent = {
       email: testStudent.email,

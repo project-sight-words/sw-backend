@@ -1,4 +1,4 @@
-import { Expose, Type } from "class-transformer";
+import { Expose } from "class-transformer";
 import { IsDate, IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class NewStudent {
@@ -16,10 +16,22 @@ export class NewStudent {
   name!: string;
 }
 
-export class Student extends NewStudent {
+export class Student {
   @IsNotEmpty()
   @IsUUID()
   id!: string;
+
+  @IsEmail()
+  email!: string | null;
+
+  @Expose({ name: "student_id" })
+  @IsNotEmpty()
+  @IsString()
+  studentId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
 
   @Expose({ name: "updated_by" })
   @IsUUID()
@@ -28,9 +40,6 @@ export class Student extends NewStudent {
   @Expose({ name: "updated_at" })
   @IsDate()
   updatedAt!: Date;
-
-  @Type(() => StudentUser)
-  studentUser!: StudentUser | null;
 }
 
 export class NewStudentUser {
