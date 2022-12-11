@@ -108,12 +108,14 @@ export class StudentsRepository {
     return rows[0].id;
   }
 
-  async update(studentUUID: string, student: NewStudent): Promise<Student> {
-    // Updates should only occur if there's a (single) record in the joining table
+  async update(
+    uuid: string,
+    student: Omit<NewStudent, "email">,
+  ): Promise<Student> {
     const rows = await this.databaseService.query(
       `
         UPDATE students
-        SET name = $1, student_id = $2
+        SET name = $1, student_id = $2, updated_at = NOW()
         FROM (
           SELECT
             students.id as student_uuid,
@@ -133,9 +135,10 @@ export class StudentsRepository {
           students.name AS name,
           subquery.email AS email;
       `,
-      [student.name, student.studentId, studentUUID],
+      [student.name, student.studentId, uuid],
     );
-    return plainToInstance(Student, rows[0]);
+    const students = plainToInstance(Student, rows);
+    return students[0];
   }
 
   async upsertByStudentId(student: NewStudent): Promise<Student> {

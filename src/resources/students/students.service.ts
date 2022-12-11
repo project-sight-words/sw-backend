@@ -61,16 +61,15 @@ export class StudentsService {
   }
 
   async updateById(
-    studentUUID: string,
+    uuid: string,
     updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    const updatedStudent = await this.studentsRepository.update(studentUUID, {
+    const student = await this.studentsRepository.update(uuid, {
       name: updateStudentDto.name,
       studentId: updateStudentDto.studentId,
-      email: "",
     });
-
-    return this.studentToDto(updatedStudent);
+    const studentDto = this.studentToDto(student);
+    return studentDto;
   }
 
   private studentToDto(student: Student): StudentDto {
