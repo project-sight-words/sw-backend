@@ -7,7 +7,6 @@ import {
   UpdateTeacher,
 } from "entities/teacher.entities";
 import { plainToInstance } from "class-transformer";
-import { isUUID } from "class-validator";
 
 @Injectable()
 export class TeachersRepository {

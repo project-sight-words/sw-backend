@@ -21,7 +21,7 @@ export class TeachersService {
     data: CreateTeacherDto[],
   ): Promise<TeacherDto[]> {
     console.log(data);
-    const teachersDto = await this.databaseService.transaction(async (_) => {
+    const teachersDto = await this.databaseService.transaction(async () => {
       const createdTeachers = [];
       for (const teacherDto of data) {
         try {
