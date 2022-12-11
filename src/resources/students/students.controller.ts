@@ -1,3 +1,4 @@
+import * as Uuid from "utils/uuid";
 import { StudentsService } from "./students.service";
 import {
   BadRequestException,
@@ -18,9 +19,6 @@ import {
 
 @Controller("students")
 export class StudentsController {
-  private readonly uuidRegexExp =
-    /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
-
   constructor(private readonly studentsService: StudentsService) {}
 
   @Get()
@@ -31,10 +29,7 @@ export class StudentsController {
 
   @Get(":id")
   async getById(@Param("id") id: string): Promise<StudentDto> {
-    const student = await this.studentsService.getById(
-      id,
-      this.uuidRegexExp.test(id),
-    );
+    const student = await this.studentsService.getById(id, Uuid.test(id));
     return student;
   }
 
@@ -42,22 +37,20 @@ export class StudentsController {
   @HttpCode(201)
   async create(
     @Body(new ParseArrayPipe({ items: CreateStudentDto }))
-    studentDtos: CreateStudentDto[],
+    body: CreateStudentDto[],
   ): Promise<StudentDto[]> {
-    const students = await this.studentsService.createStudents(studentDtos);
+    const students = await this.studentsService.createStudents(body);
     return students;
   }
 
   @Put(":id")
   async updateById(
     @Param("id") id: string,
-    @Body() updateStudentDto: UpdateStudentDto,
+    @Body() body: UpdateStudentDto,
   ): Promise<StudentDto> {
-    if (!this.uuidRegexExp.test(id)) {
+    if (!Uuid.test(id))
       throw new BadRequestException("Invalid student UUID provided.");
-    }
-
-    const student = await this.studentsService.updateById(id, updateStudentDto);
+    const student = await this.studentsService.updateById(id, body);
     return student;
   }
 }
