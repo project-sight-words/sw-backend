@@ -24,7 +24,8 @@ export class StudentsService {
 
   async get(): Promise<StudentDto[]> {
     const students = await this.studentsRepository.get();
-    return students.map((student) => this.studentToDto(student));
+    const studentDtos = students.map((student) => this.studentToDto(student));
+    return studentDtos;
   }
 
   async getById(id: string) {

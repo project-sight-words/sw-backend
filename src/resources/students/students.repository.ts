@@ -1,8 +1,8 @@
+import * as Uuid from "utils/uuid";
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
 import { plainToInstance } from "class-transformer";
-import * as Uuid from "utils/uuid";
 
 @Injectable()
 export class StudentsRepository {
@@ -45,10 +45,9 @@ export class StudentsRepository {
         JOIN users
           ON student_users.user_id = users.id;
       `,
-      [],
     );
-
-    return plainToInstance(Student, rows);
+    const students = plainToInstance(Student, rows);
+    return students;
   }
 
   async update(studentUUID: string, student: NewStudent): Promise<Student> {
