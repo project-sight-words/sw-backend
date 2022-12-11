@@ -16,10 +16,22 @@ export class NewStudent {
   name!: string;
 }
 
-export class Student extends NewStudent {
+export class Student {
   @IsNotEmpty()
   @IsUUID()
   id!: string;
+
+  @IsEmail()
+  email!: string | null;
+
+  @Expose({ name: "student_id" })
+  @IsNotEmpty()
+  @IsString()
+  studentId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
 
   @Expose({ name: "updated_by" })
   @IsUUID()

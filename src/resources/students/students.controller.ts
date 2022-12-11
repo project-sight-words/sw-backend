@@ -39,7 +39,7 @@ export class StudentsController {
     @Body(new ParseArrayPipe({ items: CreateStudentDto }))
     body: CreateStudentDto[],
   ): Promise<StudentDto[]> {
-    const students = await this.studentsService.createStudents(body);
+    const students = await this.studentsService.createMany(body);
     return students;
   }
 

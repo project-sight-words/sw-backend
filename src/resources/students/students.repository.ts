@@ -1,17 +1,14 @@
-import * as Uuid from "utils/uuid";
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
-import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
+import { NewStudent, Student, StudentUser } from "entities/student.entities";
 import { plainToInstance } from "class-transformer";
+import { Querier } from "database/database.types";
 
 @Injectable()
 export class StudentsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  // TODO: Should we really be supporting both student_uuid and student_id queries in this method?
-  //       Honestly, I think not...
   async getById(id: string): Promise<Student[]> {
-    const isUuid = Uuid.test(id);
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -24,9 +21,51 @@ export class StudentsRepository {
           ON students.id = student_users.student_id
         JOIN users
           ON student_users.user_id = users.id
-        WHERE students.${isUuid ? "id" : "student_id"} = $1;
+        WHERE students.id = $1;
       `,
       [id],
+    );
+    const students = plainToInstance(Student, rows);
+    return students;
+  }
+
+  async getByEmail(email: string): Promise<Student[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          students.id AS id,
+          users.email AS email,
+          students.student_id AS student_id,
+          students.name AS name
+        FROM students
+        JOIN student_users
+          ON students.id = student_users.student_id
+        JOIN users
+          ON student_users.user_id = users.id
+        WHERE users.email = $1;
+      `,
+      [email],
+    );
+    const students = plainToInstance(Student, rows);
+    return students;
+  }
+
+  async getIncludingDeletedByStudentId(studentId: string): Promise<Student[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          students.id AS id,
+          users.email AS email,
+          students.student_id AS student_id,
+          students.name AS name
+        FROM students
+        LEFT JOIN student_users
+          ON students.id = student_users.student_id
+        LEFT JOIN users
+          ON student_users.user_id = users.id
+        WHERE students.student_id = $1;
+      `,
+      [studentId],
     );
     const students = plainToInstance(Student, rows);
     return students;
@@ -51,6 +90,22 @@ export class StudentsRepository {
     );
     const students = plainToInstance(Student, rows);
     return students;
+  }
+
+  async insert(
+    query: Querier,
+    student: Omit<NewStudent, "email">,
+  ): Promise<string> {
+    const { studentId, name } = student;
+    const rows = (await query(
+      `
+        INSERT INTO students (student_id, name)
+        VALUES ($1, $2)
+        RETURNING id;
+      `,
+      [studentId, name],
+    )) as { id: string }[];
+    return rows[0].id;
   }
 
   async update(studentUUID: string, student: NewStudent): Promise<Student> {
@@ -100,22 +155,26 @@ export class StudentsRepository {
     return newStudent;
   }
 
-  async linkToUser(
-    studentUser: NewStudentUser,
-    student: Student,
-  ): Promise<Student> {
-    await this.databaseService.query(
+  async insertStudentUser(
+    query: Querier,
+    studentId: string,
+    userId: string,
+  ): Promise<StudentUser> {
+    const rows = await query(
       `
         INSERT INTO student_users (user_id, student_id)
         VALUES ($1, $2);
       `,
-      [studentUser.userId, studentUser.studentId],
+      [userId, studentId],
     );
-
-    return student;
+    const studentUsers = plainToInstance(StudentUser, rows);
+    return studentUsers[0];
   }
 
-  async isLinked(studentUser: NewStudentUser): Promise<boolean> {
+  async getStudentUser(
+    studentId: string,
+    userId: string,
+  ): Promise<StudentUser[]> {
     const rows = await this.databaseService.query(
       `
         SELECT *
@@ -124,9 +183,9 @@ export class StudentsRepository {
           INNER JOIN students ON student_users.student_id = students.id
         WHERE users.id = $1 AND students.id = $2;
       `,
-      [studentUser.userId, studentUser.studentId],
+      [userId, studentId],
     );
-
-    return rows.length > 0;
+    const studentUsers = plainToInstance(StudentUser, rows);
+    return studentUsers;
   }
 }
