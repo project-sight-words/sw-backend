@@ -2,12 +2,13 @@ import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { NewStudent, NewStudentUser, Student } from "entities/student.entities";
 import { plainToInstance } from "class-transformer";
+import * as Uuid from "utils/uuid";
 
 @Injectable()
 export class StudentsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async getById(id: string, isUUID: boolean) {
+  async getById(id: string) {
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -20,7 +21,7 @@ export class StudentsRepository {
           ON students.id = student_users.student_id
         JOIN users
           ON student_users.user_id = users.id
-        WHERE students.${!isUUID ? "student_id" : "id"} = $1;
+        WHERE students.${!Uuid.test(id) ? "student_id" : "id"} = $1;
       `,
       [id],
     );

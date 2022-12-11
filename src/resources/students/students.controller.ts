@@ -29,7 +29,7 @@ export class StudentsController {
 
   @Get(":id")
   async getById(@Param("id") id: string): Promise<StudentDto> {
-    const student = await this.studentsService.getById(id, Uuid.test(id));
+    const student = await this.studentsService.getById(id);
     return student;
   }
 
@@ -48,7 +48,8 @@ export class StudentsController {
     @Param("id") id: string,
     @Body() body: UpdateStudentDto,
   ): Promise<StudentDto> {
-    if (!Uuid.test(id))
+    const isUuid = Uuid.test(id);
+    if (!isUuid)
       throw new BadRequestException("Invalid student UUID provided.");
     const student = await this.studentsService.updateById(id, body);
     return student;

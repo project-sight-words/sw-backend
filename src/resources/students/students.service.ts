@@ -27,8 +27,8 @@ export class StudentsService {
     return students.map((student) => this.studentToDto(student));
   }
 
-  async getById(id: string, isUUID: boolean) {
-    const student = await this.studentsRepository.getById(id, isUUID);
+  async getById(id: string) {
+    const student = await this.studentsRepository.getById(id);
 
     if (!student) throw new NotFoundException();
 
@@ -81,7 +81,6 @@ export class StudentsService {
 
       const student = await this.studentsRepository.getById(
         studentDto.studentId,
-        false,
       );
 
       if (!student) continue;
@@ -112,10 +111,7 @@ export class StudentsService {
       });
     }
 
-    let student = await this.studentsRepository.getById(
-      studentDto.studentId,
-      false,
-    );
+    let student = await this.studentsRepository.getById(studentDto.studentId);
 
     if (!student) {
       student = await this.studentsRepository.upsertByStudentId(
