@@ -159,16 +159,14 @@ export class StudentsRepository {
     query: Querier,
     studentId: string,
     userId: string,
-  ): Promise<StudentUser> {
-    const rows = await query(
+  ): Promise<void> {
+    await query(
       `
         INSERT INTO student_users (user_id, student_id)
         VALUES ($1, $2);
       `,
       [userId, studentId],
     );
-    const studentUsers = plainToInstance(StudentUser, rows);
-    return studentUsers[0];
   }
 
   async getStudentUser(
