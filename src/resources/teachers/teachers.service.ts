@@ -47,9 +47,14 @@ export class TeachersService {
         lastLoggedIn: new Date(),
       });
     }
-    let teacher = await this.teachersRepository.getByTeacherId(data.staffId);
+    console.log("Checking by teacher ID");
+    let teacher = await this.teachersRepository.getByTeacherId(
+      data.staffId,
+      false,
+    );
 
     if (!teacher) {
+      console.log("if not created, creating");
       teacher = await this.teachersRepository.create({
         email: data.email,
         staffId: data.staffId,
@@ -85,8 +90,14 @@ export class TeachersService {
     return teachers.map((teacher) => this.teacherToDto(teacher));
   }
 
-  async getByTeacherId(teacherId: string | null): Promise<TeacherDto> {
-    const teacher = await this.teachersRepository.getByTeacherId(teacherId);
+  async getByTeacherId(
+    teacherId: string | null,
+    isUUID: boolean,
+  ): Promise<TeacherDto> {
+    const teacher = await this.teachersRepository.getByTeacherId(
+      teacherId,
+      isUUID,
+    );
     return this.teacherToDto(teacher);
   }
 
@@ -103,15 +114,16 @@ export class TeachersService {
         name: data.name,
       },
     );
+    console.log(updatedTeacher);
     return this.teacherToDto(updatedTeacher);
   }
 
   async deleteByTeacherId(
-    staffId: string,
+    teacherId: string,
     deletedBy: string | null,
   ): Promise<TeacherDto> {
     const deletedTeacher = await this.teachersRepository.deleteByTeacherId(
-      staffId,
+      teacherId,
       deletedBy,
     );
     return this.teacherToDto(deletedTeacher);
@@ -131,6 +143,7 @@ export class TeachersService {
     for (const teacherDto of data) {
       const teacher = await this.teachersRepository.getByTeacherId(
         teacherDto.staffId,
+        false,
       );
 
       if (teacher.name !== teacherDto.name) {

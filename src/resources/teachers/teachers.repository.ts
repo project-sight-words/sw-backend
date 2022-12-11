@@ -7,6 +7,7 @@ import {
   UpdateTeacher,
 } from "entities/teacher.entities";
 import { plainToInstance } from "class-transformer";
+import { isUUID } from "class-validator";
 
 @Injectable()
 export class TeachersRepository {
@@ -52,34 +53,41 @@ export class TeachersRepository {
       const rows = await query(
         `
           SELECT teachers.id, users.email, teachers.staff_id, teachers.name from teachers
-          join teacher_users ON teachers.id = teacher_users.teacher_id
-          join users on teacher_users.user_id = users.id
-          where teacher_users.deleted_at IS NULL
+          JOIN teacher_users ON teachers.id = teacher_users.teacher_id
+          JOIN users on teacher_users.user_id = users.id
+          WHERE teacher_users.deleted_at IS NULL
           `,
       );
       return plainToInstance(Teacher, rows);
     });
+    console.log(teacher);
     return teacher;
   }
 
-  async getByTeacherId(teacherId: string | null): Promise<Teacher> {
+  async getByTeacherId(
+    teacherId: string | null,
+    isUUID: boolean,
+  ): Promise<Teacher> {
     const teacher = await this.databaseService.transaction(async (query) => {
       const rows = await query(
         `
         SELECT teachers.id, users.email, teachers.staff_id, teachers.name from teachers
-        join teacher_users ON teachers.id = teacher_users.teacher_id
-        join users on teacher_users.user_id = users.id
-        WHERE teachers.id = $1 and teacher_users.deleted_at IS NULL
+        JOIN teacher_users ON teachers.id = teacher_users.teacher_id
+        JOIN users on teacher_users.user_id = users.id
+        WHERE teachers.${
+          isUUID ? "id" : "staff_id"
+        } = $1 and teacher_users.deleted_at IS NULL
       `,
         [teacherId],
       );
       return plainToInstance(Teacher, rows[0]);
     });
+    console.log(teacher);
     return teacher;
   }
 
   async updateByTeacherId(
-    staffId: string | null,
+    teacherId: string | null,
     updatedBy: string | null,
     teacher: UpdateTeacher,
   ): Promise<Teacher> {
@@ -89,14 +97,15 @@ export class TeachersRepository {
           `
             UPDATE teachers
             SET name = $1, staff_id = $2, updated_at = NOW()
-            WHERE staff_id = $3
+            WHERE id = $3
             RETURNING *
         `,
-          [teacher.name, teacher.staffId, staffId],
+          [teacher.name, teacher.staffId, teacherId],
         );
         return plainToInstance(Teacher, rows[0]);
       },
     );
+    console.log(updatedTeacher);
     return updatedTeacher;
   }
 
@@ -108,8 +117,10 @@ export class TeachersRepository {
       async (query) => {
         const rows = await query(
           `
-          SELECT * FROM teachers
-          WHERE teachers.id = $1
+            SELECT teachers.id, users.email, teachers.staff_id, teachers.name from teachers
+            join teacher_users ON teachers.id = teacher_users.teacher_id
+            join users on teacher_users.user_id = users.id
+            WHERE teachers.id= $1 and teacher_users.deleted_at IS NULL
           `,
           [teacherId],
         );
@@ -127,6 +138,7 @@ export class TeachersRepository {
         [teacherId, deletedBy],
       );
     });
+    console.log(deletedTeacher);
     return deletedTeacher;
   }
 

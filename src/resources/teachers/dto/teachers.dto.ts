@@ -1,4 +1,3 @@
-import { Expose } from "class-transformer";
 import { IsString, IsNotEmpty, IsEmail, IsUUID } from "class-validator";
 
 export class UpdateTeacherDto {
