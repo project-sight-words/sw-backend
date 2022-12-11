@@ -34,7 +34,8 @@ describe("StudentsRepository", () => {
   });
 
   it("should return Student on getStudentById", async () => {
-    const retrievedStudent = await service.getById(testNewStudent.studentId);
+    const retrievedStudents = await service.getById(testNewStudent.studentId);
+    const retrievedStudent = retrievedStudents[0];
     expect(retrievedStudent).toBeInstanceOf(Student);
     expect(retrievedStudent.email).toBe(testNewStudent.email);
     expect(retrievedStudent.studentId).toBe(testNewStudent.studentId);

@@ -8,7 +8,10 @@ import { plainToInstance } from "class-transformer";
 export class StudentsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async getById(id: string) {
+  // TODO: Should we really be supporting both student_uuid and student_id queries in this method?
+  //       Honestly, I think not...
+  async getById(id: string): Promise<Student[]> {
+    const isUuid = Uuid.test(id);
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -21,12 +24,12 @@ export class StudentsRepository {
           ON students.id = student_users.student_id
         JOIN users
           ON student_users.user_id = users.id
-        WHERE students.${!Uuid.test(id) ? "student_id" : "id"} = $1;
+        WHERE students.${isUuid ? "id" : "student_id"} = $1;
       `,
       [id],
     );
-
-    return plainToInstance(Student, rows[0]);
+    const students = plainToInstance(Student, rows);
+    return students;
   }
 
   async get(): Promise<Student[]> {

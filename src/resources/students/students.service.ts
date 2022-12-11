@@ -29,11 +29,11 @@ export class StudentsService {
   }
 
   async getById(id: string) {
-    const student = await this.studentsRepository.getById(id);
-
-    if (!student) throw new NotFoundException();
-
-    return this.studentToDto(student);
+    const students = await this.studentsRepository.getById(id);
+    if (students.length === 0) throw new NotFoundException();
+    const student = students[0];
+    const studentDto = this.studentToDto(student);
+    return studentDto;
   }
 
   async createStudents(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
@@ -80,11 +80,12 @@ export class StudentsService {
     for (let i = 0; i < studentDtos.length; i++) {
       const studentDto = studentDtos[i];
 
-      const student = await this.studentsRepository.getById(
+      const students = await this.studentsRepository.getById(
         studentDto.studentId,
       );
 
-      if (!student) continue;
+      if (students.length === 0) continue;
+      const student = students[0];
 
       if (student.name !== studentDto.name) {
         invalidStudents.push(
@@ -112,13 +113,17 @@ export class StudentsService {
       });
     }
 
-    let student = await this.studentsRepository.getById(studentDto.studentId);
+    const students = await this.studentsRepository.getById(
+      studentDto.studentId,
+    );
+    let student: Student;
 
-    if (!student) {
+    if (students.length === 0) {
       student = await this.studentsRepository.upsertByStudentId(
         this.dtoToNewStudent(studentDto),
       );
     } else {
+      student = students[0];
       if (student.name !== studentDto.name) {
         throw new BadRequestException(
           "Student's recorded name does not match given name.",
