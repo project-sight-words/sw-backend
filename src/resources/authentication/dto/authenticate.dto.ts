@@ -36,3 +36,9 @@ export class LoggedInDto {
   @IsNotEmpty()
   roles!: Roles[];
 }
+
+export class RefreshDto {
+  @IsString()
+  @IsNotEmpty()
+  refreshToken!: string;
+}

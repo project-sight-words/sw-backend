@@ -1,10 +1,10 @@
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { Roles } from "entities/roles.entities";
+import { UsersRepository } from "resources/users/users.repository";
 import { LoginWithGoogleDto } from "./dto/authenticate.dto";
 import { GoogleService } from "./google.service";
-import { Injectable } from "@nestjs/common";
-import { Roles } from "entities/roles.entities";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
-import { UsersRepository } from "resources/users/users.repository";
 
 @Injectable()
 export class AuthenticationService {
@@ -20,8 +20,11 @@ export class AuthenticationService {
       email: email,
       lastLoggedIn: new Date(),
     });
-    const accessTokenCookie = this.sessionService.generateToken(user, "access");
-    const refreshTokenCookie = this.sessionService.generateToken(
+    const accessTokenCookie = this.sessionService.generateCookie(
+      user,
+      "access",
+    );
+    const refreshTokenCookie = this.sessionService.generateCookie(
       user,
       "refresh",
     );
@@ -33,6 +36,34 @@ export class AuthenticationService {
     const ticket = await this.googleService.verifyIdToken(googleToken);
     const email = this.googleService.getEmailFromTicket(ticket);
     return this.login(email);
+  }
+
+  refreshToken(access: string, refresh: string) {
+    // Decode the user from the access and refresh tokens
+    // Not going to update the lastLoggedIn field in the database since that might cause
+    // some inconsistencies if the token is refreshed while the user was already logged
+    // in (i.e. automatic refresh).
+    const accessPayload = this.sessionService.getPayload(access);
+    const refreshPayload = this.sessionService.getPayload(refresh);
+
+    if (!accessPayload || !refreshPayload) throw new BadRequestException();
+
+    if (
+      accessPayload.email !== refreshPayload.email ||
+      accessPayload.id !== refreshPayload.id
+    )
+      throw new BadRequestException();
+
+    const accessTokenCookie = this.sessionService.generateCookie(
+      accessPayload,
+      "access",
+    );
+    const refreshTokenCookie = this.sessionService.generateCookie(
+      refreshPayload,
+      "refresh",
+    );
+
+    return { accessTokenCookie, refreshTokenCookie };
   }
 
   async getRolesByUserId(userId: string): Promise<Roles[]> {

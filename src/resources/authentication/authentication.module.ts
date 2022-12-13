@@ -6,6 +6,7 @@ import { UsersModule } from "resources/users/users.module";
 import { AuthenticationController } from "./authentication.controller";
 import { AuthenticationService } from "./authentication.service";
 import { GoogleService } from "./google.service";
+import { JwtStrategy } from "./jwt.strategy";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
 
@@ -26,6 +27,7 @@ import { SessionService } from "./session.service";
     AuthenticationService,
     RolesRepository,
     SessionService,
+    JwtStrategy,
   ],
   controllers: [AuthenticationController],
 })

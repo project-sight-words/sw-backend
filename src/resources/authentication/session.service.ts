@@ -37,9 +37,19 @@ export class SessionService {
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${maxAge}`;
   }
 
-  generateToken(data: JwtPayload, type: tokenType): string {
+  generateCookie(data: JwtPayload, type: tokenType): string {
     const token = this.sign(data, type);
     const cookie = this.createCookieWithToken(token, type);
     return cookie;
+  }
+
+  getPayload(token: string): JwtPayload | undefined {
+    const payload = this.jwtService.decode(token);
+    if (!payload || typeof payload === "string") return undefined;
+    const castPayload = payload as { id: string; email: string };
+    return {
+      id: castPayload.id,
+      email: castPayload.email,
+    };
   }
 }

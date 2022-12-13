@@ -10,12 +10,14 @@ import {
   ParseArrayPipe,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common";
 import {
   CreateStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
+import { JwtAuthGuard } from "../authentication/jwt-auth.guard";
 
 @Controller("students")
 export class StudentsController {
