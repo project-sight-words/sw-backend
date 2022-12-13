@@ -24,10 +24,10 @@ export class AuthenticationController {
     if (environment !== "development") throw new NotFoundException();
     const session = await this.authenticationService.login(data.email);
     const { accessTokenCookie, refreshTokenCookie, user } = session;
-    response.setHeader("Set-Cookie", [
-      `access=${accessTokenCookie}`,
-      `refresh=${refreshTokenCookie}`,
-    ]);
+    response.setHeader(
+      "Set-Cookie",
+      this.createCookieHeaders(accessTokenCookie, refreshTokenCookie),
+    );
     const roles = await this.authenticationService.getRolesByUserId(user.id);
     return { user, roles };
   }
@@ -37,10 +37,17 @@ export class AuthenticationController {
     @Body() data: LoginWithGoogleDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<LoggedInDto> {
-    const { accessTokenCookie, user } =
+    const { accessTokenCookie, refreshTokenCookie, user } =
       await this.authenticationService.loginWithGoogle(data);
-    response.setHeader("Set-Cookie", accessTokenCookie);
+    response.setHeader(
+      "Set-Cookie",
+      this.createCookieHeaders(accessTokenCookie, refreshTokenCookie),
+    );
     const roles = await this.authenticationService.getRolesByUserId(user.id);
     return { user, roles };
+  }
+
+  private createCookieHeaders(access: string, refresh: string): string[] {
+    return [`access=${access}`, `refresh=${refresh}`];
   }
 }
