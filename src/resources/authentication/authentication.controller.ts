@@ -1,12 +1,12 @@
-import { AuthenticationService } from "./authentication.service";
 import { Body, Controller, NotFoundException, Post, Res } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
+import { AuthenticationService } from "./authentication.service";
 import {
-  LoginWithGoogleDto,
   LoggedInDto,
   LoginInDevelopmentDto,
+  LoginWithGoogleDto,
 } from "./dto/authenticate.dto";
-import { ConfigService } from "@nestjs/config";
 
 @Controller("authentication")
 export class AuthenticationController {
@@ -23,8 +23,11 @@ export class AuthenticationController {
     const environment = this.configService.getOrThrow<string>("NODE_ENV");
     if (environment !== "development") throw new NotFoundException();
     const session = await this.authenticationService.login(data.email);
-    const { accessTokenCookie, user } = session;
-    response.setHeader("Set-Cookie", accessTokenCookie);
+    const { accessTokenCookie, refreshTokenCookie, user } = session;
+    response.setHeader("Set-Cookie", [
+      `access=${accessTokenCookie}`,
+      `refresh=${refreshTokenCookie}`,
+    ]);
     const roles = await this.authenticationService.getRolesByUserId(user.id);
     return { user, roles };
   }

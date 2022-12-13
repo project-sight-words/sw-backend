@@ -20,11 +20,12 @@ export class AuthenticationService {
       email: email,
       lastLoggedIn: new Date(),
     });
-    const jwtToken = this.sessionService.sign(user);
-    const accessTokenCookie =
-      this.sessionService.createCookieWithToken(jwtToken);
-    // TODO: Create refresh token cookie
-    return { accessTokenCookie, user };
+    const accessTokenCookie = this.sessionService.generateToken(user, "access");
+    const refreshTokenCookie = this.sessionService.generateToken(
+      user,
+      "refresh",
+    );
+    return { accessTokenCookie, refreshTokenCookie, user };
   }
 
   async loginWithGoogle(data: LoginWithGoogleDto) {
