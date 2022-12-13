@@ -1,5 +1,3 @@
-import * as Uuid from "utils/uuid";
-import { StudentsService } from "./students.service";
 import {
   Body,
   Controller,
@@ -10,14 +8,14 @@ import {
   ParseArrayPipe,
   Post,
   Put,
-  UseGuards,
 } from "@nestjs/common";
+import * as Uuid from "utils/uuid";
 import {
   CreateStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
-import { JwtAuthGuard } from "../authentication/jwt-auth.guard";
+import { StudentsService } from "./students.service";
 
 @Controller("students")
 export class StudentsController {

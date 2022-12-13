@@ -2,7 +2,6 @@ import { Module } from "@nestjs/common";
 import { DatabaseModule } from "database/database.module";
 import { UsersModule } from "resources/users/users.module";
 import { UsersRepository } from "resources/users/users.repository";
-import { JwtStrategy } from "../authentication/jwt.strategy";
 import { StudentsController } from "./students.controller";
 import { StudentsRepository } from "./students.repository";
 import { StudentsService } from "./students.service";
@@ -10,11 +9,6 @@ import { StudentsService } from "./students.service";
 @Module({
   imports: [DatabaseModule, UsersModule],
   controllers: [StudentsController],
-  providers: [
-    UsersRepository,
-    StudentsService,
-    StudentsRepository,
-    JwtStrategy,
-  ],
+  providers: [UsersRepository, StudentsService, StudentsRepository],
 })
 export class StudentsModule {}
