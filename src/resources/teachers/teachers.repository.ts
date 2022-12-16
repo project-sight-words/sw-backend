@@ -1,17 +1,18 @@
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
+import { isUUID } from "class-validator";
+import { plainToInstance } from "class-transformer";
 import {
   NewTeacher,
   NewTeacherUser,
   Teacher,
   UpdateTeacher,
 } from "entities/teacher.entities";
-import { plainToInstance } from "class-transformer";
-import { isUUID } from "class-validator";
 
 @Injectable()
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
+
   async create(teacher: NewTeacher): Promise<Teacher> {
     const createdTeacher = await this.databaseService.transaction(
       async (query) => {

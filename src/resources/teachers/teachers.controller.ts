@@ -1,3 +1,5 @@
+import * as Uuid from "utils/uuid";
+import { BadRequestException } from "@nestjs/common/exceptions";
 import { TeachersService } from "./teachers.service";
 import {
   CreateTeacherDto,
@@ -14,13 +16,9 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { BadRequestException } from "@nestjs/common/exceptions";
 
 @Controller("teachers")
 export class TeachersController {
-  private readonly uuidRegexExp =
-    /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
-
   constructor(private readonly teachersService: TeachersService) {}
 
   @Post()
@@ -40,7 +38,7 @@ export class TeachersController {
   async getByTeacherId(@Param("id") teacherId: string): Promise<TeacherDto> {
     const teacher = await this.teachersService.getByTeacherId(
       teacherId,
-      this.uuidRegexExp.test(teacherId),
+      Uuid.test(teacherId),
     );
     return teacher;
   }
@@ -51,7 +49,7 @@ export class TeachersController {
     @Body() data: UpdateTeacherDto,
   ): Promise<TeacherDto> {
     console.log(teacherId);
-    if (!this.uuidRegexExp.test(teacherId)) {
+    if (!Uuid.test(teacherId)) {
       throw new BadRequestException("Invalid teacher UUID provided");
     }
     const teacher = await this.teachersService.updateByTeacherId(
@@ -64,7 +62,7 @@ export class TeachersController {
 
   @Delete(":id")
   async deleteByTeacherId(@Param("id") teacherId: string): Promise<TeacherDto> {
-    if (!this.uuidRegexExp.test(teacherId)) {
+    if (!Uuid.test(teacherId)) {
       throw new BadRequestException("Invalid teacher UUID provided");
     }
     const teacher = await this.teachersService.deleteByTeacherId(

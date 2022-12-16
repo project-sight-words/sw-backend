@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
+import { DatabaseService } from "../../database/database.service";
 import { NewTeacherUser, Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
 import { UsersRepository } from "resources/users/users.repository";
-import { DatabaseService } from "../../database/database.service";
 import {
   CreateTeacherDto,
   TeacherDto,
   UpdateTeacherDto,
 } from "./dto/teachers.dto";
+
 @Injectable()
 export class TeachersService {
   constructor(
@@ -39,7 +40,8 @@ export class TeachersService {
     createdBy: string | null,
     data: CreateTeacherDto,
   ): Promise<TeacherDto> {
-    let newUser = await this.usersRepository.getByEmail(data.email);
+    const newUsers = await this.usersRepository.getByEmail(data.email);
+    let newUser;
 
     if (!newUser) {
       newUser = await this.usersRepository.upsertByEmail({
