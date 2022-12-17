@@ -1,4 +1,5 @@
 import { Auth, google } from "googleapis";
+import { ConfigService } from "@nestjs/config";
 import {
   Injectable,
   InternalServerErrorException,
@@ -7,16 +8,20 @@ import {
 
 @Injectable()
 export class GoogleService {
-  private static readonly oauthClient = new google.auth.OAuth2({
-    clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-  });
+  private readonly oauthClient: Auth.OAuth2Client;
+
+  constructor(configService: ConfigService) {
+    this.oauthClient = new google.auth.OAuth2({
+      clientId: configService.getOrThrow("GOOGLE_OAUTH_CLIENT_ID"),
+      clientSecret: configService.getOrThrow("GOOGLE_OAUTH_CLIENT_SECRET"),
+    });
+  }
 
   private readonly logService = new Logger("GoogleService");
 
   async verifyIdToken(idToken: string): Promise<Auth.LoginTicket> {
     try {
-      const ticket = await GoogleService.oauthClient.verifyIdToken({
+      const ticket = await this.oauthClient.verifyIdToken({
         idToken,
         // TODO: Add audience setting so that only log ins to authorized clients can access
         // audience: process.env.FRONTEND_GOOGLE_OAUTH_CLIENT_ID,

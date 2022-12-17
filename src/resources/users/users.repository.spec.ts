@@ -1,5 +1,5 @@
-import { DatabaseService } from "database/database.service";
-import { NewUser, User } from "entities/user.entities";
+import { DatabaseService } from "../../database/database.service";
+import { NewUser, User } from "../../entities/user.entities";
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersRepository } from "./users.repository";
 

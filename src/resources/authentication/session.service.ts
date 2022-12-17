@@ -1,18 +1,24 @@
+import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
 import { instanceToPlain } from "class-transformer";
-import { JwtService } from "@nestjs/jwt";
 import { JwtPayload } from "entities/jwt.entities";
+import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
 export class SessionService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   sign(data: JwtPayload): string {
     return this.jwtService.sign(instanceToPlain(data));
   }
 
   createCookieWithToken(token: string): string {
-    const maxAge = parseInt(process.env.JWT_EXPIRATION_SECONDS ?? "300");
+    const maxAge = this.configService.getOrThrow<number>(
+      "JWT_EXPIRATION_SECONDS",
+    );
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${maxAge}`;
   }
 }

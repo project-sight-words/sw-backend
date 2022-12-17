@@ -59,18 +59,18 @@ cd sw-backend/
 
 ### Creating issues
 
-Before creating a new branch, always ensure that a new issue is created first
-so that the branch can properly target that issue.
+Before creating a new branch, always ensure that a new issue is created first so
+that the branch can properly target that issue.
 
-Without an issue, it is harder to track the progress and reasons why the
+Without an issue, it is harder to track the progress and reasons why the
 feature/fix was made.
 
-For bug reports, please include the following information as a starting point to
+For bug reports, please include the following information as a starting point to
 help the assigned developer replicate the issue.
 
-1. Steps taken to encounter the bug.
+1. Steps taken to encounter the bug.
 2. Environment you are using when the bug occurred.
-3. Additional information about the bug.
+3. Additional information about the bug.
 
 ### Atomic commits
 
