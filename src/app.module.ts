@@ -8,7 +8,6 @@ import { Module } from "@nestjs/common";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
 import { UsersModule } from "resources/users/users.module";
-import { AdminsModule } from "resources/admins/admins.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
