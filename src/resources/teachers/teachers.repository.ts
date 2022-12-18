@@ -1,7 +1,7 @@
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
-import { isUUID } from "class-validator";
 import { plainToInstance } from "class-transformer";
+import { Querier } from "database/database.types";
 import {
   NewTeacher,
   NewTeacherUser,
@@ -13,40 +13,35 @@ import {
 export class TeachersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async create(teacher: NewTeacher): Promise<Teacher> {
-    const createdTeacher = await this.databaseService.transaction(
-      async (query) => {
-        const rows = await query(
-          `
-            INSERT INTO teachers (staff_id, name)
-            VALUES($1, $2)
-            RETURNING *
-          `,
-          [teacher.staffId, teacher.name],
-        );
-        const newTeacher = plainToInstance(Teacher, rows[0]);
-        newTeacher.email = teacher.email;
-        return newTeacher;
-      },
-    );
-    return createdTeacher;
+  async insert(
+    query: Querier,
+    teacher: Omit<NewTeacher, "email">,
+  ): Promise<string> {
+    const { name, staffId } = teacher;
+    const rows = (await query(
+      `
+        INSERT INTO teachers (staff_id, name)
+        VALUES ($1, $2)
+        RETURNING id;
+      `,
+      [staffId, name],
+    )) as { id: string }[];
+    return rows[0].id;
   }
 
-  async linkTeacherUser(
-    userId: string,
-    createdBy: string | null,
+  async insertTeacherUser(
+    query: Querier,
     teacherId: string,
+    userId: string,
+    createdBy: string | null = null,
   ): Promise<void> {
-    await this.databaseService.transaction(async (query) => {
-      await query(
-        `
-          INSERT INTO teacher_users (user_id, teacher_id, created_at, created_by)
-          VALUES ($1, $2, NOW(), $3)
-          RETURNING *
-        `,
-        [userId, teacherId, createdBy],
-      );
-    });
+    await query(
+      `
+        INSERT INTO teacher_users (user_id, teacher_id, created_by)
+        VALUES ($1, $2, $3);
+      `,
+      [userId, teacherId, createdBy],
+    );
   }
 
   async get(): Promise<Teacher[]> {
@@ -65,26 +60,67 @@ export class TeachersRepository {
     return teacher;
   }
 
-  async getByTeacherId(
-    teacherId: string | null,
-    isUUID: boolean,
-  ): Promise<Teacher> {
-    const teacher = await this.databaseService.transaction(async (query) => {
-      const rows = await query(
-        `
-        SELECT teachers.id, users.email, teachers.staff_id, teachers.name from teachers
-        JOIN teacher_users ON teachers.id = teacher_users.teacher_id
-        JOIN users on teacher_users.user_id = users.id
-        WHERE teachers.${
-          isUUID ? "id" : "staff_id"
-        } = $1 and teacher_users.deleted_at IS NULL
+  async getByEmail(email: string): Promise<Teacher[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          teachers.id as id,
+          users.email as email,
+          teachers.staff_id as staff_id,
+          teachers.name as name
+        FROM teachers
+        JOIN teacher_users
+          ON teachers.id = teacher_users.teacher_id AND teacher_users.deleted_at IS NULL
+        JOIN users 
+          ON teacher_users.user_id = users.id
+        WHERE users.email = $1;
       `,
-        [teacherId],
-      );
-      return plainToInstance(Teacher, rows[0]);
-    });
-    console.log(teacher);
-    return teacher;
+      [email],
+    );
+    const teachers = plainToInstance(Teacher, rows);
+    return teachers;
+  }
+
+  async getById(id: string): Promise<Teacher[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          teachers.id as id,
+          users.email as email,
+          teachers.staff_id as staff_id,
+          teachers.name as name
+        FROM teachers
+        JOIN teacher_users
+          ON teachers.id = teacher_users.teacher_id AND teacher_users.deleted_at IS NULL
+        JOIN users
+          ON teacher_users.user_id = users.id
+        WHERE teachers.id = $1;
+      `,
+      [id],
+    );
+    const teachers = plainToInstance(Teacher, rows);
+    return teachers;
+  }
+
+  async getIncludingDeletedByStaffId(staffId: string): Promise<Teacher[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          teachers.id AS id,
+          users.email AS email,
+          teachers.staff_id AS staff_id,
+          teachers.name AS name
+        FROM teachers
+        LEFT JOIN teacher_users
+          ON teachers.id = teacher_users.teacher_id AND teacher_users.deleted_at IS NULL
+        LEFT JOIN users
+          ON teacher_users.user_id = users.id
+        WHERE teachers.staff_id = $1;
+      `,
+      [staffId],
+    );
+    const teachers = plainToInstance(Teacher, rows);
+    return teachers;
   }
 
   async updateByTeacherId(
@@ -106,7 +142,6 @@ export class TeachersRepository {
         return plainToInstance(Teacher, rows[0]);
       },
     );
-    console.log(updatedTeacher);
     return updatedTeacher;
   }
 

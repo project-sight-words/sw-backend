@@ -8,7 +8,6 @@ import { UsersRepository } from "resources/users/users.repository";
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
@@ -101,20 +100,25 @@ export class StudentsService {
       }
 
       const studentWithStudentId = studentsWithStudentId[0];
-      if (studentWithStudentId.email === null)
-        throw new InternalServerErrorException();
+      if (studentWithStudentId.email === null) continue;
 
       switch (true) {
         case studentWithStudentId.name !== name:
           invalidStudents.push({
             index,
-            message: `Student ${studentId} ${studentWithStudentId.name} exists.`,
+            message: `Student ${studentId} already exists as ${studentWithStudentId.name}.`,
           });
           break;
         case studentWithStudentId.email !== email:
           invalidStudents.push({
             index,
             message: `Student ${studentId} has email ${studentWithStudentId.email}.`,
+          });
+          break;
+        default:
+          invalidStudents.push({
+            index,
+            message: `Student ${studentId} ${studentWithStudentId.email} already exists.`,
           });
           break;
       }

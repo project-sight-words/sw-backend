@@ -1,6 +1,9 @@
 import * as Uuid from "utils/uuid";
-import { BadRequestException } from "@nestjs/common/exceptions";
 import { TeachersService } from "./teachers.service";
+import {
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common/exceptions";
 import {
   CreateTeacherDto,
   TeacherDto,
@@ -24,7 +27,7 @@ export class TeachersController {
   @Post()
   @HttpCode(201)
   async create(@Body() data: CreateTeacherDto[]): Promise<TeacherDto[]> {
-    const teachers = await this.teachersService.bulkCreate(null, data);
+    const teachers = await this.teachersService.createMany(data);
     return teachers;
   }
 
@@ -35,11 +38,10 @@ export class TeachersController {
   }
 
   @Get(":id")
-  async getByTeacherId(@Param("id") teacherId: string): Promise<TeacherDto> {
-    const teacher = await this.teachersService.getByTeacherId(
-      teacherId,
-      Uuid.test(teacherId),
-    );
+  async getById(@Param("id") id: string): Promise<TeacherDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const teacher = await this.teachersService.getById(id);
     return teacher;
   }
 

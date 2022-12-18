@@ -1,8 +1,15 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { DatabaseService } from "../../database/database.service";
-import { NewTeacherUser, Teacher } from "entities/teacher.entities";
+import { DatabaseService } from "database/database.service";
+import { Querier } from "database/database.types";
+import { Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
+import { User } from "entities/user.entities";
 import { UsersRepository } from "resources/users/users.repository";
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 import {
   CreateTeacherDto,
   TeacherDto,
@@ -17,90 +24,93 @@ export class TeachersService {
     private readonly databaseService: DatabaseService,
   ) {}
 
-  async bulkCreate(
-    createdBy: string | null,
-    data: CreateTeacherDto[],
-  ): Promise<TeacherDto[]> {
-    console.log(data);
-    const teachersDto = await this.databaseService.transaction(async () => {
+  private readonly loggerService = new Logger("TeachersService");
+
+  async createMany(teacherDtos: CreateTeacherDto[]): Promise<TeacherDto[]> {
+    const teachers = await this.databaseService.transaction(async (query) => {
       const createdTeachers = [];
-      for (const teacherDto of data) {
+      for (const teacherDto of teacherDtos) {
         try {
-          createdTeachers.push(await this.create(createdBy, teacherDto));
-        } catch (e) {
-          throw new BadRequestException(await this.validateAll(data));
+          const createdTeacher = await this.createOne(query, teacherDto);
+          createdTeachers.push(createdTeacher);
+        } catch (error) {
+          this.loggerService.error(error);
+          const validationMessages = await this.validateAll(teacherDtos);
+          throw new BadRequestException(validationMessages);
         }
       }
       return createdTeachers;
     });
-    return teachersDto;
+    return teachers;
   }
 
-  async create(
-    createdBy: string | null,
-    data: CreateTeacherDto,
+  async createOne(
+    query: Querier,
+    teacherDto: CreateTeacherDto,
   ): Promise<TeacherDto> {
-    const newUsers = await this.usersRepository.getByEmail(data.email);
-    let newUser;
+    const { email, name, staffId } = teacherDto;
 
-    if (!newUser) {
-      newUser = await this.usersRepository.upsertByEmail({
-        email: data.email,
-        lastLoggedIn: new Date(),
-      });
-    }
-    console.log("Checking by teacher ID");
-    let teacher = await this.teachersRepository.getByTeacherId(
-      data.staffId,
-      false,
-    );
-
-    if (!teacher) {
-      console.log("if not created, creating");
-      teacher = await this.teachersRepository.create({
-        email: data.email,
-        staffId: data.staffId,
-        name: data.name,
-      });
+    const usersWithEmail = await this.usersRepository.getByEmail(email);
+    let user: User;
+    if (usersWithEmail.length > 0) {
+      user = usersWithEmail[0];
     } else {
-      if (teacher.name != data.name) {
-        throw new BadRequestException("Teacher's recorded name does not match");
-      }
+      user = await this.usersRepository.insert(query, {
+        email,
+        lastLoggedIn: null,
+      });
     }
 
-    const teacherId = teacher.id;
+    const teachersWithStaffId =
+      await this.teachersRepository.getIncludingDeletedByStaffId(staffId);
 
-    const teacherUser: NewTeacherUser = {
-      userId: newUser.id,
-      teacherId: teacherId,
-    };
-
-    const isLinked = await this.teachersRepository.isLinked(teacherUser);
-
-    if (!isLinked) {
-      await this.teachersRepository.linkTeacherUser(
-        newUser.id,
-        createdBy,
+    if (teachersWithStaffId.length === 0) {
+      const teacherId = await this.teachersRepository.insert(query, {
+        name,
+        staffId,
+      });
+      await this.teachersRepository.insertTeacherUser(
+        query,
         teacherId,
+        user.id,
       );
+      return {
+        email,
+        id: teacherId,
+        name,
+        staffId,
+      };
     }
-    return this.teacherToDto(teacher);
+
+    const teacher = teachersWithStaffId[0];
+    if (teacher.email !== null)
+      throw new BadRequestException("Teacher already exists.");
+    if (teacher.name !== name)
+      throw new BadRequestException(
+        "Teacher's recorded name does not match given name.",
+      );
+
+    await this.teachersRepository.insertTeacherUser(query, teacher.id, user.id);
+    return {
+      email,
+      id: teacher.id,
+      name,
+      staffId,
+    };
   }
 
   async get(): Promise<TeacherDto[]> {
     const teachers = await this.teachersRepository.get();
-    return teachers.map((teacher) => this.teacherToDto(teacher));
+    const teacherDtos = teachers.map((teacher) => this.teacherToDto(teacher));
+    return teacherDtos;
   }
 
-  async getByTeacherId(
-    teacherId: string | null,
-    isUUID: boolean,
-  ): Promise<TeacherDto> {
-    const teacher = await this.teachersRepository.getByTeacherId(
-      teacherId,
-      isUUID,
-    );
-    return this.teacherToDto(teacher);
+  async getById(id: string): Promise<TeacherDto> {
+    const teachers = await this.teachersRepository.getById(id);
+    if (teachers.length === 0) throw new NotFoundException();
+    const teacher = teachers[0];
+    const teacherDto = this.teacherToDto(teacher);
+    return teacherDto;
   }
 
   async updateByTeacherId(
@@ -140,20 +150,51 @@ export class TeachersService {
     };
   }
 
-  private async validateAll(data: CreateTeacherDto[]) {
+  private async validateAll(teacherDtos: CreateTeacherDto[]) {
     const invalidTeachers = [];
-    for (const teacherDto of data) {
-      const teacher = await this.teachersRepository.getByTeacherId(
-        teacherDto.staffId,
-        false,
-      );
-
-      if (teacher.name !== teacherDto.name) {
-        invalidTeachers.push(
-          `Attempted Insert ${teacherDto.name} conflicts with ${teacher.name}`,
+    for (let index = 0; index < teacherDtos.length; index++) {
+      const { email, name, staffId } = teacherDtos[index];
+      const teachersWithStaffId =
+        await this.teachersRepository.getIncludingDeletedByStaffId(staffId);
+      if (teachersWithStaffId.length === 0) {
+        const teachersWithEmail = await this.teachersRepository.getByEmail(
+          email,
         );
+        if (teachersWithEmail.length > 0) {
+          const teacherWithEmail = teachersWithEmail[0];
+          invalidTeachers.push({
+            index,
+            message: `Email ${email} belongs to Teacher ${teacherWithEmail.staffId}.`,
+          });
+        }
+        continue;
+      }
+
+      const teacherWithStaffId = teachersWithStaffId[0];
+      if (teacherWithStaffId.email === null) continue;
+
+      switch (true) {
+        case teacherWithStaffId.name !== name:
+          invalidTeachers.push({
+            index,
+            message: `Teacher ${staffId} already exists as ${teacherWithStaffId.name}.`,
+          });
+          break;
+        case teacherWithStaffId.email !== email:
+          invalidTeachers.push({
+            index,
+            message: `Teacher ${staffId} has email ${teacherWithStaffId.email}.`,
+          });
+          break;
+        default:
+          invalidTeachers.push({
+            index,
+            message: `Teacher ${staffId} ${teacherWithStaffId.name} already exists.`,
+          });
+          break;
       }
     }
+
     return invalidTeachers;
   }
 }
