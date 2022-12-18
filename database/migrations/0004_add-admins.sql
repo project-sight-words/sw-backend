@@ -5,7 +5,7 @@ CREATE TABLE admins (
   CONSTRAINT fk_users FOREIGN KEY (updated_by) REFERENCES users (id)
 );
 
-CREATE TABLE admin_user (
+CREATE TABLE admin_users (
   user_id     UUID         NOT NULL UNIQUE,
   admin_id    UUID         NOT NULL UNIQUE,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
