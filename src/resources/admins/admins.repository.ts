@@ -1,5 +1,5 @@
 import { Admin, AdminUser } from "entities/admin.entity";
-import { CreateAdminDto } from "./dto/createAdmin.dto";
+import { CreateAdminDto } from "./dto/admins.dto";
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";

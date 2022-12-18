@@ -1,5 +1,5 @@
 import { AdminsRepository } from "./admins.repository";
-import { CreateAdminDto } from "./dto/createAdmin.dto";
+import { CreateAdminDto } from "./dto/admins.dto";
 import { Injectable } from "@nestjs/common";
 
 @Injectable()

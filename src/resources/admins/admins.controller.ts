@@ -8,7 +8,7 @@ import {
   Post,
 } from "@nestjs/common";
 import { AdminsService } from "./admins.service";
-import { CreateAdminDto } from "./dto/createAdmin.dto";
+import { CreateAdminDto } from "./dto/admins.dto";
 
 @Controller("admins")
 export class AdminsController {
