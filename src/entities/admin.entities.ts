@@ -1,14 +1,22 @@
 import { Expose } from "class-transformer";
-import { IsDate, IsNotEmpty, IsUUID } from "class-validator";
+import { IsDate, IsEmail, IsNotEmpty, IsUUID } from "class-validator";
+
+export class NewAdmin {
+  @IsNotEmpty()
+  @IsEmail()
+  email!: string;
+}
 
 export class Admin {
-  @Expose()
   @IsNotEmpty()
   @IsUUID()
   id!: string;
+
+  @IsEmail()
+  email!: string | null;
 }
 
-export class AdminUser {
+export class NewAdminUser {
   @Expose({ name: "user_id" })
   @IsNotEmpty()
   @IsUUID()
@@ -18,20 +26,22 @@ export class AdminUser {
   @IsNotEmpty()
   @IsUUID()
   adminId!: string;
+}
 
-  @Expose({ name: "created_at" })
-  @IsDate()
-  createdAt!: Date | null;
-
+export class AdminUser {
   @Expose({ name: "created_by" })
   @IsUUID()
   createdBy!: string | null;
 
-  @Expose({ name: "deleted_at" })
+  @Expose({ name: "created_at" })
   @IsDate()
-  deletedAt!: Date | null;
+  createdAt!: Date;
 
   @Expose({ name: "deleted_by" })
   @IsUUID()
   deletedBy!: string | null;
+
+  @Expose({ name: "deleted_at" })
+  @IsDate()
+  deletedAt!: Date | null;
 }
