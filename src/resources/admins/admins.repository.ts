@@ -1,90 +1,113 @@
-import { Admin, AdminUser } from "entities/admin.entity";
-import { CreateAdminDto } from "./dto/admins.dto";
+import { Admin, AdminUser } from "entities/admin.entities";
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
-import { UsersRepository } from "resources/users/users.repository";
+import { Querier } from "database/database.types";
 
 @Injectable()
 export class AdminsRepository {
-  constructor(
-    private readonly databaseService: DatabaseService,
-    private readonly usersRepository: UsersRepository,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
-  async create(data: CreateAdminDto): Promise<AdminUser> {
-    const userToMakeAdmin = await this.usersRepository.upsertByEmail({
-      email: data.email,
-      lastLoggedIn: new Date(),
-    });
-    const userId = userToMakeAdmin.id;
+  async get(): Promise<Admin[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT 
+          admins.id AS id,
+          users.email AS email
+        FROM admins
+        JOIN admin_users 
+          ON admins.id = admin_users.admin_id
+        JOIN users 
+          ON admin_users.user_id = users.id
+        WHERE admin_users.deleted_at IS NULL;
+      `,
+    );
+    const admins = plainToInstance(Admin, rows);
+    return admins;
+  }
 
-    const createdAdminRows = await this.databaseService.query(
+  async getById(id: string): Promise<Admin[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          admins.id AS id,
+          users.email AS email
+        FROM admins
+        JOIN admin_users
+          ON admins.id = admin_users.admin_id
+        JOIN users
+          ON admin_users.user_id = users.id
+        WHERE admin_users.deleted_at IS NULL AND admin_users.admin_id = $1;
+      `,
+      [id],
+    );
+    const admins = plainToInstance(Admin, rows);
+    return admins;
+  }
+
+  async insert(query: Querier): Promise<string> {
+    const rows = (await query(
       `
         INSERT INTO admins (id)
         VALUES (DEFAULT)
-        RETURNING *;
+        RETURNING id;
       `,
-    );
-    const createdAdmin = plainToInstance(Admin, createdAdminRows[0]);
-    const adminId = createdAdmin.id;
-
-    const rows = await this.databaseService.query(
-      `
-        WITH inserted AS (
-          INSERT INTO user_admin (user_id, admin_id, created_at, created_by)
-          VALUES ($1, $2, NOW(), NULL)
-          RETURNING *
-        ) 
-        SELECT * FROM inserted
-        INNER JOIN users ON user_id = users.id
-        INNER JOIN admins ON admin_id = admins.id;
-      `,
-      [userId, adminId],
-    );
-    return plainToInstance(AdminUser, rows[0]);
+    )) as { id: string }[];
+    return rows[0].id;
   }
 
-  async getAll(): Promise<AdminUser[]> {
-    const rows = await this.databaseService.query(
-      `
-        SELECT * FROM user_admin
-        INNER JOIN users ON user_admin.user_id = users.id
-        INNER JOIN admins ON user_admin.admin_id = admins.id
-        WHERE user_admin.deleted_at IS NULL;
-      `,
-    );
-    return plainToInstance(AdminUser, rows);
-  }
-
-  async getById(id: string): Promise<AdminUser> {
-    const rows = await this.databaseService.query(
-      `
-        SELECT * FROM user_admin 
-        INNER JOIN users ON user_admin.user_id = users.id
-        INNER JOIN admins ON user_admin.admin_id = admins.id
-        WHERE user_admin.deleted_at IS NULL AND user_admin.admin_id = $1;
-      `,
-      [id],
-    );
-    return plainToInstance(AdminUser, rows[0]);
-  }
-
-  async deleteById(id: string): Promise<AdminUser> {
+  async delete(uuid: string): Promise<Admin> {
     const rows = await this.databaseService.query(
       `
         WITH updated AS (
-          UPDATE user_admin 
-          SET deleted_at = NOW(), deleted_by = NULL 
-          WHERE admin_id = $1
+          UPDATE admin_users
+          SET updated_at = NOW(), deleted_at = NOW(), deleted_by = NULL
+          WHERE admin_users.admin_id = $1
           RETURNING *
-        ) 
-        SELECT * FROM updated
-        INNER JOIN users ON user_id = users.id
-        INNER JOIN admins ON admin_id = admins.id;
+        )
+        SELECT
+          admins.id AS id,
+          users.email AS email
+        FROM updated
+        JOIN users
+          ON admin_users.user_id = users.id
+        JOIN admins
+          ON admin_users.admin_id = admins.id;
       `,
-      [id],
+      [uuid],
     );
-    return plainToInstance(AdminUser, rows[0]);
+    const admins = plainToInstance(Admin, rows);
+    return admins[0];
+  }
+
+  async insertAdminUser(
+    query: Querier,
+    adminId: string,
+    userId: string,
+  ): Promise<void> {
+    await query(
+      `
+        INSERT INTO admin_users (user_id, admin_id)
+        VALUES ($1, $2);
+      `,
+      [userId, adminId],
+    );
+  }
+
+  async getAdminUserByUserId(userId: string): Promise<AdminUser[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT *
+        FROM users
+        JOIN admin_users
+          ON users.id = admin_users.user_id
+        JOIN admins
+          ON admin_users.admin_id = admins.id
+        WHERE admin_users.deleted_at IS NULL AND users.id = $2;
+      `,
+      [userId],
+    );
+    const adminUsers = plainToInstance(AdminUser, rows);
+    return adminUsers;
   }
 }

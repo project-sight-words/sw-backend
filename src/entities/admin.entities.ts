@@ -28,7 +28,7 @@ export class NewAdminUser {
   adminId!: string;
 }
 
-export class AdminUser {
+export class AdminUser extends NewAdminUser {
   @Expose({ name: "created_by" })
   @IsUUID()
   createdBy!: string | null;
