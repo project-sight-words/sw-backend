@@ -1,14 +1,15 @@
-import { Controller, Get, Param, Post, Body, Delete } from "@nestjs/common";
-import { CentresService } from "./centres.service";
 import { AddClassToCentreDto } from "./dto/centres.dto";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
+import { CentresService } from "./centres.service";
 
 @Controller("centres")
 export class CentresController {
   constructor(private readonly centresService: CentresService) {}
 
   @Get()
-  findAll() {
-    return this.centresService.findAll();
+  async get() {
+    const centres = await this.centresService.get();
+    return centres;
   }
 
   @Get(":id")

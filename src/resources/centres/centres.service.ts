@@ -1,12 +1,15 @@
-import { Injectable } from "@nestjs/common";
+import { CentreDto } from "./dto/centres.dto";
 import { CentresRepository } from "./centres.repository";
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class CentresService {
   constructor(private readonly centreRepository: CentresRepository) {}
 
-  async findAll() {
-    return this.centreRepository.findAll();
+  async get(): Promise<CentreDto[]> {
+    const centres = await this.centreRepository.get();
+    const centreDtos = centres.map((centre) => CentreDto.fromEntity(centre));
+    return centreDtos;
   }
 
   async findOne(id: string) {

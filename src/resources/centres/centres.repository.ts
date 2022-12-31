@@ -1,15 +1,16 @@
+import { Centre, CentreClass } from "entities/centre.entity";
+import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
-import { DatabaseService } from "database/database.service";
-import { Centre, CentreClass } from "entities/centre.entity";
 
 @Injectable()
 export class CentresRepository {
   constructor(private databaseService: DatabaseService) {}
 
-  async findAll() {
+  async get(): Promise<Centre[]> {
     const rows = await this.databaseService.query("SELECT * FROM centres;");
-    return plainToInstance(Centre, rows);
+    const centres = plainToInstance(Centre, rows);
+    return centres;
   }
 
   async findOne(id: string) {
