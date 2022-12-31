@@ -1,9 +1,6 @@
 import * as Uuid from "utils/uuid";
+import { NotFoundException } from "@nestjs/common/exceptions";
 import { TeachersService } from "./teachers.service";
-import {
-  BadRequestException,
-  NotFoundException,
-} from "@nestjs/common/exceptions";
 import {
   CreateTeacherDto,
   TeacherDto,
@@ -16,6 +13,7 @@ import {
   Get,
   HttpCode,
   Param,
+  ParseArrayPipe,
   Post,
   Put,
 } from "@nestjs/common";
@@ -26,8 +24,11 @@ export class TeachersController {
 
   @Post()
   @HttpCode(201)
-  async create(@Body() data: CreateTeacherDto[]): Promise<TeacherDto[]> {
-    const teachers = await this.teachersService.createMany(data);
+  async create(
+    @Body(new ParseArrayPipe({ items: CreateTeacherDto }))
+    body: CreateTeacherDto[],
+  ): Promise<TeacherDto[]> {
+    const teachers = await this.teachersService.createMany(body);
     return teachers;
   }
 
@@ -46,31 +47,21 @@ export class TeachersController {
   }
 
   @Put(":id")
-  async updateByTeacherId(
-    @Param("id") teacherId: string,
-    @Body() data: UpdateTeacherDto,
+  async updateById(
+    @Param("id") id: string,
+    @Body() body: UpdateTeacherDto,
   ): Promise<TeacherDto> {
-    console.log(teacherId);
-    if (!Uuid.test(teacherId)) {
-      throw new BadRequestException("Invalid teacher UUID provided");
-    }
-    const teacher = await this.teachersService.updateByTeacherId(
-      teacherId,
-      null,
-      data,
-    );
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const teacher = await this.teachersService.updateByTeacherId(id, body);
     return teacher;
   }
 
   @Delete(":id")
-  async deleteByTeacherId(@Param("id") teacherId: string): Promise<TeacherDto> {
-    if (!Uuid.test(teacherId)) {
-      throw new BadRequestException("Invalid teacher UUID provided");
-    }
-    const teacher = await this.teachersService.deleteByTeacherId(
-      teacherId,
-      null,
-    );
+  async deleteById(@Param("id") id: string): Promise<TeacherDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const teacher = await this.teachersService.deleteById(id);
     return teacher;
   }
 }

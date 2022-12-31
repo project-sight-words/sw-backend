@@ -1,4 +1,5 @@
 import { DatabaseService } from "database/database.service";
+import { instanceToPlain, plainToInstance } from "class-transformer";
 import { Querier } from "database/database.types";
 import { Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
@@ -114,40 +115,25 @@ export class TeachersService {
   }
 
   async updateByTeacherId(
-    staffId: string,
-    updatedBy: string | null,
-    data: UpdateTeacherDto,
+    id: string,
+    updateTeacherDto: UpdateTeacherDto,
   ): Promise<TeacherDto> {
-    const updatedTeacher = await this.teachersRepository.updateByTeacherId(
-      staffId,
-      updatedBy,
-      {
-        staffId: data.staffId,
-        name: data.name,
-      },
+    const updatedTeacher = await this.teachersRepository.updateById(
+      id,
+      updateTeacherDto,
     );
-    console.log(updatedTeacher);
-    return this.teacherToDto(updatedTeacher);
+    const teacherDto = this.teacherToDto(updatedTeacher);
+    return teacherDto;
   }
 
-  async deleteByTeacherId(
-    teacherId: string,
-    deletedBy: string | null,
-  ): Promise<TeacherDto> {
-    const deletedTeacher = await this.teachersRepository.deleteByTeacherId(
-      teacherId,
-      deletedBy,
-    );
-    return this.teacherToDto(deletedTeacher);
+  async deleteById(id: string): Promise<TeacherDto> {
+    const deletedTeacher = await this.teachersRepository.deleteById(id);
+    const teacherDto = this.teacherToDto(deletedTeacher);
+    return teacherDto;
   }
 
   private teacherToDto(teacher: Teacher): TeacherDto {
-    return {
-      id: teacher.id,
-      email: teacher.email,
-      staffId: teacher.staffId,
-      name: teacher.name,
-    };
+    return plainToInstance(TeacherDto, instanceToPlain(teacher));
   }
 
   private async validateAll(teacherDtos: CreateTeacherDto[]) {

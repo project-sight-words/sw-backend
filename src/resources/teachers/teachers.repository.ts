@@ -56,7 +56,6 @@ export class TeachersRepository {
       );
       return plainToInstance(Teacher, rows);
     });
-    console.log(teacher);
     return teacher;
   }
 
@@ -123,59 +122,51 @@ export class TeachersRepository {
     return teachers;
   }
 
-  async updateByTeacherId(
-    teacherId: string | null,
-    updatedBy: string | null,
-    teacher: UpdateTeacher,
-  ): Promise<Teacher> {
-    const updatedTeacher = await this.databaseService.transaction(
-      async (query) => {
-        const rows = await query(
-          `
-            UPDATE teachers
-            SET name = $1, staff_id = $2, updated_at = NOW()
-            WHERE id = $3
-            RETURNING *
-        `,
-          [teacher.name, teacher.staffId, teacherId],
-        );
-        return plainToInstance(Teacher, rows[0]);
-      },
+  async updateById(id: string, teacher: UpdateTeacher): Promise<Teacher> {
+    const rows = await this.databaseService.query(
+      `
+        UPDATE teachers
+        SET name = $1, staff_id = $2, updated_at = NOW()
+        FROM (
+          SELECT
+            teachers.id AS teacher_id,
+            teachers.staff_id AS staff_id,
+            users.email AS email
+          FROM teachers
+          JOIN teacher_users
+            ON teachers.id = teacher_users.teacher_id AND teacher_users.deleted_at IS NULL
+          JOIN users
+            ON teacher_users.user_id = users.id
+          WHERE teachers.id = $3
+        ) AS subquery
+        WHERE teachers.id = subquery.teacher_id
+        RETURNING
+          teachers.id AS id,
+          teachers.staff_id AS staff_id,
+          teachers.name AS name,
+          subquery.email AS email;
+      `,
+      [teacher.name, teacher.staffId, id],
     );
-    return updatedTeacher;
+    const teachers = plainToInstance(Teacher, rows);
+    return teachers[0];
   }
 
-  async deleteByTeacherId(
+  async deleteById(
     teacherId: string,
-    deletedBy: string | null,
+    deletedBy: string | null = null,
   ): Promise<Teacher> {
-    const deletedTeacher = await this.databaseService.transaction(
-      async (query) => {
-        const rows = await query(
-          `
-            SELECT teachers.id, users.email, teachers.staff_id, teachers.name from teachers
-            join teacher_users ON teachers.id = teacher_users.teacher_id
-            join users on teacher_users.user_id = users.id
-            WHERE teachers.id= $1 and teacher_users.deleted_at IS NULL
-          `,
-          [teacherId],
-        );
-        return plainToInstance(Teacher, rows[0]);
-      },
-    );
-    await this.databaseService.transaction(async (query) => {
-      await query(
-        `
+    const rows = await this.databaseService.query(
+      `
         UPDATE teacher_users
         SET deleted_at = NOW(), deleted_by = $2
-        WHERE teacher_users.teacher_id = $1
+        WHERE teacher_users.teacher_id = $1 AND deleted_at IS NULL
         RETURNING *
       `,
-        [teacherId, deletedBy],
-      );
-    });
-    console.log(deletedTeacher);
-    return deletedTeacher;
+      [teacherId, deletedBy],
+    );
+    const teachers = plainToInstance(Teacher, rows);
+    return teachers[0];
   }
 
   async isLinked(teacherUser: NewTeacherUser): Promise<boolean> {

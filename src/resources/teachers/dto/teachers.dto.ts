@@ -1,8 +1,10 @@
+import { Expose } from "class-transformer";
 import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class UpdateTeacherDto {
   @IsString()
   @IsNotEmpty()
+  @Expose({ name: "staff_id" })
   staffId!: string;
 
   @IsString()
