@@ -1,8 +1,9 @@
+import * as Uuid from "utils/uuid";
+import { NotFoundException } from "@nestjs/common/exceptions";
 import { TeachersService } from "./teachers.service";
 import {
   CreateTeacherDto,
-  DeleteTeacherDto,
-  GetTeacherDto,
+  TeacherDto,
   UpdateTeacherDto,
 } from "./dto/teachers.dto";
 import {
@@ -12,6 +13,7 @@ import {
   Get,
   HttpCode,
   Param,
+  ParseArrayPipe,
   Post,
   Put,
 } from "@nestjs/common";
@@ -22,41 +24,44 @@ export class TeachersController {
 
   @Post()
   @HttpCode(201)
-  async create(@Body() data: CreateTeacherDto): Promise<CreateTeacherDto> {
-    const teacher = await this.teachersService.create(null, data);
-    return teacher;
+  async create(
+    @Body(new ParseArrayPipe({ items: CreateTeacherDto }))
+    body: CreateTeacherDto[],
+  ): Promise<TeacherDto[]> {
+    const teachers = await this.teachersService.createMany(body);
+    return teachers;
   }
 
   @Get()
-  async get(): Promise<GetTeacherDto[]> {
+  async get(): Promise<TeacherDto[]> {
     const teachers = await this.teachersService.get();
     return teachers;
   }
 
   @Get(":id")
-  async getByStaffId(@Param("id") staffId: string): Promise<GetTeacherDto> {
-    const teacher = await this.teachersService.getByStaffId(staffId);
+  async getById(@Param("id") id: string): Promise<TeacherDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const teacher = await this.teachersService.getById(id);
     return teacher;
   }
 
   @Put(":id")
-  async updateByStaffId(
-    @Param("id") staffId: string,
-    @Body() data: UpdateTeacherDto,
-  ): Promise<UpdateTeacherDto> {
-    const teacher = await this.teachersService.updateByStaffId(
-      staffId,
-      null,
-      data,
-    );
+  async updateById(
+    @Param("id") id: string,
+    @Body() body: UpdateTeacherDto,
+  ): Promise<TeacherDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const teacher = await this.teachersService.updateByTeacherId(id, body);
     return teacher;
   }
 
   @Delete(":id")
-  async deleteByStaffId(
-    @Param("id") staffId: string,
-  ): Promise<DeleteTeacherDto> {
-    const teacher = await this.teachersService.deleteByStaffId(staffId, null);
+  async deleteById(@Param("id") id: string): Promise<TeacherDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const teacher = await this.teachersService.deleteById(id);
     return teacher;
   }
 }
