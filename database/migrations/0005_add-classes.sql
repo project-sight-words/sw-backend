@@ -1,52 +1,60 @@
 CREATE TABLE classes (
-  id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  day           INTEGER      NOT NULL,
-  time          TIME         NOT NULL,
+  id            UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  day           INTEGER       NOT NULL,
+  time          TIME          NOT NULL,
   updated_at    TIMESTAMPTZ,
-  updated_by    UUID         REFERENCES users(id),
+  updated_by    UUID          REFERENCES users(id),
   CHECK (day >= 1 AND day <= 7)
 );
 
+
+
 CREATE TABLE class_students (
-  class_id        UUID            NOT NULL,
-  student_id      UUID            NOT NULL,
-  created_at      TIMESTAMPTZ     NOT NULL   DEFAULT NOW(),
+  id              UUID            PRIMARY KEY   DEFAULT gen_random_uuid(),
+  class_id        UUID            NOT NULL      REFERENCES classes(id),
+  student_id      UUID            NOT NULL      REFERENCES students(id),
+  created_at      TIMESTAMPTZ     NOT NULL      DEFAULT NOW(),
   created_by      UUID            REFERENCES users(id),
   deleted_at      TIMESTAMPTZ,
-  deleted_by      UUID            REFERENCES users(id),
-  PRIMARY KEY (class_id, student_id),
-  FOREIGN KEY (class_id)          REFERENCES classes(id),
-  FOREIGN KEY (student_id)        REFERENCES students(id)
+  deleted_by      UUID            REFERENCES users(id)
 );
+
+CREATE UNIQUE INDEX ON class_students(student_id) WHERE deleted_at IS NULL;
+
+
 
 CREATE TABLE class_teachers (
-  class_id        UUID            NOT NULL,
-  teacher_id      UUID            NOT NULL,
-  is_form_teacher BOOLEAN         NOT NULL   DEFAULT FALSE, 
-  created_at      TIMESTAMPTZ     NOT NULL   DEFAULT NOW(),
+  id              UUID            PRIMARY KEY   DEFAULT gen_random_uuid(),
+  class_id        UUID            NOT NULL      REFERENCES classes(id),
+  teacher_id      UUID            NOT NULL      REFERENCES teachers(id),
+  is_form_teacher BOOLEAN         NOT NULL      DEFAULT FALSE, 
+  created_at      TIMESTAMPTZ     NOT NULL      DEFAULT NOW(),
   created_by      UUID            REFERENCES users(id),
   deleted_at      TIMESTAMPTZ,
-  deleted_by      UUID            REFERENCES users(id),
-  PRIMARY KEY (class_id, teacher_id),
-  FOREIGN KEY (class_id)          REFERENCES classes(id),
-  FOREIGN KEY (teacher_id)        REFERENCES teachers(id)
+  deleted_by      UUID            REFERENCES users(id)
 );
 
+CREATE UNIQUE INDEX ON class_teachers(class_id) WHERE is_form_teacher = TRUE AND deleted_at IS NULL;
+
+
+
 CREATE TABLE centres (
-  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  name       CITEXT      NOT NULL,
+  id            UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT          NOT NULL,
   updated_at    TIMESTAMPTZ,
   updated_by    UUID         REFERENCES users(id)
 );
 
+
+
 CREATE TABLE class_centres (
-  centre_id       UUID            NOT NULL,
-  class_id        UUID            NOT NULL,
-  created_at      TIMESTAMPTZ     NOT NULL   DEFAULT NOW(),
+  id              UUID            PRIMARY KEY   DEFAULT gen_random_uuid(),
+  centre_id       UUID            NOT NULL      REFERENCES centres(id),
+  class_id        UUID            NOT NULL      REFERENCES classes(id),
+  created_at      TIMESTAMPTZ     NOT NULL      DEFAULT NOW(),
   created_by      UUID            REFERENCES users(id),
   deleted_at      TIMESTAMPTZ,
-  deleted_by      UUID            REFERENCES users(id),
-  PRIMARY KEY (centre_id, class_id),
-  FOREIGN KEY (centre_id)         REFERENCES centres(id),
-  FOREIGN KEY (class_id)          REFERENCES classes(id)
+  deleted_by      UUID            REFERENCES users(id)
 );
+
+CREATE UNIQUE INDEX ON class_centres(class_id) WHERE deleted_at IS NULL;
