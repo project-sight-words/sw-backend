@@ -8,19 +8,18 @@ export class CentresRepository {
   constructor(private databaseService: DatabaseService) {}
 
   async get(): Promise<Centre[]> {
-    const rows = await this.databaseService.query("SELECT * FROM centres;");
+    const rows = await this.databaseService.query(`SELECT * FROM centres;`);
     const centres = plainToInstance(Centre, rows);
     return centres;
   }
 
-  async findOne(id: string) {
+  async getById(id: string): Promise<Centre[]> {
     const rows = await this.databaseService.query(
-      "SELECT * FROM centres WHERE id = $1;",
+      `SELECT * FROM centres WHERE id = $1;`,
       [id],
     );
-
-    this.databaseService.checkIfResultNotEmpty(rows);
-    return plainToInstance(Centre, rows[0]);
+    const centres = plainToInstance(Centre, rows);
+    return centres;
   }
 
   async addClassToCentre(centreId: string, classId: string) {

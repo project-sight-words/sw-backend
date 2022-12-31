@@ -1,6 +1,6 @@
 import { CentreDto } from "./dto/centres.dto";
 import { CentresRepository } from "./centres.repository";
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 
 @Injectable()
 export class CentresService {
@@ -12,8 +12,12 @@ export class CentresService {
     return centreDtos;
   }
 
-  async findOne(id: string) {
-    return this.centreRepository.findOne(id);
+  async getById(id: string): Promise<CentreDto> {
+    const centres = await this.centreRepository.getById(id);
+    if (centres.length === 0) throw new NotFoundException();
+    const centre = centres[0];
+    const centreDto = CentreDto.fromEntity(centre);
+    return centreDto;
   }
 
   async addClassToCentre(centreId: string, classId: string) {

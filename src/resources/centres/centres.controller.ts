@@ -13,8 +13,9 @@ export class CentresController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.centresService.findOne(id);
+  getById(@Param("id") id: string) {
+    const centre = this.centresService.getById(id);
+    return centre;
   }
 
   @Post(":id/classes")
