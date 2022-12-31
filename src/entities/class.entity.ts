@@ -1,32 +1,33 @@
-import { Expose } from "class-transformer";
-import {
-  IsBoolean,
-  IsDate,
-  IsMilitaryTime,
-  IsNotEmpty,
-  IsNumber,
-  IsUUID,
-  Max,
-  Min,
-} from "class-validator";
+import { Expose, plainToClass } from "class-transformer";
+import { IsBoolean, IsDate, IsNotEmpty, IsUUID } from "class-validator";
+import { Centre } from "./centre.entity";
+import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 
 export class Class {
+  @Expose({ name: "day_time" })
   @IsNotEmpty()
-  @IsUUID()
-  @Expose()
-  id!: string;
+  @IsDate()
+  dayTime!: Date;
+}
 
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  @Max(7)
-  @Expose({ name: "day" })
-  day!: number;
+export class ClassEntity {
+  identifier!: Identifier;
+  class!: Class;
+  centre!: Centre;
+  createStamp!: CreateStamp;
+  updateStamp!: UpdateStamp;
+  deleteStamp!: DeleteStamp;
 
-  @IsNotEmpty()
-  @IsMilitaryTime()
-  @Expose({ name: "time" })
-  time!: string;
+  static fromObject(object: object): ClassEntity {
+    const classEntity = new ClassEntity();
+    classEntity.identifier = plainToClass(Identifier, object);
+    classEntity.class = plainToClass(Class, object);
+    classEntity.centre = plainToClass(Centre, object);
+    classEntity.createStamp = plainToClass(CreateStamp, object);
+    classEntity.updateStamp = plainToClass(UpdateStamp, object);
+    classEntity.deleteStamp = plainToClass(DeleteStamp, object);
+    return classEntity;
+  }
 }
 
 export class ClassTeacher {

@@ -1,10 +1,8 @@
 CREATE TABLE classes (
   id            UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-  day           INTEGER       NOT NULL,
-  time          TIME          NOT NULL,
+  day_time      TIMESTAMPTZ   NOT NULL, 
   updated_at    TIMESTAMPTZ,
-  updated_by    UUID          REFERENCES users(id),
-  CHECK (day >= 1 AND day <= 7)
+  updated_by    UUID          REFERENCES users(id)
 );
 
 

@@ -1,28 +1,37 @@
-import { Centre } from "entities/centre.entity";
+import { Centre, CentreEntity } from "entities/centre.entity";
 import { Expose, plainToClass } from "class-transformer";
 import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 
-export class AddClassToCentreDto {
-  @IsUUID()
-  @IsNotEmpty()
-  @Expose({ name: "class_id" })
-  classId!: string;
-}
+// TODO: export class AddClassToCentreDto {
+//   @IsUUID()
+//   @IsNotEmpty()
+//   @Expose({ name: "class_id" })
+//   classId!: string;
+// }
 
 export class CentreDto {
-  @IsNotEmpty()
-  @Expose()
-  @IsUUID()
-  id!: string;
-
   @IsNotEmpty()
   @Expose()
   @IsString()
   name!: string;
 
-  static fromEntity(entity: Centre): CentreDto {
-    const { id, name } = entity;
-    const dto = plainToClass(CentreDto, { id, name });
+  static toCentre(dto: CentreDto): Centre {
+    const { name } = dto;
+    const centre = plainToClass(Centre, { name });
+    return centre;
+  }
+}
+
+export class IdentifiableCentreDto extends CentreDto {
+  @IsNotEmpty()
+  @Expose()
+  @IsUUID()
+  id!: string;
+
+  static fromEntity(entity: CentreEntity): IdentifiableCentreDto {
+    const { id } = entity.identifier;
+    const { name } = entity.centre;
+    const dto = plainToClass(IdentifiableCentreDto, { id, name });
     return dto;
   }
 }

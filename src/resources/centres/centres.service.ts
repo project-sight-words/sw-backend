@@ -1,34 +1,40 @@
-import { CentreDto } from "./dto/centres.dto";
+import { Centre, CentreEntity } from "entities/centre.entity";
 import { CentresRepository } from "./centres.repository";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class CentresService {
   constructor(private readonly centreRepository: CentresRepository) {}
 
-  async get(): Promise<CentreDto[]> {
+  async get(): Promise<CentreEntity[]> {
     const centres = await this.centreRepository.get();
-    const centreDtos = centres.map((centre) => CentreDto.fromEntity(centre));
-    return centreDtos;
+    return centres;
   }
 
-  async getById(id: string): Promise<CentreDto> {
+  async getById(id: string): Promise<CentreEntity[]> {
     const centres = await this.centreRepository.getById(id);
-    if (centres.length === 0) throw new NotFoundException();
-    const centre = centres[0];
-    const centreDto = CentreDto.fromEntity(centre);
-    return centreDto;
+    return centres;
   }
 
-  async addClassToCentre(centreId: string, classId: string) {
-    return this.centreRepository.addClassToCentre(centreId, classId);
+  async create(data: Centre): Promise<CentreEntity> {
+    const centre = await this.centreRepository.insert(data);
+    return centre;
   }
 
-  async getClassesFromCentre(centreId: string) {
-    return this.centreRepository.getClassesFromCentre(centreId);
+  async updateById(id: string, data: Centre): Promise<CentreEntity> {
+    const centre = await this.centreRepository.updateById(id, data);
+    return centre;
   }
 
-  async removeClassFromCentre(centreId: string, classId: string) {
-    return this.centreRepository.removeClassFromCentre(centreId, classId);
-  }
+  // TODO: async addClassToCentre(centreId: string, classId: string) {
+  //   return this.centreRepository.addClassToCentre(centreId, classId);
+  // }
+
+  // async getClassesFromCentre(centreId: string) {
+  //   return this.centreRepository.getClassesFromCentre(centreId);
+  // }
+
+  // async removeClassFromCentre(centreId: string, classId: string) {
+  //   return this.centreRepository.removeClassFromCentre(centreId, classId);
+  // }
 }

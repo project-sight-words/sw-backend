@@ -1,26 +1,24 @@
-import { Expose } from "class-transformer";
-import { IsNotEmpty, IsString, IsUUID } from "class-validator";
+import { Expose, plainToClass } from "class-transformer";
+import { Identifier, UpdateStamp } from "./common";
+import { IsNotEmpty, IsString } from "class-validator";
 
 export class Centre {
-  @IsNotEmpty()
-  @IsUUID()
-  @Expose()
-  id!: string;
-
   @IsNotEmpty()
   @IsString()
   @Expose()
   name!: string;
 }
 
-export class CentreClass {
-  @IsNotEmpty()
-  @IsUUID()
-  @Expose({ name: "centre_id" })
-  centreId!: string;
+export class CentreEntity {
+  identifier!: Identifier;
+  centre!: Centre;
+  updateStamp!: UpdateStamp;
 
-  @IsNotEmpty()
-  @IsUUID()
-  @Expose({ name: "class_id" })
-  classId!: string;
+  static fromObject(object: object): CentreEntity {
+    const centre = new CentreEntity();
+    centre.identifier = plainToClass(Identifier, object);
+    centre.centre = plainToClass(Centre, object);
+    centre.updateStamp = plainToClass(UpdateStamp, object);
+    return centre;
+  }
 }
