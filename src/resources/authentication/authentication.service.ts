@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { Roles } from "entities/roles.entities";
 import { UsersRepository } from "resources/users/users.repository";
+import { JwtPayload } from "../../entities/jwt.entities";
 import { LoginWithGoogleDto } from "./dto/authenticate.dto";
 import { GoogleService } from "./google.service";
 import { RolesRepository } from "./roles.repository";
@@ -20,12 +21,18 @@ export class AuthenticationService {
       email: email,
       lastLoggedIn: new Date(),
     });
+    const roles = await this.getRolesByUserId(user.id);
+    const payload: JwtPayload = {
+      id: user.id,
+      email: user.email,
+      roles: roles,
+    };
     const accessTokenCookie = this.sessionService.generateCookie(
-      user,
+      payload,
       "access",
     );
     const refreshTokenCookie = this.sessionService.generateCookie(
-      user,
+      payload,
       "refresh",
     );
     return { accessTokenCookie, refreshTokenCookie, user };

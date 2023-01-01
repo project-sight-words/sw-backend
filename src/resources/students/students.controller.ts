@@ -8,8 +8,12 @@ import {
   ParseArrayPipe,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common";
 import * as Uuid from "utils/uuid";
+import { Permissions } from "../../decorators/permission.decorator";
+import { Admin, Teacher } from "../../entities/permission.entities";
+import { JwtAuthGuard } from "../authentication/jwt-auth.guard";
 import {
   CreateStudentDto,
   StudentDto,
@@ -22,6 +26,8 @@ export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @Permissions(Teacher, Admin)
   async get(): Promise<StudentDto[]> {
     const students = await this.studentsService.get();
     return students;

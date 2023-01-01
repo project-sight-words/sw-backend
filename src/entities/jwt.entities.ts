@@ -1,5 +1,6 @@
 import { Expose } from "class-transformer";
-import { IsEmail, IsNotEmpty, IsUUID } from "class-validator";
+import { IsArray, IsEmail, IsNotEmpty, IsUUID } from "class-validator";
+import { Roles } from "./roles.entities";
 
 export class JwtPayload {
   @Expose()
@@ -11,4 +12,8 @@ export class JwtPayload {
   @IsNotEmpty()
   @IsEmail()
   email!: string;
+
+  @Expose()
+  @IsArray()
+  roles!: Roles[];
 }

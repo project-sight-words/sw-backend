@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { instanceToPlain } from "class-transformer";
 import { JwtPayload } from "entities/jwt.entities";
+import { Roles } from "../../entities/roles.entities";
 
 type tokenType = "access" | "refresh";
 
@@ -46,10 +47,15 @@ export class SessionService {
   getPayload(token: string): JwtPayload | undefined {
     const payload = this.jwtService.decode(token);
     if (!payload || typeof payload === "string") return undefined;
-    const castPayload = payload as { id: string; email: string };
+    const castPayload = payload as {
+      id: string;
+      email: string;
+      roles: Roles[];
+    };
     return {
       id: castPayload.id,
       email: castPayload.email,
+      roles: castPayload.roles,
     };
   }
 }

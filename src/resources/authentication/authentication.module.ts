@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { APP_GUARD } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
 import { DatabaseModule } from "database/database.module";
 import { UsersModule } from "resources/users/users.module";
@@ -7,6 +8,7 @@ import { AuthenticationController } from "./authentication.controller";
 import { AuthenticationService } from "./authentication.service";
 import { GoogleService } from "./google.service";
 import { JwtStrategy } from "./jwt.strategy";
+import { PermissionsGuard } from "./permissions.guard";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
 
@@ -28,6 +30,10 @@ import { SessionService } from "./session.service";
     RolesRepository,
     SessionService,
     JwtStrategy,
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
+    },
   ],
   controllers: [AuthenticationController],
 })
