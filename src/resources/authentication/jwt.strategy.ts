@@ -12,7 +12,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow<string>("JWT_SECRET"),
     });
-    console.log("hi");
   }
 
   // Used to validate that the extracted payload contains the user's details

@@ -22,7 +22,6 @@ export function extractJwt(context: ExecutionContext): string | undefined {
 }
 
 export function extractParams<T>(context: ExecutionContext): T | undefined {
-  console.log(context.switchToHttp().getRequest<Request>());
   return (
     context.switchToHttp().getRequest<Request>() as unknown as {
       params: T;
