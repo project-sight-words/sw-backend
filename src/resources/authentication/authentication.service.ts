@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { Roles } from "entities/roles.entities";
+import { Role } from "entities/roles.entities";
 import { UsersRepository } from "resources/users/users.repository";
 import { JwtPayload } from "../../entities/jwt.entities";
 import { LoginWithGoogleDto } from "./dto/authenticate.dto";
@@ -73,7 +73,7 @@ export class AuthenticationService {
     return { accessTokenCookie, refreshTokenCookie };
   }
 
-  async getRolesByUserId(userId: string): Promise<Roles[]> {
+  async getRolesByUserId(userId: string): Promise<Role[]> {
     const roles = await this.rolesRepository.getByUserId(userId);
     return roles;
   }

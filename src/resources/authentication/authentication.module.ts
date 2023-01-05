@@ -4,11 +4,13 @@ import { APP_GUARD } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
 import { DatabaseModule } from "database/database.module";
 import { UsersModule } from "resources/users/users.module";
+import { TeachersModule } from "../teachers/teachers.module";
 import { AuthenticationController } from "./authentication.controller";
 import { AuthenticationService } from "./authentication.service";
 import { GoogleService } from "./google.service";
+import { RolesGuard } from "./guards/roles.guard";
+import { TeacherSelfGuard } from "./guards/teacher-self.guard";
 import { JwtStrategy } from "./jwt.strategy";
-import { PermissionsGuard } from "./permissions.guard";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
 
@@ -16,6 +18,7 @@ import { SessionService } from "./session.service";
   imports: [
     DatabaseModule,
     UsersModule,
+    TeachersModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -32,9 +35,14 @@ import { SessionService } from "./session.service";
     JwtStrategy,
     {
       provide: APP_GUARD,
-      useClass: PermissionsGuard,
+      useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: TeacherSelfGuard,
     },
   ],
+  exports: [SessionService],
   controllers: [AuthenticationController],
 })
 export class AuthenticationModule {}

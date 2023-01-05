@@ -1,7 +1,7 @@
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
-import { Roles } from "entities/roles.entities";
+import { Role } from "entities/roles.entities";
 
 @Injectable()
 export class RolesRepository {
@@ -9,7 +9,7 @@ export class RolesRepository {
 
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async getByUserId(userId: string): Promise<Roles[]> {
+  async getByUserId(userId: string): Promise<Role[]> {
     const rows = await this.databaseService.query(
       `
         SELECT users.id, student_users.student_id, teacher_users.teacher_id
@@ -23,14 +23,14 @@ export class RolesRepository {
       [userId],
     );
     const row = rows[0];
-    const roles: Roles[] = [];
+    const roles: Role[] = [];
     // TODO: Add LEFT OUTER JOIN query for admin_users table
     // @ts-expect-error: TS2339
-    if ("admin_id" in row && row.admin_id) roles.push(Roles.admin);
+    if ("admin_id" in row && row.admin_id) roles.push(Role.admin);
     // @ts-expect-error: TS2339
-    if ("teacher_id" in row && row.teacher_id) roles.push(Roles.teacher);
+    if ("teacher_id" in row && row.teacher_id) roles.push(Role.teacher);
     // @ts-expect-error: TS2339
-    if ("student_id" in row && row.student_id) roles.push(Roles.student);
+    if ("student_id" in row && row.student_id) roles.push(Role.student);
     return roles;
   }
 }
