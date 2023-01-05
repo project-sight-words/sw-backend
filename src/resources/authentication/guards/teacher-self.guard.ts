@@ -1,8 +1,8 @@
 import {
   CanActivate,
   ExecutionContext,
-  Inject,
   Injectable,
+  Logger,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { ABAC } from "../../../entities/abac.entities";
@@ -13,6 +13,8 @@ import { SessionService } from "../session.service";
 
 @Injectable()
 export class TeacherSelfGuard implements CanActivate {
+  private readonly logger = new Logger("TeacherSelfGuard");
+
   constructor(
     private reflector: Reflector,
     private sessionService: SessionService,
@@ -28,16 +30,28 @@ export class TeacherSelfGuard implements CanActivate {
 
     // Get the teacher ID to use
     const params = extractParams<{ id: string }>(context);
-    // TODO: Log that invalid parameter is given (which should not happen)
-    if (!params) return false;
+    if (!params) {
+      this.logger.error(
+        "Teacher self called when id parameter is not present.",
+      );
+      return false;
+    }
 
-    // Get JWt
+    // Get JWT
     const jwt = extractJwt(context);
-    if (!jwt) return false;
+    if (!jwt) {
+      this.logger.error(
+        "JWT should be provided in header already. Ensure that JwtAuthGuard is added to the controller. Internal error.",
+      );
+      return false;
+    }
 
     // Get the current user's id
     const user = this.sessionService.getPayload(jwt);
-    if (!user) return false;
+    if (!user) {
+      this.logger.error("Unable to retrieve JWT payload user. Internal error.");
+      return false;
+    }
 
     const target = await this.teachersRepository.getByStaffId(params.id);
     return target.id === user.id || user.roles.includes(Role.admin);
