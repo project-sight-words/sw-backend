@@ -17,6 +17,7 @@
     "sourceMap": true,
     "strict": true,
     "strictBindCallApply": false,
-    "target": "es2017"
+    "target": "es2017",
+    "esModuleInterop": true
   }
 }

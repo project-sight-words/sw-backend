@@ -24,6 +24,8 @@ const ConfigurationModule = ConfigModule.forRoot({
     JWT_SECRET: Joi.string().required(),
     PORT: Joi.number().default(3000),
     NODE_ENV: Joi.string().valid("development", "production").required(),
+    ACCESS_KEY: Joi.string().required(),
+    KEY_SECRET: Joi.string().required(),
   }),
 });
 
