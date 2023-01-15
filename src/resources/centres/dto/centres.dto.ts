@@ -1,37 +1,40 @@
-import { Centre, CentreEntity } from "entities/centre.entity";
+import { CentreDatum, CentreEntity } from "entities/centre.entity";
 import { Expose, plainToClass } from "class-transformer";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 
-// TODO: export class AddClassToCentreDto {
-//   @IsUUID()
-//   @IsNotEmpty()
-//   @Expose({ name: "class_id" })
-//   classId!: string;
-// }
-
-export class CentreDto {
-  @IsNotEmpty()
+export class CentreDatumDto extends CentreDatum {
   @Expose()
+  @IsNotEmpty()
   @IsString()
   name!: string;
 
-  static toCentre(dto: CentreDto): Centre {
-    const { name } = dto;
-    const centre = plainToClass(Centre, { name });
-    return centre;
+  static toCentreDatum(dto: CentreDatumDto): CentreDatum {
+    const plain = instanceToPlain(dto);
+    const datum = plainToClass(CentreDatum, plain);
+    return datum;
+  }
+
+  static fromCentreDatum(centre: CentreDatum): CentreDatumDto {
+    const plain = instanceToPlain(centre);
+    const dto = plainToClass(CentreDatumDto, plain);
+    return dto;
   }
 }
 
-export class IdentifiableCentreDto extends CentreDto {
+export class CentreEntityDto extends CentreDatumDto {
   @IsNotEmpty()
   @Expose()
   @IsUUID()
   id!: string;
 
-  static fromEntity(entity: CentreEntity): IdentifiableCentreDto {
-    const { id } = entity.identifier;
-    const { name } = entity.centre;
-    const dto = plainToClass(IdentifiableCentreDto, { id, name });
+  static fromCentreEntity(entity: CentreEntity): CentreEntityDto {
+    const { identifier, datum } = entity;
+    const datumDto = CentreDatumDto.fromCentreDatum(datum);
+    const dto = plainToInstance(CentreEntityDto, {
+      ...instanceToPlain(datumDto),
+      ...instanceToPlain(identifier),
+    });
     return dto;
   }
 }

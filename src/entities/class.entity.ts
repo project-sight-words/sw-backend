@@ -1,94 +1,143 @@
-import { Expose, plainToClass } from "class-transformer";
-import { IsBoolean, IsDate, IsNotEmpty, IsUUID } from "class-validator";
-import { Centre } from "./centre.entity";
 import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
+import { Expose, Type } from "class-transformer";
+import { IsBoolean, IsDate, IsNotEmpty, IsUUID } from "class-validator";
+import { plainToInstance } from "utils/transformer";
 
-export class Class {
+export class ClassDatum {
   @Expose({ name: "day_time" })
   @IsNotEmpty()
   @IsDate()
+  @Type(() => Date)
   dayTime!: Date;
+
+  @Expose({ name: "centre_id" })
+  @IsNotEmpty()
+  @IsUUID()
+  centreId!: string;
+
+  static fromObject(object: object): ClassDatum {
+    const datum = plainToInstance(ClassDatum, object);
+    return datum;
+  }
 }
 
 export class ClassEntity {
   identifier!: Identifier;
-  class!: Class;
-  centre!: Centre;
+  datum!: ClassDatum;
   createStamp!: CreateStamp;
   updateStamp!: UpdateStamp;
   deleteStamp!: DeleteStamp;
 
   static fromObject(object: object): ClassEntity {
-    const classEntity = new ClassEntity();
-    classEntity.identifier = plainToClass(Identifier, object);
-    classEntity.class = plainToClass(Class, object);
-    classEntity.centre = plainToClass(Centre, object);
-    classEntity.createStamp = plainToClass(CreateStamp, object);
-    classEntity.updateStamp = plainToClass(UpdateStamp, object);
-    classEntity.deleteStamp = plainToClass(DeleteStamp, object);
-    return classEntity;
+    const entity = new ClassEntity();
+    entity.identifier = Identifier.fromObject(object);
+    entity.datum = ClassDatum.fromObject(object);
+    entity.createStamp = CreateStamp.fromObject(object);
+    entity.updateStamp = UpdateStamp.fromObject(object);
+    entity.deleteStamp = DeleteStamp.fromObject(object);
+    return entity;
   }
 }
 
-export class ClassTeacher {
+export class ClassCentreDatum {
+  @Expose({ name: "centre_id" })
   @IsNotEmpty()
   @IsUUID()
-  @Expose({ name: "teacher_id" })
-  teacherId!: string;
-
-  @IsNotEmpty()
-  @IsUUID()
-  @Expose({ name: "class_id" })
   classId!: string;
 
+  @Expose({ name: "centre_id" })
   @IsNotEmpty()
-  @IsBoolean()
-  @Expose({ name: "is_form_teacher" })
-  isFormTeacher!: boolean;
-
-  @IsNotEmpty()
-  @Expose({ name: "created_at" })
-  @IsDate()
-  createdAt!: Date;
-
-  @Expose({ name: "created_by" })
   @IsUUID()
-  createdBy!: string | null;
+  centreId!: string;
 
-  @Expose({ name: "deleted_at" })
-  @IsDate()
-  deletedAt!: Date | null;
-
-  @Expose({ name: "deleted_by" })
-  @IsUUID()
-  deletedBy!: string | null;
+  static fromObject(object: object): ClassCentreDatum {
+    const datum = plainToInstance(ClassCentreDatum, object);
+    return datum;
+  }
 }
 
-export class ClassStudent {
-  @IsNotEmpty()
-  @IsUUID()
-  @Expose({ name: "student_id" })
-  studentId!: string;
+export class ClassCentreEntity {
+  identifier!: Identifier;
+  datum!: ClassCentreDatum;
+  createStamp!: CreateStamp;
+  deleteStamp!: DeleteStamp;
 
+  static fromObject(object: object): ClassCentreEntity {
+    const entity = new ClassCentreEntity();
+    entity.identifier = Identifier.fromObject(object);
+    entity.datum = ClassCentreDatum.fromObject(object);
+    entity.createStamp = CreateStamp.fromObject(object);
+    entity.deleteStamp = DeleteStamp.fromObject(object);
+    return entity;
+  }
+}
+
+export class ClassTeacherDatum {
+  @Expose({ name: "class_id" })
   @IsNotEmpty()
   @IsUUID()
-  @Expose({ name: "class_id" })
   classId!: string;
 
+  @Expose({ name: "teacher_id" })
   @IsNotEmpty()
-  @Expose({ name: "created_at" })
-  @IsDate()
-  createdAt!: Date;
-
-  @Expose({ name: "created_by" })
   @IsUUID()
-  createdBy!: string | null;
+  teacherId!: string;
 
-  @Expose({ name: "deleted_at" })
-  @IsDate()
-  deletedAt!: Date | null;
+  @Expose({ name: "is_form_teacher" })
+  @IsBoolean()
+  isFormTeacher!: boolean;
 
-  @Expose({ name: "deleted_by" })
+  static fromObject(object: object): ClassTeacherDatum {
+    const datum = plainToInstance(ClassTeacherDatum, object);
+    return datum;
+  }
+}
+
+export class ClassTeacherEntity {
+  identifier!: Identifier;
+  datum!: ClassTeacherDatum;
+  createStamp!: CreateStamp;
+  deleteStamp!: DeleteStamp;
+
+  static fromObject(object: object): ClassTeacherEntity {
+    const entity = new ClassTeacherEntity();
+    entity.identifier = Identifier.fromObject(object);
+    entity.datum = ClassTeacherDatum.fromObject(object);
+    entity.createStamp = CreateStamp.fromObject(object);
+    entity.deleteStamp = DeleteStamp.fromObject(object);
+    return entity;
+  }
+}
+
+export class ClassStudentDatum {
+  @Expose({ name: "class_id" })
+  @IsNotEmpty()
   @IsUUID()
-  deletedBy!: string | null;
+  classId!: string;
+
+  @Expose({ name: "student_id" })
+  @IsNotEmpty()
+  @IsUUID()
+  studentId!: string;
+
+  static fromObject(object: object): ClassStudentDatum {
+    const datum = plainToInstance(ClassStudentDatum, object);
+    return datum;
+  }
+}
+
+export class ClassStudentEntity {
+  identifier!: Identifier;
+  datum!: ClassStudentDatum;
+  createStamp!: CreateStamp;
+  deleteStamp!: DeleteStamp;
+
+  static fromObject(object: object): ClassStudentEntity {
+    const entity = new ClassStudentEntity();
+    entity.identifier = Identifier.fromObject(object);
+    entity.datum = ClassStudentDatum.fromObject(object);
+    entity.createStamp = CreateStamp.fromObject(object);
+    entity.deleteStamp = DeleteStamp.fromObject(object);
+    return entity;
+  }
 }

@@ -2,7 +2,7 @@ import { Expose, plainToClass } from "class-transformer";
 import { Identifier, UpdateStamp } from "./common";
 import { IsNotEmpty, IsString } from "class-validator";
 
-export class Centre {
+export class CentreDatum {
   @IsNotEmpty()
   @IsString()
   @Expose()
@@ -11,13 +11,13 @@ export class Centre {
 
 export class CentreEntity {
   identifier!: Identifier;
-  centre!: Centre;
+  datum!: CentreDatum;
   updateStamp!: UpdateStamp;
 
   static fromObject(object: object): CentreEntity {
     const centre = new CentreEntity();
     centre.identifier = plainToClass(Identifier, object);
-    centre.centre = plainToClass(Centre, object);
+    centre.datum = plainToClass(CentreDatum, object);
     centre.updateStamp = plainToClass(UpdateStamp, object);
     return centre;
   }
