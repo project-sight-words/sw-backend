@@ -18,9 +18,9 @@ export class S3Service {
     });
   }
 
-  async uploadFile(file: Express.Multer.File) {
+  async uploadFile(file: Express.Multer.File): Promise<boolean> {
     const { originalname } = file;
-    await this.uploadToS3(file, this.bucketName, originalname, file.mimetype);
+    return await this.uploadToS3(file, this.bucketName, originalname, file.mimetype);
   }
 
   private async uploadToS3(
@@ -28,12 +28,11 @@ export class S3Service {
     bucket: string,
     name: string,
     mime: string,
-  ) {
+  ): Promise<boolean> {
     const params = {
       Bucket: bucket,
       Key: String(name),
-      Body: file,
-      ACL: "public-read",
+      Body: file.buffer,
       ContentType: mime,
       ContentDisposition: "inline",
       CreateBucketConfiguration: {
@@ -44,8 +43,10 @@ export class S3Service {
     try {
       const response = await this.s3.upload(params).promise();
       console.log(response);
+      return true;
     } catch (e) {
       console.log(e);
+      return false;
     }
   }
 }

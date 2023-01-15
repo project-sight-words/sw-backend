@@ -7,6 +7,7 @@ import { Module } from "@nestjs/common";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
 import { UsersModule } from "resources/users/users.module";
+import { AWSModule } from "./resources/aws/aws.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -24,8 +25,9 @@ const ConfigurationModule = ConfigModule.forRoot({
     JWT_SECRET: Joi.string().required(),
     PORT: Joi.number().default(3000),
     NODE_ENV: Joi.string().valid("development", "production").required(),
-    ACCESS_KEY: Joi.string().required(),
-    KEY_SECRET: Joi.string().required(),
+    S3_ACCESS_KEY: Joi.string().required(),
+    S3_KEY_SECRET: Joi.string().required(),
+    S3_BUCKET: Joi.string().required(),
   }),
 });
 
@@ -36,9 +38,10 @@ const ConfigurationModule = ConfigModule.forRoot({
     TeachersModule,
     StudentsModule,
     UsersModule,
+    AWSModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class AppModule {}
+export class AppModule { }
