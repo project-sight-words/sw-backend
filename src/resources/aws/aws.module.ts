@@ -7,4 +7,4 @@ import { S3Service } from "./s3.service";
   exports: [S3Service],
   providers: [S3Service],
 })
-export class AWSModule { }
+export class AWSModule {}

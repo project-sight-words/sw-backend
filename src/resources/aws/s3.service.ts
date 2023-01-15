@@ -20,7 +20,12 @@ export class S3Service {
 
   async uploadFile(file: Express.Multer.File): Promise<boolean> {
     const { originalname } = file;
-    return await this.uploadToS3(file, this.bucketName, originalname, file.mimetype);
+    return await this.uploadToS3(
+      file,
+      this.bucketName,
+      originalname,
+      file.mimetype,
+    );
   }
 
   private async uploadToS3(
