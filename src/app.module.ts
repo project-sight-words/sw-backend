@@ -4,6 +4,8 @@ import { AppService } from "app.service";
 import { AuthenticationModule } from "resources/authentication/authentication.module";
 import { ConfigModule } from "@nestjs/config";
 import { Module } from "@nestjs/common";
+import { CentresModule } from "resources/centres/centres.module";
+import { ClassesModule } from "resources/classes/classes.module";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
 import { UsersModule } from "resources/users/users.module";
@@ -30,6 +32,8 @@ const ConfigurationModule = ConfigModule.forRoot({
 @Module({
   imports: [
     AuthenticationModule,
+    CentresModule,
+    ClassesModule,
     ConfigurationModule,
     TeachersModule,
     StudentsModule,
