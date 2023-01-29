@@ -1,12 +1,7 @@
 import { DatabaseService } from "database/database.service";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
-import { plainToInstance } from "class-transformer";
 import { Querier } from "database/database.types";
-import {
-  StudentDatum,
-  StudentEntity,
-  StudentUser,
-} from "entities/student.entities";
+import { StudentDatum, StudentEntity } from "entities/student.entities";
 
 @Injectable()
 export class StudentsRepository {
@@ -218,24 +213,6 @@ export class StudentsRepository {
       `,
       [userId, studentId],
     );
-  }
-
-  async getStudentUser(
-    studentId: string,
-    userId: string,
-  ): Promise<StudentUser[]> {
-    const rows = await this.databaseService.query(
-      `
-        SELECT *
-        FROM users
-          INNER JOIN student_users ON users.id = student_users.user_id
-          INNER JOIN students ON student_users.student_id = students.id
-        WHERE users.id = $1 AND students.id = $2;
-      `,
-      [userId, studentId],
-    );
-    const studentUsers = plainToInstance(StudentUser, rows);
-    return studentUsers;
   }
 
   async deleteStudentUser(

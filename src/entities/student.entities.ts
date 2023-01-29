@@ -1,7 +1,7 @@
 import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { Expose } from "class-transformer";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
-import { IsDate, IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 
 export class StudentDatum {
   @IsNotEmpty()
@@ -55,28 +55,4 @@ export class StudentEntity {
       ...DeleteStamp.toObject(deleteStamp),
     };
   }
-}
-
-// TODO: Adjust this to datum-entity relationship
-export class NewStudentUser {
-  @Expose({ name: "user_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  userId!: string;
-
-  @Expose({ name: "student_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  studentId!: string;
-}
-
-// TODO: Adjust this to datum-entity relationship
-export class StudentUser {
-  @Expose({ name: "created_by" })
-  @IsUUID()
-  createdBy!: string | null;
-
-  @Expose({ name: "created_at" })
-  @IsDate()
-  createdAt!: Date;
 }
