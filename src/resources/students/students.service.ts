@@ -1,9 +1,9 @@
 import { DatabaseService } from "database/database.service";
 import { instanceToPlain, plainToInstance } from "class-transformer";
-import { NewStudent, Student } from "entities/student.entities";
+import { Student } from "entities/student.entities";
 import { Querier } from "database/database.types";
 import { StudentsRepository } from "./students.repository";
-import { User } from "entities/user.entities";
+import { UserEntity } from "entities/user.entities";
 import { UsersRepository } from "resources/users/users.repository";
 import {
   BadRequestException,
@@ -75,10 +75,6 @@ export class StudentsService {
     return plainToInstance(StudentDto, instanceToPlain(student));
   }
 
-  private dtoToNewStudent(studentDto: CreateStudentDto): NewStudent {
-    return plainToInstance(NewStudent, instanceToPlain(studentDto));
-  }
-
   private async validateAll(studentDtos: CreateStudentDto[]) {
     const invalidStudents = [];
     for (let index = 0; index < studentDtos.length; index++) {
@@ -134,7 +130,7 @@ export class StudentsService {
     const { email, name, studentId } = studentDto;
 
     const usersWithEmail = await this.usersRepository.getByEmail(email);
-    let user: User;
+    let user: UserEntity;
     if (usersWithEmail.length > 0) {
       user = usersWithEmail[0];
     } else {
@@ -155,7 +151,7 @@ export class StudentsService {
       await this.studentsRepository.insertStudentUser(
         query,
         studentUuid,
-        user.id,
+        user.identitifier.id,
       );
       return {
         email,
@@ -172,7 +168,11 @@ export class StudentsService {
       throw new BadRequestException(
         "Student's recorded name does not match given name.",
       );
-    await this.studentsRepository.insertStudentUser(query, student.id, user.id);
+    await this.studentsRepository.insertStudentUser(
+      query,
+      student.id,
+      user.identitifier.id,
+    );
     return {
       email,
       id: student.id,

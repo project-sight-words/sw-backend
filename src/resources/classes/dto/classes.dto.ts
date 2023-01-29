@@ -13,12 +13,8 @@ import {
   IsBoolean,
   IsDate,
   IsInstance,
-  IsMilitaryTime,
   IsNotEmpty,
-  IsNumber,
   IsUUID,
-  Max,
-  Min,
 } from "class-validator";
 
 export class ClassDatumDto {

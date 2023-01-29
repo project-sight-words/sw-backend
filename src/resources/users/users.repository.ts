@@ -1,14 +1,14 @@
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
-import { NewUser, User } from "entities/user.entities";
 import { plainToInstance } from "class-transformer";
 import { Querier } from "database/database.types";
+import { UserDatum, UserEntity } from "entities/user.entities";
 
 @Injectable()
 export class UsersRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async getByEmail(email: string): Promise<User[]> {
+  async getByEmail(email: string): Promise<UserEntity[]> {
     const rows = await this.databaseService.query(
       `
         SELECT * FROM users
@@ -16,11 +16,12 @@ export class UsersRepository {
       `,
       [email],
     );
-    const users = plainToInstance(User, rows);
+    const users = plainToInstance(UserEntity, rows);
     return users;
   }
 
-  async upsertByEmail(user: NewUser): Promise<User> {
+  async upsertByEmail(datum: UserDatum): Promise<UserEntity> {
+    const { email, lastLoggedIn } = datum;
     const rows = await this.databaseService.query(
       `
         INSERT INTO users (email, last_logged_in)
@@ -30,22 +31,23 @@ export class UsersRepository {
         UPDATE SET last_logged_in = $2
         RETURNING *;
       `,
-      [user.email, user.lastLoggedIn],
+      [email, lastLoggedIn],
     );
-    const users = plainToInstance(User, rows);
+    const users = plainToInstance(UserEntity, rows);
     return users[0];
   }
 
-  async insert(query: Querier, user: NewUser): Promise<User> {
+  async insert(query: Querier, datum: UserDatum): Promise<UserEntity> {
+    const { email, lastLoggedIn } = datum;
     const rows = await query(
       `
         INSERT INTO users (email, last_logged_in)
         VALUES ($1, $2)
         RETURNING *;
       `,
-      [user.email, user.lastLoggedIn],
+      [email, lastLoggedIn],
     );
-    const users = plainToInstance(User, rows);
+    const users = plainToInstance(UserEntity, rows);
     return users[0];
   }
 }

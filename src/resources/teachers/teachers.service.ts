@@ -3,7 +3,7 @@ import { instanceToPlain, plainToInstance } from "class-transformer";
 import { Querier } from "database/database.types";
 import { Teacher } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
-import { User } from "entities/user.entities";
+import { UserEntity } from "entities/user.entities";
 import { UsersRepository } from "resources/users/users.repository";
 import {
   BadRequestException,
@@ -52,7 +52,7 @@ export class TeachersService {
     const { email, name, staffId } = teacherDto;
 
     const usersWithEmail = await this.usersRepository.getByEmail(email);
-    let user: User;
+    let user: UserEntity;
     if (usersWithEmail.length > 0) {
       user = usersWithEmail[0];
     } else {
@@ -73,7 +73,7 @@ export class TeachersService {
       await this.teachersRepository.insertTeacherUser(
         query,
         teacherId,
-        user.id,
+        user.identitifier.id,
       );
       return {
         email,
@@ -91,7 +91,11 @@ export class TeachersService {
         "Teacher's recorded name does not match given name.",
       );
 
-    await this.teachersRepository.insertTeacherUser(query, teacher.id, user.id);
+    await this.teachersRepository.insertTeacherUser(
+      query,
+      teacher.id,
+      user.identitifier.id,
+    );
     return {
       email,
       id: teacher.id,

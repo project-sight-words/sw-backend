@@ -1,9 +1,9 @@
 import { CentreDatum, CentreEntity } from "entities/centre.entity";
-import { Expose, plainToClass } from "class-transformer";
+import { Expose } from "class-transformer";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 
-export class CentreDatumDto extends CentreDatum {
+export class CentreDatumDto {
   @Expose()
   @IsNotEmpty()
   @IsString()
@@ -11,13 +11,13 @@ export class CentreDatumDto extends CentreDatum {
 
   static toCentreDatum(dto: CentreDatumDto): CentreDatum {
     const plain = instanceToPlain(dto);
-    const datum = plainToClass(CentreDatum, plain);
+    const datum = plainToInstance(CentreDatum, plain);
     return datum;
   }
 
   static fromCentreDatum(centre: CentreDatum): CentreDatumDto {
     const plain = instanceToPlain(centre);
-    const dto = plainToClass(CentreDatumDto, plain);
+    const dto = plainToInstance(CentreDatumDto, plain);
     return dto;
   }
 }
