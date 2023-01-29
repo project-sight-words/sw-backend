@@ -180,4 +180,8 @@ export class StudentsService {
       studentId,
     };
   }
+
+  async deleteById(uuid: string): Promise<void> {
+    await this.studentsRepository.deleteStudentUser(uuid);
+  }
 }

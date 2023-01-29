@@ -1,5 +1,5 @@
 import { DatabaseService } from "database/database.service";
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { NewStudent, Student, StudentUser } from "entities/student.entities";
 import { plainToInstance } from "class-transformer";
 import { Querier } from "database/database.types";
@@ -188,5 +188,20 @@ export class StudentsRepository {
     );
     const studentUsers = plainToInstance(StudentUser, rows);
     return studentUsers;
+  }
+
+  async deleteStudentUser(
+    studentId: string,
+    deletedBy: string | null = null,
+  ): Promise<void> {
+    const rows = await this.databaseService.query(
+      `
+        UPDATE student_users
+        SET deleted_at = NOW(), deleted_by = $1
+        WHERE students.id = $2 AND deleted_at IS NULl;
+      `,
+      [deletedBy, studentId],
+    );
+    if (rows.length !== 1) throw new InternalServerErrorException();
   }
 }
