@@ -1,4 +1,4 @@
-import { Expose } from "class-transformer";
+import { Expose, instanceToPlain } from "class-transformer";
 import { IsDate, IsEmail, IsNotEmpty } from "class-validator";
 import { Identifier } from "./common";
 import { plainToInstance } from "utils/transformer";
@@ -23,5 +23,13 @@ export class UserEntity {
     user.identitifier = plainToInstance(Identifier, object);
     user.datum = plainToInstance(UserDatum, object);
     return user;
+  }
+
+  static toObject(entity: UserEntity): object {
+    const { datum, identitifier } = entity;
+    return {
+      ...instanceToPlain(datum),
+      ...instanceToPlain(identitifier),
+    };
   }
 }
