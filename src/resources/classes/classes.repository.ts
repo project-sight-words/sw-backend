@@ -43,7 +43,7 @@ export class ClassesRepository {
 
   async getById(id: string): Promise<ClassEntity> {
     const entities = await this.searchById(id);
-    if (entities.length === 0) throw new InternalServerErrorException();
+    if (entities.length !== 1) throw new InternalServerErrorException();
     return entities[0];
   }
 

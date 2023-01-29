@@ -1,6 +1,10 @@
 import { Exclude, Expose } from "class-transformer";
 import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
+export class StudentDatumDto {}
+
+export class StudentEntityDto extends StudentDatumDto {}
+
 export class UpdateStudentDto {
   @IsNotEmpty()
   @Expose()

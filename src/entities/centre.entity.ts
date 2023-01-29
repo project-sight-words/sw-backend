@@ -8,6 +8,11 @@ export class CentreDatum {
   @IsString()
   @Expose()
   name!: string;
+
+  static fromObject(object: object): CentreDatum {
+    const datum = plainToInstance(CentreDatum, object);
+    return datum;
+  }
 }
 
 export class CentreEntity {
@@ -17,9 +22,9 @@ export class CentreEntity {
 
   static fromObject(object: object): CentreEntity {
     const centre = new CentreEntity();
-    centre.identifier = plainToInstance(Identifier, object);
-    centre.datum = plainToInstance(CentreDatum, object);
-    centre.updateStamp = plainToInstance(UpdateStamp, object);
+    centre.identifier = Identifier.fromObject(object);
+    centre.datum = CentreDatum.fromObject(object);
+    centre.updateStamp = UpdateStamp.fromObject(object);
     return centre;
   }
 }

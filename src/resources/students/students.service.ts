@@ -1,7 +1,7 @@
 import { DatabaseService } from "database/database.service";
-import { instanceToPlain, plainToInstance } from "class-transformer";
-import { Student } from "entities/student.entities";
+import { plainToInstance } from "utils/transformer";
 import { Querier } from "database/database.types";
+import { StudentEntity } from "entities/student.entities";
 import { StudentsRepository } from "./students.repository";
 import { UserEntity } from "entities/user.entities";
 import { UsersRepository } from "resources/users/users.repository";
@@ -34,7 +34,7 @@ export class StudentsService {
   }
 
   async getById(id: string) {
-    const students = await this.studentsRepository.getById(id);
+    const students = await this.studentsRepository.searchById(id);
     if (students.length === 0) throw new NotFoundException();
     const student = students[0];
     const studentDto = this.studentToDto(student);
@@ -71,8 +71,9 @@ export class StudentsService {
     return studentDto;
   }
 
-  private studentToDto(student: Student): StudentDto {
-    return plainToInstance(StudentDto, instanceToPlain(student));
+  private studentToDto(entity: StudentEntity): StudentDto {
+    const plain = StudentEntity.toObject(entity);
+    return plainToInstance(StudentDto, plain);
   }
 
   private async validateAll(studentDtos: CreateStudentDto[]) {
@@ -82,39 +83,42 @@ export class StudentsService {
       const studentsWithStudentId =
         await this.studentsRepository.getIncludingDeletedByStudentId(studentId);
       if (studentsWithStudentId.length === 0) {
-        const studentsWithEmail = await this.studentsRepository.getByEmail(
+        const studentsWithEmail = await this.studentsRepository.searchByEmail(
           email,
         );
         if (studentsWithEmail.length > 0) {
           const studentWithEmail = studentsWithEmail[0];
+          const {
+            datum: { studentId },
+          } = studentWithEmail;
           invalidStudents.push({
             index,
-            message: `Email ${email} belongs to Student ${studentWithEmail.studentId}.`,
+            message: `Email ${email} belongs to Student ${studentId}.`,
           });
         }
         continue;
       }
 
       const studentWithStudentId = studentsWithStudentId[0];
-      if (studentWithStudentId.email === null) continue;
+      if (studentWithStudentId.datum.email === null) continue;
 
       switch (true) {
-        case studentWithStudentId.name !== name:
+        case studentWithStudentId.datum.name !== name:
           invalidStudents.push({
             index,
-            message: `Student ${studentId} already exists as ${studentWithStudentId.name}.`,
+            message: `Student ${studentId} already exists as ${studentWithStudentId.datum.name}.`,
           });
           break;
-        case studentWithStudentId.email !== email:
+        case studentWithStudentId.datum.email !== email:
           invalidStudents.push({
             index,
-            message: `Student ${studentId} has email ${studentWithStudentId.email}.`,
+            message: `Student ${studentId} has email ${studentWithStudentId.datum.email}.`,
           });
           break;
         default:
           invalidStudents.push({
             index,
-            message: `Student ${studentId} ${studentWithStudentId.email} already exists.`,
+            message: `Student ${studentId} ${studentWithStudentId.datum.email} already exists.`,
           });
           break;
       }
@@ -162,20 +166,20 @@ export class StudentsService {
     }
 
     const student = studentsWithStudentId[0];
-    if (student.email !== null)
+    if (student.datum.email !== null)
       throw new BadRequestException("Student already exists.");
-    if (student.name !== name)
+    if (student.datum.name !== name)
       throw new BadRequestException(
         "Student's recorded name does not match given name.",
       );
     await this.studentsRepository.insertStudentUser(
       query,
-      student.id,
+      student.identifier.id,
       user.identitifier.id,
     );
     return {
       email,
-      id: student.id,
+      id: student.identifier.id,
       name,
       studentId,
     };
