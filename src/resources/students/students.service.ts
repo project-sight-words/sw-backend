@@ -8,6 +8,7 @@ import { UsersRepository } from "resources/users/users.repository";
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
@@ -27,6 +28,11 @@ export class StudentsService {
 
   private readonly loggerService = new Logger("StudentsService");
 
+  async searchByIds(ids: Set<string>): Promise<StudentEntity[]> {
+    const students = await this.studentsRepository.searchByIds(ids);
+    return students;
+  }
+
   async get(): Promise<StudentDto[]> {
     const students = await this.studentsRepository.get();
     const studentDtos = students.map((student) => this.studentToDto(student));
@@ -34,16 +40,11 @@ export class StudentsService {
   }
 
   async getById(id: string): Promise<StudentDto> {
-    const students = await this.studentsRepository.searchById(id);
-    if (students.length === 0) throw new NotFoundException();
-    const student = students[0];
+    const entities = await this.studentsRepository.searchById(id);
+    if (entities.length !== 1) throw new InternalServerErrorException();
+    const student = entities[0];
     const studentDto = this.studentToDto(student);
     return studentDto;
-  }
-
-  async searchByIds(ids: Set<string>): Promise<StudentEntity[]> {
-    const students = await this.studentsRepository.searchByIds(ids);
-    return students;
   }
 
   // TODO: Refactor to take in StudentDatum and return StudentEntity

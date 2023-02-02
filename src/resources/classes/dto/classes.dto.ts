@@ -21,6 +21,8 @@ import {
   ClassStudentDatum,
   ClassTeacherDatum,
 } from "entities/class.entity";
+import { TeacherEntity } from "entities/teacher.entities";
+import { TeacherEntityDto } from "resources/teachers/dto/teachers.dto";
 
 export class ClassDatumDto extends ClassDatum {
   static fromObject(object: object): ClassDatumDto {
@@ -76,10 +78,17 @@ export class DetailedClassDto extends ClassEntityDto {
   @Type(() => StudentEntityDto)
   students!: StudentEntityDto[];
 
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TeacherEntityDto)
+  teachers!: TeacherEntityDto[];
+
   static fromClassEntityAndDetails(
     classEntity: ClassEntity,
     centreEntityMap: Map<string, CentreEntity>,
     studentEntitiesMap: Map<string, StudentEntity[]>,
+    teacherEntitiesMap: Map<string, TeacherEntity[]>,
   ): DetailedClassDto {
     const classEntityDto = ClassEntityDto.fromClassEntity(classEntity);
     const {
@@ -94,12 +103,18 @@ export class DetailedClassDto extends ClassEntityDto {
     );
     const centreEntityDto = CentreEntityDto.fromCentreEntity(centreEntity);
     const studentEntities = studentEntitiesMap.get(classId) ?? [];
+    const teacherEntities = teacherEntitiesMap.get(classId) ?? [];
     const dto = plainToInstance(DetailedClassDto, {
       ...ClassEntityDto.toObject(classEntityDto),
       centre: CentreEntityDto.toObject(centreEntityDto),
       students: studentEntities.map((entity) => {
         const studentEntityDto = StudentEntityDto.fromStudentEntity(entity);
         const plain = StudentEntityDto.toObject(studentEntityDto);
+        return plain;
+      }),
+      teachers: teacherEntities.map((entity) => {
+        const studentEntityDto = TeacherEntityDto.fromTeacherEntity(entity);
+        const plain = TeacherEntityDto.toObject(studentEntityDto);
         return plain;
       }),
     });
@@ -110,12 +125,14 @@ export class DetailedClassDto extends ClassEntityDto {
     classEntities: ClassEntity[],
     centreEntityMap: Map<string, CentreEntity>,
     studentEntitiesMap: Map<string, StudentEntity[]>,
+    teacherEntitiesMap: Map<string, TeacherEntity[]>,
   ): DetailedClassDto[] {
     const dtos = classEntities.map((entity) =>
       this.fromClassEntityAndDetails(
         entity,
         centreEntityMap,
         studentEntitiesMap,
+        teacherEntitiesMap,
       ),
     );
     return dtos;

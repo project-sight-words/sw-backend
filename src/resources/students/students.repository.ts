@@ -67,18 +67,6 @@ export class StudentsRepository {
     return students;
   }
 
-  async getById(id: string): Promise<StudentEntity> {
-    const entities = await this.searchById(id);
-    if (entities.length !== 1) throw new InternalServerErrorException();
-    return entities[0];
-  }
-
-  async getByEmail(email: string): Promise<StudentEntity> {
-    const entities = await this.searchByEmail(email);
-    if (entities.length !== 1) throw new InternalServerErrorException();
-    return entities[0];
-  }
-
   async getIncludingDeletedByStudentId(
     studentId: string,
   ): Promise<StudentEntity[]> {

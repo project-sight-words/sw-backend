@@ -1,12 +1,16 @@
 import { CentreEntity } from "entities/centre.entity";
 import { CentresRepository } from "resources/centres/centres.repository";
 import { ClassesRepository } from "./classes.repository";
+import { getOrError } from "utils/map";
+import { StudentEntity } from "entities/student.entities";
+import { StudentsService } from "resources/students/students.service";
+import { TeacherEntity } from "entities/teacher.entities";
+import { TeachersService } from "resources/teachers/teachers.service";
 import {
   Injectable,
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
-import { StudentsService } from "resources/students/students.service";
 import {
   ClassDatum,
   ClassEntity,
@@ -15,8 +19,6 @@ import {
   ClassTeacherDatum,
   ClassTeacherEntity,
 } from "entities/class.entity";
-import { StudentEntity } from "entities/student.entities";
-import { getOrError } from "utils/map";
 
 @Injectable()
 export class ClassesService {
@@ -24,6 +26,7 @@ export class ClassesService {
     private classesRepository: ClassesRepository,
     private centresRepository: CentresRepository, // TODO: Change this to service
     private studentsService: StudentsService,
+    private teachersService: TeachersService,
   ) {}
 
   private readonly loggerService = new Logger("ClassesService");
@@ -135,6 +138,56 @@ export class ClassesService {
       studentEntitiesArray.push(studentEntity);
     });
     return studentEntitesMap;
+  }
+
+  async getTeacherEntitiesMapOfClass(
+    entity: ClassEntity,
+  ): Promise<Map<string, TeacherEntity[]>> {
+    const teachersEntitiesMap = this.getTeacherEntitiesMapOfClasses([entity]);
+    return teachersEntitiesMap;
+  }
+
+  async getTeacherEntitiesMapOfClasses(
+    entities: ClassEntity[],
+  ): Promise<Map<string, TeacherEntity[]>> {
+    const classIds = new Set<string>();
+    entities.forEach((entity) => {
+      const { identifier } = entity;
+      const { id } = identifier;
+      classIds.add(id);
+    });
+    const classTeacherEntities =
+      await this.classesRepository.getClassTeachersByClassIds(classIds);
+    const teacherIds = new Set<string>();
+    classTeacherEntities.forEach((entity) => {
+      const { datum } = entity;
+      const { teacherId } = datum;
+      teacherIds.add(teacherId);
+    });
+    const teacherEntities = await this.teachersService.searchByIds(teacherIds);
+    const teacherEntityMap = new Map<string, TeacherEntity>();
+    teacherEntities.forEach((entity) => {
+      const { identifier } = entity;
+      const { id } = identifier;
+      teacherEntityMap.set(id, entity);
+    });
+    const teacherEntitesMap = new Map<string, TeacherEntity[]>();
+    classTeacherEntities.forEach((entity) => {
+      const { datum } = entity;
+      const { classId, teacherId } = datum;
+      const studentEntity = getOrError(
+        teacherEntityMap,
+        teacherId,
+        this.loggerService,
+      );
+      let teacherEntitiesArray = teacherEntitesMap.get(classId);
+      if (!teacherEntitiesArray) {
+        teacherEntitiesArray = [];
+        teacherEntitesMap.set(classId, teacherEntitiesArray);
+      }
+      teacherEntitiesArray.push(studentEntity);
+    });
+    return teacherEntitesMap;
   }
 
   async create(

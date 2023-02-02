@@ -130,6 +130,22 @@ export class ClassesRepository {
     return entities;
   }
 
+  async getClassTeachersByClassIds(
+    classIds: Set<string>,
+  ): Promise<ClassTeacherEntity[]> {
+    const classIdsArray = Array.from(classIds);
+    const rows = await this.databaseService.query(
+      `
+        SELECT *
+        FROM class_teachers
+        WHERE deleted_at IS NULL AND class_id = ANY($1::UUID[]);
+      `,
+      [classIdsArray],
+    );
+    const entities = rows.map((r) => ClassTeacherEntity.fromObject(r));
+    return entities;
+  }
+
   async insert(
     data: ClassDatum,
     insertedBy: string | null = null,

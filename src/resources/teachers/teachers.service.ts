@@ -8,6 +8,7 @@ import { UsersRepository } from "resources/users/users.repository";
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
@@ -27,6 +28,11 @@ export class TeachersService {
 
   private readonly loggerService = new Logger("TeachersService");
 
+  async searchByIds(ids: Set<string>): Promise<TeacherEntity[]> {
+    const teachers = await this.teachersRepository.searchByIds(ids);
+    return teachers;
+  }
+
   async get(): Promise<TeacherDto[]> {
     const teachers = await this.teachersRepository.get();
     const teacherDtos = teachers.map((teacher) => this.teacherToDto(teacher));
@@ -34,9 +40,9 @@ export class TeachersService {
   }
 
   async getById(id: string): Promise<TeacherDto> {
-    const teachers = await this.teachersRepository.searchById(id);
-    if (teachers.length === 0) throw new NotFoundException();
-    const teacher = teachers[0];
+    const entities = await this.teachersRepository.searchById(id);
+    if (entities.length !== 1) throw new InternalServerErrorException();
+    const teacher = entities[0];
     const teacherDto = this.teacherToDto(teacher);
     return teacherDto;
   }
