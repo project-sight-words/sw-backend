@@ -18,7 +18,7 @@ export class UserEntityDto extends UserDatumDto {
   id!: string;
 
   static fromUserEntity(entity: UserEntity): UserEntityDto {
-    const { datum, identitifier } = entity;
+    const { datum, identifier: identitifier } = entity;
     const datumDto = UserDatumDto.fromUserDatum(datum);
     const dto = plainToInstance(UserEntityDto, {
       ...instanceToPlain(datumDto),

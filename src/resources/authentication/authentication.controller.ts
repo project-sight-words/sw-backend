@@ -27,7 +27,7 @@ export class AuthenticationController {
     const { accessTokenCookie, user: userEntity } = session;
     response.setHeader("Set-Cookie", accessTokenCookie);
     const roles = await this.authenticationService.getRolesByUserId(
-      userEntity.identitifier.id,
+      userEntity.identifier.id,
     );
     return { user: UserEntityDto.fromUserEntity(userEntity), roles };
   }
@@ -41,7 +41,7 @@ export class AuthenticationController {
       await this.authenticationService.loginWithGoogle(data);
     response.setHeader("Set-Cookie", accessTokenCookie);
     const roles = await this.authenticationService.getRolesByUserId(
-      userEntity.identitifier.id,
+      userEntity.identifier.id,
     );
     return { user: UserEntityDto.fromUserEntity(userEntity), roles };
   }

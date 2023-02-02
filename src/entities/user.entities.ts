@@ -25,18 +25,18 @@ export class UserDatum {
 }
 
 export class UserEntity {
-  identitifier!: Identifier;
+  identifier!: Identifier;
   datum!: UserDatum;
 
   static fromObject(object: object): UserEntity {
     const user = new UserEntity();
-    user.identitifier = Identifier.fromObject(object);
+    user.identifier = Identifier.fromObject(object);
     user.datum = UserDatum.fromObject(object);
     return user;
   }
 
   static toObject(entity: UserEntity): object {
-    const { datum, identitifier } = entity;
+    const { datum, identifier: identitifier } = entity;
     return {
       ...UserDatum.toObject(datum),
       ...Identifier.toObject(identitifier),

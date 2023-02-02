@@ -46,6 +46,7 @@ export class StudentsService {
     return students;
   }
 
+  // TODO: Refactor to take in StudentDatum and return StudentEntity
   async createMany(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
     const students = await this.databaseService.transaction(async (query) => {
       const createdStudents = [];
@@ -64,16 +65,79 @@ export class StudentsService {
     return students;
   }
 
+  // TODO: Refactor to take in StudentDatum and return StudentEntity
+  private async createOne(
+    query: Querier,
+    studentDto: CreateStudentDto,
+  ): Promise<StudentDto> {
+    const { email, name, studentId } = studentDto;
+
+    const usersWithEmail = await this.usersRepository.getByEmail(email);
+    let user: UserEntity;
+    if (usersWithEmail.length > 0) {
+      user = usersWithEmail[0];
+    } else {
+      user = await this.usersRepository.insert(query, {
+        email,
+        lastLoggedIn: null,
+      });
+    }
+
+    const studentsWithStudentId =
+      await this.studentsRepository.getIncludingDeletedByStudentId(studentId);
+
+    if (studentsWithStudentId.length === 0) {
+      const studentUuid = await this.studentsRepository.insert(query, {
+        name,
+        studentId,
+      });
+      await this.studentsRepository.insertStudentUser(
+        query,
+        studentUuid,
+        user.identifier.id,
+      );
+      return {
+        email,
+        id: studentUuid,
+        name,
+        studentId,
+      };
+    }
+
+    const student = studentsWithStudentId[0];
+    if (student.datum.email !== null)
+      throw new BadRequestException("Student already exists.");
+    if (student.datum.name !== name)
+      throw new BadRequestException(
+        "Student's recorded name does not match given name.",
+      );
+    await this.studentsRepository.insertStudentUser(
+      query,
+      student.identifier.id,
+      user.identifier.id,
+    );
+    return {
+      email,
+      id: student.identifier.id,
+      name,
+      studentId,
+    };
+  }
+
   async updateById(
     uuid: string,
     updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    const student = await this.studentsRepository.update(uuid, {
+    const student = await this.studentsRepository.updateById(uuid, {
       name: updateStudentDto.name,
       studentId: updateStudentDto.studentId,
     });
     const studentDto = this.studentToDto(student);
     return studentDto;
+  }
+
+  async deleteById(uuid: string): Promise<void> {
+    await this.studentsRepository.deleteStudentUserByStudentId(uuid);
   }
 
   private studentToDto(entity: StudentEntity): StudentDto {
@@ -130,68 +194,5 @@ export class StudentsService {
     }
 
     return invalidStudents;
-  }
-
-  private async createOne(
-    query: Querier,
-    studentDto: CreateStudentDto,
-  ): Promise<StudentDto> {
-    const { email, name, studentId } = studentDto;
-
-    const usersWithEmail = await this.usersRepository.getByEmail(email);
-    let user: UserEntity;
-    if (usersWithEmail.length > 0) {
-      user = usersWithEmail[0];
-    } else {
-      user = await this.usersRepository.insert(query, {
-        email,
-        lastLoggedIn: null,
-      });
-    }
-
-    const studentsWithStudentId =
-      await this.studentsRepository.getIncludingDeletedByStudentId(studentId);
-
-    if (studentsWithStudentId.length === 0) {
-      const studentUuid = await this.studentsRepository.insert(query, {
-        name,
-        studentId,
-      });
-      console.log(user);
-      await this.studentsRepository.insertStudentUser(
-        query,
-        studentUuid,
-        user.identitifier.id, // HERE
-      );
-      return {
-        email,
-        id: studentUuid,
-        name,
-        studentId,
-      };
-    }
-
-    const student = studentsWithStudentId[0];
-    if (student.datum.email !== null)
-      throw new BadRequestException("Student already exists.");
-    if (student.datum.name !== name)
-      throw new BadRequestException(
-        "Student's recorded name does not match given name.",
-      );
-    await this.studentsRepository.insertStudentUser(
-      query,
-      student.identifier.id,
-      user.identitifier.id,
-    );
-    return {
-      email,
-      id: student.identifier.id,
-      name,
-      studentId,
-    };
-  }
-
-  async deleteById(uuid: string): Promise<void> {
-    await this.studentsRepository.deleteStudentUser(uuid);
   }
 }

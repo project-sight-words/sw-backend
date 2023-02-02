@@ -154,14 +154,16 @@ export class StudentsRepository {
     return rows[0].id;
   }
 
-  async update(
+  // TODO: Fix this to return properly in SQL
+  async updateById(
     uuid: string,
     student: Omit<StudentDatum, "email">,
+    updatedBy: string | null = null,
   ): Promise<StudentEntity> {
     const rows = await this.databaseService.query(
       `
         UPDATE students
-        SET name = $1, student_id = $2, updated_at = NOW()
+        SET name = $2, student_id = $3, updated_at = NOW(), updated_by = $1
         FROM (
           SELECT
             students.id as student_uuid,
@@ -172,7 +174,7 @@ export class StudentsRepository {
             ON students.id = student_users.student_id
           JOIN users
             ON student_users.user_id = users.id
-          WHERE students.id = $3
+          WHERE students.id = $4
         ) AS subquery
         WHERE students.id = subquery.student_uuid
         RETURNING
@@ -181,7 +183,7 @@ export class StudentsRepository {
           students.name AS name,
           subquery.email AS email;
       `,
-      [student.name, student.studentId, uuid],
+      [updatedBy, student.name, student.studentId, uuid],
     );
     const students = rows.map((r) => StudentEntity.fromObject(r));
     return students[0];
@@ -220,7 +222,7 @@ export class StudentsRepository {
     );
   }
 
-  async deleteStudentUser(
+  async deleteStudentUserByStudentId(
     studentId: string,
     deletedBy: string | null = null,
   ): Promise<void> {

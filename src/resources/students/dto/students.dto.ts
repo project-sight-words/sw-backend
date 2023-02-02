@@ -50,29 +50,30 @@ export class StudentEntityDto extends StudentDatumDto {
   }
 }
 
+// TODO: Refactor the below
 export class UpdateStudentDto {
-  @IsNotEmpty()
   @Expose()
+  @IsNotEmpty()
   @IsString()
   name!: string;
 
-  @IsNotEmpty()
   @Expose({ name: "student_id" })
+  @IsNotEmpty()
   @IsString()
   studentId!: string;
 }
 
 export class CreateStudentDto extends UpdateStudentDto {
+  @Expose()
   @IsNotEmpty()
   @IsEmail()
-  @Expose()
   email!: string;
 }
 
 @Exclude()
 export class StudentDto extends CreateStudentDto {
-  @IsNotEmpty()
   @Expose({ name: "id" })
+  @IsNotEmpty()
   @IsUUID()
   id!: string;
 }
