@@ -1,5 +1,63 @@
+import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { Expose } from "class-transformer";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { IsDate, IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
+
+export class TeacherDatum {
+  @Expose()
+  @IsNotEmpty()
+  @IsEmail()
+  email!: string;
+
+  @Expose({ name: "staff_id" })
+  @IsNotEmpty()
+  @IsString()
+  staffId!: string;
+
+  @Expose()
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+
+  static fromObject(object: object): TeacherDatum {
+    const datum = plainToInstance(TeacherDatum, object);
+    return datum;
+  }
+
+  static toObject(datum: TeacherDatum): object {
+    const object = instanceToPlain(datum);
+    return object;
+  }
+}
+
+export class TeacherEntity {
+  identifier!: Identifier;
+  datum!: TeacherDatum;
+  createStamp!: CreateStamp;
+  updateStamp!: UpdateStamp;
+  deleteStamp!: DeleteStamp;
+
+  static fromObject(object: object): TeacherEntity {
+    const entity = new TeacherEntity();
+    entity.identifier = Identifier.fromObject(object);
+    entity.datum = TeacherDatum.fromObject(object);
+    entity.createStamp = CreateStamp.fromObject(object);
+    entity.updateStamp = UpdateStamp.fromObject(object);
+    entity.deleteStamp = DeleteStamp.fromObject(object);
+    return entity;
+  }
+
+  static toObject(entity: TeacherEntity): object {
+    const { identifier, datum, createStamp, updateStamp, deleteStamp } = entity;
+    return {
+      ...Identifier.toObject(identifier),
+      ...TeacherDatum.toObject(datum),
+      ...CreateStamp.toObject(createStamp),
+      ...UpdateStamp.toObject(updateStamp),
+      ...DeleteStamp.toObject(deleteStamp),
+    };
+  }
+}
 
 export class UpdateTeacher {
   @Expose({ name: "staff_id" })
@@ -7,22 +65,26 @@ export class UpdateTeacher {
   @IsString()
   staffId!: string;
 
+  @Expose()
   @IsNotEmpty()
   @IsString()
   name!: string;
 }
 
 export class NewTeacher extends UpdateTeacher {
+  @Expose()
   @IsNotEmpty()
   @IsEmail()
   email!: string;
 }
 
 export class Teacher {
+  @Expose()
   @IsNotEmpty()
   @IsUUID()
   id!: string;
 
+  @Expose()
   @IsEmail()
   email!: string | null;
 
@@ -31,6 +93,7 @@ export class Teacher {
   @IsString()
   staffId!: string;
 
+  @Expose()
   @IsNotEmpty()
   @IsString()
   name!: string;

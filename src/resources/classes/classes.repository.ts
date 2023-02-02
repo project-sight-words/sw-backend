@@ -43,7 +43,7 @@ export class ClassesRepository {
 
   async getById(id: string): Promise<ClassEntity> {
     const entities = await this.searchById(id);
-    if (entities.length === 0) throw new InternalServerErrorException();
+    if (entities.length !== 1) throw new InternalServerErrorException();
     return entities[0];
   }
 
@@ -112,6 +112,38 @@ export class ClassesRepository {
     );
     const entities = rows.map((r) => ClassCentreEntity.fromObject(r));
     return entities[0];
+  }
+
+  async getClassStudentsByClassIds(
+    classIds: Set<string>,
+  ): Promise<ClassStudentEntity[]> {
+    const classIdsArray = Array.from(classIds);
+    const rows = await this.databaseService.query(
+      `
+        SELECT *
+        FROM class_students
+        WHERE deleted_at IS NULL AND class_id = ANY($1::UUID[]);
+      `,
+      [classIdsArray],
+    );
+    const entities = rows.map((r) => ClassStudentEntity.fromObject(r));
+    return entities;
+  }
+
+  async getClassTeachersByClassIds(
+    classIds: Set<string>,
+  ): Promise<ClassTeacherEntity[]> {
+    const classIdsArray = Array.from(classIds);
+    const rows = await this.databaseService.query(
+      `
+        SELECT *
+        FROM class_teachers
+        WHERE deleted_at IS NULL AND class_id = ANY($1::UUID[]);
+      `,
+      [classIdsArray],
+    );
+    const entities = rows.map((r) => ClassTeacherEntity.fromObject(r));
+    return entities;
   }
 
   async insert(

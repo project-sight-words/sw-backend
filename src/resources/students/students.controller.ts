@@ -3,6 +3,7 @@ import { StudentsService } from "./students.service";
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   NotFoundException,
@@ -53,6 +54,16 @@ export class StudentsController {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
     const student = await this.studentsService.updateById(id, body);
+    return student;
+  }
+
+  @Delete(":id")
+  async deleteById(@Param("id") id: string): Promise<StudentDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    // TODO: Change this to search by id
+    const student = await this.studentsService.getById(id);
+    await this.studentsService.deleteById(id);
     return student;
   }
 }

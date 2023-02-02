@@ -1,7 +1,10 @@
+import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { Expose } from "class-transformer";
-import { IsDate, IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
+import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 
-export class NewStudent {
+export class StudentDatum {
+  @Expose()
   @IsNotEmpty()
   @IsEmail()
   email!: string;
@@ -11,55 +14,47 @@ export class NewStudent {
   @IsString()
   studentId!: string;
 
-  @IsNotEmpty()
-  @IsString()
-  name!: string;
-}
-
-export class Student {
-  @IsNotEmpty()
-  @IsUUID()
-  id!: string;
-
-  @IsEmail()
-  email!: string | null;
-
-  @Expose({ name: "student_id" })
-  @IsNotEmpty()
-  @IsString()
-  studentId!: string;
-
+  @Expose()
   @IsNotEmpty()
   @IsString()
   name!: string;
 
-  @Expose({ name: "updated_by" })
-  @IsUUID()
-  updatedBy!: string | null;
+  static fromObject(object: object): StudentDatum {
+    const datum = plainToInstance(StudentDatum, object);
+    return datum;
+  }
 
-  @Expose({ name: "updated_at" })
-  @IsDate()
-  updatedAt!: Date;
+  static toObject(datum: StudentDatum): object {
+    const object = instanceToPlain(datum);
+    return object;
+  }
 }
 
-export class NewStudentUser {
-  @Expose({ name: "user_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  userId!: string;
+export class StudentEntity {
+  identifier!: Identifier;
+  datum!: StudentDatum;
+  createStamp!: CreateStamp;
+  updateStamp!: UpdateStamp;
+  deleteStamp!: DeleteStamp;
 
-  @Expose({ name: "student_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  studentId!: string;
-}
+  static fromObject(object: object): StudentEntity {
+    const entity = new StudentEntity();
+    entity.identifier = Identifier.fromObject(object);
+    entity.datum = StudentDatum.fromObject(object);
+    entity.createStamp = CreateStamp.fromObject(object);
+    entity.updateStamp = UpdateStamp.fromObject(object);
+    entity.deleteStamp = DeleteStamp.fromObject(object);
+    return entity;
+  }
 
-export class StudentUser {
-  @Expose({ name: "created_by" })
-  @IsUUID()
-  createdBy!: string | null;
-
-  @Expose({ name: "created_at" })
-  @IsDate()
-  createdAt!: Date;
+  static toObject(entity: StudentEntity): object {
+    const { identifier, datum, createStamp, updateStamp, deleteStamp } = entity;
+    return {
+      ...Identifier.toObject(identifier),
+      ...StudentDatum.toObject(datum),
+      ...CreateStamp.toObject(createStamp),
+      ...UpdateStamp.toObject(updateStamp),
+      ...DeleteStamp.toObject(deleteStamp),
+    };
+  }
 }

@@ -1,47 +1,49 @@
 import { CentreEntity } from "entities/centre.entity";
 import { CentreEntityDto } from "resources/centres/dto/centres.dto";
-import { Expose, plainToClass, Type } from "class-transformer";
+import { Expose, Type } from "class-transformer";
 import { getOrError } from "utils/map";
+import { Identifier } from "entities/common";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
+import { Logger } from "@nestjs/common";
+import { StudentEntity } from "entities/student.entities";
+import { StudentEntityDto } from "resources/students/dto/students.dto";
+import {
+  IsArray,
+  IsBoolean,
+  IsInstance,
+  IsNotEmpty,
+  IsUUID,
+  ValidateNested,
+} from "class-validator";
 import {
   ClassDatum,
   ClassEntity,
   ClassStudentDatum,
   ClassTeacherDatum,
 } from "entities/class.entity";
-import {
-  IsBoolean,
-  IsDate,
-  IsInstance,
-  IsMilitaryTime,
-  IsNotEmpty,
-  IsNumber,
-  IsUUID,
-  Max,
-  Min,
-} from "class-validator";
+import { TeacherEntity } from "entities/teacher.entities";
+import { TeacherEntityDto } from "resources/teachers/dto/teachers.dto";
 
-export class ClassDatumDto {
-  @Expose({ name: "day_time" })
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date)
-  dayTime!: Date;
+export class ClassDatumDto extends ClassDatum {
+  static fromObject(object: object): ClassDatumDto {
+    const datumDto = plainToInstance(ClassDatumDto, object);
+    return datumDto;
+  }
 
-  @Expose({ name: "centre_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  centreId!: string;
+  static toObject(dto: ClassDatumDto): object {
+    const plain = instanceToPlain(dto);
+    return plain;
+  }
 
   static toClassDatum(dto: ClassDatumDto): ClassDatum {
-    const plain = instanceToPlain(dto);
-    const datum = plainToClass(ClassDatum, plain);
+    const plain = ClassDatumDto.toObject(dto);
+    const datum = ClassDatum.fromObject(plain);
     return datum;
   }
 
   static fromClassDatum(datum: ClassDatum): ClassDatumDto {
-    const plain = instanceToPlain(datum);
-    const dto = plainToClass(ClassDatum, plain);
+    const plain = ClassDatum.toObject(datum);
+    const dto = ClassDatumDto.fromObject(plain);
     return dto;
   }
 }
@@ -56,30 +58,65 @@ export class ClassEntityDto extends ClassDatumDto {
     const { identifier, datum } = entity;
     const datumDto = ClassDatumDto.fromClassDatum(datum);
     const dto = plainToInstance(ClassEntityDto, {
-      ...instanceToPlain(identifier),
-      ...instanceToPlain(datumDto),
+      ...Identifier.toObject(identifier),
+      ...ClassDatumDto.toObject(datumDto),
     });
     return dto;
   }
 }
 
 export class DetailedClassDto extends ClassEntityDto {
+  static readonly loggerService = new Logger("DetailedClassDto");
+
   @Expose()
   @IsInstance(CentreEntityDto)
   centre!: CentreEntityDto;
 
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => StudentEntityDto)
+  students!: StudentEntityDto[];
+
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TeacherEntityDto)
+  teachers!: TeacherEntityDto[];
+
   static fromClassEntityAndDetails(
     classEntity: ClassEntity,
     centreEntityMap: Map<string, CentreEntity>,
+    studentEntitiesMap: Map<string, StudentEntity[]>,
+    teacherEntitiesMap: Map<string, TeacherEntity[]>,
   ): DetailedClassDto {
     const classEntityDto = ClassEntityDto.fromClassEntity(classEntity);
-    const { datum: classDatum } = classEntity;
+    const {
+      identifier: { id: classId },
+      datum: classDatum,
+    } = classEntity;
     const { centreId } = classDatum;
-    const centreEntity = getOrError(centreEntityMap, centreId);
+    const centreEntity = getOrError(
+      centreEntityMap,
+      centreId,
+      DetailedClassDto.loggerService,
+    );
     const centreEntityDto = CentreEntityDto.fromCentreEntity(centreEntity);
+    const studentEntities = studentEntitiesMap.get(classId) ?? [];
+    const teacherEntities = teacherEntitiesMap.get(classId) ?? [];
     const dto = plainToInstance(DetailedClassDto, {
-      ...instanceToPlain(classEntityDto),
-      centre: instanceToPlain(centreEntityDto),
+      ...ClassEntityDto.toObject(classEntityDto),
+      centre: CentreEntityDto.toObject(centreEntityDto),
+      students: studentEntities.map((entity) => {
+        const studentEntityDto = StudentEntityDto.fromStudentEntity(entity);
+        const plain = StudentEntityDto.toObject(studentEntityDto);
+        return plain;
+      }),
+      teachers: teacherEntities.map((entity) => {
+        const studentEntityDto = TeacherEntityDto.fromTeacherEntity(entity);
+        const plain = TeacherEntityDto.toObject(studentEntityDto);
+        return plain;
+      }),
     });
     return dto;
   }
@@ -87,9 +124,16 @@ export class DetailedClassDto extends ClassEntityDto {
   static fromClassEntitiesAndDetails(
     classEntities: ClassEntity[],
     centreEntityMap: Map<string, CentreEntity>,
+    studentEntitiesMap: Map<string, StudentEntity[]>,
+    teacherEntitiesMap: Map<string, TeacherEntity[]>,
   ): DetailedClassDto[] {
     const dtos = classEntities.map((entity) =>
-      this.fromClassEntityAndDetails(entity, centreEntityMap),
+      this.fromClassEntityAndDetails(
+        entity,
+        centreEntityMap,
+        studentEntitiesMap,
+        teacherEntitiesMap,
+      ),
     );
     return dtos;
   }
@@ -105,13 +149,17 @@ export class ClassTeacherDto {
   @IsBoolean()
   isFormTeacher!: boolean;
 
+  static toObject(dto: ClassTeacherDto): object {
+    const plain = instanceToPlain(dto);
+    return plain;
+  }
+
   static toClassTeacherDatum(
     dto: ClassTeacherDto,
     classId: string,
   ): ClassTeacherDatum {
-    const plain = instanceToPlain(dto);
-    const datum = plainToClass(ClassTeacherDatum, {
-      ...plain,
+    const datum = ClassTeacherDatum.fromObject({
+      ...ClassTeacherDto.toObject(dto),
       class_id: classId,
     });
     return datum;
@@ -124,13 +172,17 @@ export class ClassStudentDto {
   @IsUUID()
   studentId!: string;
 
+  static toObject(dto: ClassStudentDto): object {
+    const plain = instanceToPlain(dto);
+    return plain;
+  }
+
   static toClassStudentDatum(
     dto: ClassStudentDto,
     classId: string,
   ): ClassStudentDatum {
-    const plain = instanceToPlain(dto);
-    const datum = plainToClass(ClassStudentDatum, {
-      ...plain,
+    const datum = ClassStudentDatum.fromObject({
+      ...ClassStudentDto.toObject(dto),
       class_id: classId,
     });
     return datum;

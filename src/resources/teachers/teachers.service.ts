@@ -1,13 +1,14 @@
 import { DatabaseService } from "database/database.service";
-import { instanceToPlain, plainToInstance } from "class-transformer";
+import { plainToInstance } from "utils/transformer";
 import { Querier } from "database/database.types";
-import { Teacher } from "entities/teacher.entities";
+import { TeacherEntity } from "entities/teacher.entities";
 import { TeachersRepository } from "./teachers.repository";
-import { User } from "entities/user.entities";
+import { UserEntity } from "entities/user.entities";
 import { UsersRepository } from "resources/users/users.repository";
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
@@ -27,6 +28,26 @@ export class TeachersService {
 
   private readonly loggerService = new Logger("TeachersService");
 
+  async searchByIds(ids: Set<string>): Promise<TeacherEntity[]> {
+    const teachers = await this.teachersRepository.searchByIds(ids);
+    return teachers;
+  }
+
+  async get(): Promise<TeacherDto[]> {
+    const teachers = await this.teachersRepository.get();
+    const teacherDtos = teachers.map((teacher) => this.teacherToDto(teacher));
+    return teacherDtos;
+  }
+
+  async getById(id: string): Promise<TeacherDto> {
+    const entities = await this.teachersRepository.searchById(id);
+    if (entities.length !== 1) throw new InternalServerErrorException();
+    const teacher = entities[0];
+    const teacherDto = this.teacherToDto(teacher);
+    return teacherDto;
+  }
+
+  // TODO: Refactor to take in TeacherDatum and return TeacherEntity
   async createMany(teacherDtos: CreateTeacherDto[]): Promise<TeacherDto[]> {
     const teachers = await this.databaseService.transaction(async (query) => {
       const createdTeachers = [];
@@ -45,6 +66,7 @@ export class TeachersService {
     return teachers;
   }
 
+  // TODO: Refactor to take TeacherDatum and return TeacherEntity
   async createOne(
     query: Querier,
     teacherDto: CreateTeacherDto,
@@ -52,7 +74,7 @@ export class TeachersService {
     const { email, name, staffId } = teacherDto;
 
     const usersWithEmail = await this.usersRepository.getByEmail(email);
-    let user: User;
+    let user: UserEntity;
     if (usersWithEmail.length > 0) {
       user = usersWithEmail[0];
     } else {
@@ -73,7 +95,7 @@ export class TeachersService {
       await this.teachersRepository.insertTeacherUser(
         query,
         teacherId,
-        user.id,
+        user.identifier.id,
       );
       return {
         email,
@@ -84,37 +106,27 @@ export class TeachersService {
     }
 
     const teacher = teachersWithStaffId[0];
-    if (teacher.email !== null)
+    if (teacher.datum.email !== null)
       throw new BadRequestException("Teacher already exists.");
-    if (teacher.name !== name)
+    if (teacher.datum.name !== name)
       throw new BadRequestException(
         "Teacher's recorded name does not match given name.",
       );
 
-    await this.teachersRepository.insertTeacherUser(query, teacher.id, user.id);
+    await this.teachersRepository.insertTeacherUser(
+      query,
+      teacher.identifier.id,
+      user.identifier.id,
+    );
     return {
       email,
-      id: teacher.id,
+      id: teacher.identifier.id,
       name,
       staffId,
     };
   }
 
-  async get(): Promise<TeacherDto[]> {
-    const teachers = await this.teachersRepository.get();
-    const teacherDtos = teachers.map((teacher) => this.teacherToDto(teacher));
-    return teacherDtos;
-  }
-
-  async getById(id: string): Promise<TeacherDto> {
-    const teachers = await this.teachersRepository.getById(id);
-    if (teachers.length === 0) throw new NotFoundException();
-    const teacher = teachers[0];
-    const teacherDto = this.teacherToDto(teacher);
-    return teacherDto;
-  }
-
-  async updateByTeacherId(
+  async updateById(
     id: string,
     updateTeacherDto: UpdateTeacherDto,
   ): Promise<TeacherDto> {
@@ -126,14 +138,13 @@ export class TeachersService {
     return teacherDto;
   }
 
-  async deleteById(id: string): Promise<TeacherDto> {
-    const deletedTeacher = await this.teachersRepository.deleteById(id);
-    const teacherDto = this.teacherToDto(deletedTeacher);
-    return teacherDto;
+  async deleteById(id: string): Promise<void> {
+    await this.teachersRepository.deleteTeacherUserByTeacherId(id);
   }
 
-  private teacherToDto(teacher: Teacher): TeacherDto {
-    return plainToInstance(TeacherDto, instanceToPlain(teacher));
+  private teacherToDto(entity: TeacherEntity): TeacherDto {
+    const plain = TeacherEntity.toObject(entity);
+    return plainToInstance(TeacherDto, plain);
   }
 
   private async validateAll(teacherDtos: CreateTeacherDto[]) {
@@ -143,39 +154,39 @@ export class TeachersService {
       const teachersWithStaffId =
         await this.teachersRepository.getIncludingDeletedByStaffId(staffId);
       if (teachersWithStaffId.length === 0) {
-        const teachersWithEmail = await this.teachersRepository.getByEmail(
+        const teachersWithEmail = await this.teachersRepository.searchByEmail(
           email,
         );
         if (teachersWithEmail.length > 0) {
           const teacherWithEmail = teachersWithEmail[0];
           invalidTeachers.push({
             index,
-            message: `Email ${email} belongs to Teacher ${teacherWithEmail.staffId}.`,
+            message: `Email ${email} belongs to Teacher ${teacherWithEmail.datum.staffId}.`,
           });
         }
         continue;
       }
 
       const teacherWithStaffId = teachersWithStaffId[0];
-      if (teacherWithStaffId.email === null) continue;
+      if (teacherWithStaffId.datum.email === null) continue;
 
       switch (true) {
-        case teacherWithStaffId.name !== name:
+        case teacherWithStaffId.datum.name !== name:
           invalidTeachers.push({
             index,
-            message: `Teacher ${staffId} already exists as ${teacherWithStaffId.name}.`,
+            message: `Teacher ${staffId} already exists as ${teacherWithStaffId.datum.name}.`,
           });
           break;
-        case teacherWithStaffId.email !== email:
+        case teacherWithStaffId.datum.email !== email:
           invalidTeachers.push({
             index,
-            message: `Teacher ${staffId} has email ${teacherWithStaffId.email}.`,
+            message: `Teacher ${staffId} has email ${teacherWithStaffId.datum.email}.`,
           });
           break;
         default:
           invalidTeachers.push({
             index,
-            message: `Teacher ${staffId} ${teacherWithStaffId.name} already exists.`,
+            message: `Teacher ${staffId} ${teacherWithStaffId.datum.name} already exists.`,
           });
           break;
       }

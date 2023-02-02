@@ -1,7 +1,7 @@
 import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { Expose, Type } from "class-transformer";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { IsBoolean, IsDate, IsNotEmpty, IsUUID } from "class-validator";
-import { plainToInstance } from "utils/transformer";
 
 export class ClassDatum {
   @Expose({ name: "day_time" })
@@ -18,6 +18,11 @@ export class ClassDatum {
   static fromObject(object: object): ClassDatum {
     const datum = plainToInstance(ClassDatum, object);
     return datum;
+  }
+
+  static toObject(datum: ClassDatum): object {
+    const plain = instanceToPlain(datum);
+    return plain;
   }
 }
 
@@ -91,6 +96,11 @@ export class ClassTeacherDatum {
     const datum = plainToInstance(ClassTeacherDatum, object);
     return datum;
   }
+
+  static toObject(dto: ClassTeacherDatum): object {
+    const plain = instanceToPlain(dto);
+    return plain;
+  }
 }
 
 export class ClassTeacherEntity {
@@ -123,6 +133,11 @@ export class ClassStudentDatum {
   static fromObject(object: object): ClassStudentDatum {
     const datum = plainToInstance(ClassStudentDatum, object);
     return datum;
+  }
+
+  static toObject(dto: ClassStudentDatum): object {
+    const plain = instanceToPlain(dto);
+    return plain;
   }
 }
 
