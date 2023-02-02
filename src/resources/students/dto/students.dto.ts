@@ -1,4 +1,3 @@
-import { ClassEntityDto } from "resources/classes/dto/classes.dto";
 import { Exclude, Expose } from "class-transformer";
 import { Identifier } from "entities/common";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
@@ -34,6 +33,11 @@ export class StudentEntityDto extends StudentDatumDto {
   @Expose({ name: "id" })
   @IsUUID()
   id!: string;
+
+  static toObject(dto: StudentEntityDto): object {
+    const plain = instanceToPlain(dto);
+    return plain;
+  }
 
   static fromStudentEntity(entity: StudentEntity): StudentEntityDto {
     const { identifier, datum } = entity;

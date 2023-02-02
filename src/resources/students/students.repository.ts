@@ -35,6 +35,12 @@ export class StudentsRepository {
   }
 
   async searchById(id: string): Promise<StudentEntity[]> {
+    const students = await this.searchByIds(new Set([id]));
+    return students;
+  }
+
+  async searchByIds(ids: Set<string>): Promise<StudentEntity[]> {
+    const idsArray = Array.from(ids);
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -53,9 +59,9 @@ export class StudentsRepository {
           ON students.id = student_users.student_id AND student_users.deleted_at IS NULL
         JOIN users
           ON student_users.user_id = users.id
-        WHERE students.id = $1;
+        WHERE students.id = ANY($1::UUID[]);
       `,
-      [id],
+      [idsArray],
     );
     const students = rows.map((r) => StudentEntity.fromObject(r));
     return students;
@@ -79,22 +85,21 @@ export class StudentsRepository {
     const rows = await this.databaseService.query(
       `
         WITH most_recent_student_users AS (
-          SELECT
-            DISTINCT ON (user_id, student_id) *
+          SELECT DISTINCT ON (user_id, student_id, deleted_at) *
           FROM student_users
-          ORDER BY deleted_at DESC;
+          ORDER BY deleted_at DESC
         )
         SELECT
           students.id AS id,
           users.email AS email,
           students.student_id AS student_id,
           students.name AS name,
-          student_users.created_at AS created_at,
-          student_users.created_by AS created_by,
+          most_recent_student_users.created_at AS created_at,
+          most_recent_student_users.created_by AS created_by,
           students.updated_at AS updated_at,
           students.updated_by AS updated_by,
-          student_users.deleted_at AS deleted_at,
-          student_users.deleted_by AS deleted_by
+          most_recent_student_users.deleted_at AS deleted_at,
+          most_recent_student_users.deleted_by AS deleted_by
         FROM students
         JOIN most_recent_student_users
           ON students.id = most_recent_student_users.student_id

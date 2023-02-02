@@ -4,6 +4,7 @@ import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 
 export class StudentDatum {
+  @Expose()
   @IsNotEmpty()
   @IsEmail()
   email!: string;
@@ -13,6 +14,7 @@ export class StudentDatum {
   @IsString()
   studentId!: string;
 
+  @Expose()
   @IsNotEmpty()
   @IsString()
   name!: string;

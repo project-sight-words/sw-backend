@@ -32,11 +32,14 @@ export class ClassesController {
   @Get()
   async get(): Promise<DetailedClassDto[]> {
     const entities: ClassEntity[] = await this.classesService.get();
-    const centreEntityMap =
-      await this.classesService.getCentreEntityMapOfClasses(entities);
+    const [centreEntityMap, studentEntitiesMap] = await Promise.all([
+      this.classesService.getCentreEntityMapOfClasses(entities),
+      this.classesService.getStudentEntitiesMapOfClasses(entities),
+    ]);
     const dtos = DetailedClassDto.fromClassEntitiesAndDetails(
       entities,
       centreEntityMap,
+      studentEntitiesMap,
     );
     return dtos;
   }
@@ -48,12 +51,14 @@ export class ClassesController {
     const entities = await this.classesService.searchById(id);
     if (entities.length === 0) throw new NotFoundException();
     const entity = entities[0];
-    const centreEntityMap = await this.classesService.getCentreEntityMapOfClass(
-      entity,
-    );
+    const [centreEntityMap, studentEntitiesMap] = await Promise.all([
+      this.classesService.getCentreEntityMapOfClass(entity),
+      this.classesService.getStudentEntitiesMapOfClass(entity),
+    ]);
     const dto = DetailedClassDto.fromClassEntityAndDetails(
       entity,
       centreEntityMap,
+      studentEntitiesMap,
     );
     return dto;
   }
@@ -62,12 +67,14 @@ export class ClassesController {
   async create(@Body() body: ClassDatumDto): Promise<DetailedClassDto> {
     const datum = ClassDatumDto.toClassDatum(body);
     const entity = await this.classesService.create(datum);
-    const centreEntityMap = await this.classesService.getCentreEntityMapOfClass(
-      entity,
-    );
+    const [centreEntityMap, studentEntitiesMap] = await Promise.all([
+      this.classesService.getCentreEntityMapOfClass(entity),
+      this.classesService.getStudentEntitiesMapOfClass(entity),
+    ]);
     const dto = DetailedClassDto.fromClassEntityAndDetails(
       entity,
       centreEntityMap,
+      studentEntitiesMap,
     );
     return dto;
   }
@@ -114,12 +121,14 @@ export class ClassesController {
     const entities = await this.classesService.searchById(id);
     if (entities.length === 0) throw new NotFoundException();
     const entity = await this.classesService.updateById(id, body);
-    const centreEntityMap = await this.classesService.getCentreEntityMapOfClass(
-      entity,
-    );
+    const [centreEntityMap, studentEntitiesMap] = await Promise.all([
+      this.classesService.getCentreEntityMapOfClass(entity),
+      this.classesService.getStudentEntitiesMapOfClass(entity),
+    ]);
     const dto = DetailedClassDto.fromClassEntityAndDetails(
       entity,
       centreEntityMap,
+      studentEntitiesMap,
     );
     return dto;
   }
@@ -131,13 +140,15 @@ export class ClassesController {
     const entities = await this.classesService.searchById(id);
     if (entities.length === 0) throw new NotFoundException();
     const deletingEntity = entities[0];
-    const centreEntityMap = await this.classesService.getCentreEntityMapOfClass(
-      deletingEntity,
-    );
+    const [centreEntityMap, studentEntitiesMap] = await Promise.all([
+      this.classesService.getCentreEntityMapOfClass(deletingEntity),
+      this.classesService.getStudentEntitiesMapOfClass(deletingEntity),
+    ]);
     const deletedEntity = await this.classesService.deleteById(id);
     const dto = DetailedClassDto.fromClassEntityAndDetails(
       deletedEntity,
       centreEntityMap,
+      studentEntitiesMap,
     );
     return dto;
   }

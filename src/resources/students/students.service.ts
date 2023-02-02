@@ -33,12 +33,17 @@ export class StudentsService {
     return studentDtos;
   }
 
-  async getById(id: string) {
+  async getById(id: string): Promise<StudentDto> {
     const students = await this.studentsRepository.searchById(id);
     if (students.length === 0) throw new NotFoundException();
     const student = students[0];
     const studentDto = this.studentToDto(student);
     return studentDto;
+  }
+
+  async searchByIds(ids: Set<string>): Promise<StudentEntity[]> {
+    const students = await this.studentsRepository.searchByIds(ids);
+    return students;
   }
 
   async createMany(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
@@ -152,10 +157,11 @@ export class StudentsService {
         name,
         studentId,
       });
+      console.log(user);
       await this.studentsRepository.insertStudentUser(
         query,
         studentUuid,
-        user.identitifier.id,
+        user.identitifier.id, // HERE
       );
       return {
         email,

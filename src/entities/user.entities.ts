@@ -1,7 +1,7 @@
-import { Expose, instanceToPlain } from "class-transformer";
-import { IsDate, IsEmail, IsNotEmpty } from "class-validator";
+import { Expose } from "class-transformer";
 import { Identifier } from "./common";
-import { plainToInstance } from "utils/transformer";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
+import { IsDate, IsEmail, IsNotEmpty } from "class-validator";
 
 export class UserDatum {
   @Expose()
@@ -12,6 +12,16 @@ export class UserDatum {
   @Expose({ name: "last_logged_in" })
   @IsDate()
   lastLoggedIn!: Date | null;
+
+  static fromObject(object: object): UserDatum {
+    const datum = plainToInstance(UserDatum, object);
+    return datum;
+  }
+
+  static toObject(datum: UserDatum): object {
+    const plain = instanceToPlain(datum);
+    return plain;
+  }
 }
 
 export class UserEntity {
@@ -20,16 +30,16 @@ export class UserEntity {
 
   static fromObject(object: object): UserEntity {
     const user = new UserEntity();
-    user.identitifier = plainToInstance(Identifier, object);
-    user.datum = plainToInstance(UserDatum, object);
+    user.identitifier = Identifier.fromObject(object);
+    user.datum = UserDatum.fromObject(object);
     return user;
   }
 
   static toObject(entity: UserEntity): object {
     const { datum, identitifier } = entity;
     return {
-      ...instanceToPlain(datum),
-      ...instanceToPlain(identitifier),
+      ...UserDatum.toObject(datum),
+      ...Identifier.toObject(identitifier),
     };
   }
 }

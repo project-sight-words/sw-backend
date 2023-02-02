@@ -114,6 +114,22 @@ export class ClassesRepository {
     return entities[0];
   }
 
+  async getClassStudentsByClassIds(
+    classIds: Set<string>,
+  ): Promise<ClassStudentEntity[]> {
+    const classIdsArray = Array.from(classIds);
+    const rows = await this.databaseService.query(
+      `
+        SELECT *
+        FROM class_students
+        WHERE deleted_at IS NULL AND class_id = ANY($1::UUID[]);
+      `,
+      [classIdsArray],
+    );
+    const entities = rows.map((r) => ClassStudentEntity.fromObject(r));
+    return entities;
+  }
+
   async insert(
     data: ClassDatum,
     insertedBy: string | null = null,

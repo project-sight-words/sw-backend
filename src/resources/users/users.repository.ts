@@ -1,6 +1,5 @@
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
-import { plainToInstance } from "class-transformer";
 import { Querier } from "database/database.types";
 import { UserDatum, UserEntity } from "entities/user.entities";
 
@@ -16,7 +15,7 @@ export class UsersRepository {
       `,
       [email],
     );
-    const users = plainToInstance(UserEntity, rows);
+    const users = rows.map((r) => UserEntity.fromObject(r));
     return users;
   }
 
@@ -33,7 +32,7 @@ export class UsersRepository {
       `,
       [email, lastLoggedIn],
     );
-    const users = plainToInstance(UserEntity, rows);
+    const users = rows.map((r) => UserEntity.fromObject(r));
     return users[0];
   }
 
@@ -47,7 +46,7 @@ export class UsersRepository {
       `,
       [email, lastLoggedIn],
     );
-    const users = plainToInstance(UserEntity, rows);
+    const users = rows.map((r) => UserEntity.fromObject(r));
     return users[0];
   }
 }
