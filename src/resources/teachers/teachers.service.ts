@@ -10,7 +10,6 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
-  NotFoundException,
 } from "@nestjs/common";
 import {
   CreateTeacherDto,

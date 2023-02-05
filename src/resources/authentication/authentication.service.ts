@@ -2,7 +2,7 @@ import { GoogleService } from "./google.service";
 import { Injectable } from "@nestjs/common";
 import { JwtPayload } from "entities/jwt.entities";
 import { LoginWithGoogleDto } from "./dto/authenticate.dto";
-import { Roles } from "entities/roles.entities";
+import { Roles } from "entities/role.entities";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
 import { UsersRepository } from "resources/users/users.repository";

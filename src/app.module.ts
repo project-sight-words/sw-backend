@@ -9,6 +9,7 @@ import { ClassesModule } from "resources/classes/classes.module";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
 import { UsersModule } from "resources/users/users.module";
+import { WordsModule } from "./resources/words/words.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -35,9 +36,10 @@ const ConfigurationModule = ConfigModule.forRoot({
     CentresModule,
     ClassesModule,
     ConfigurationModule,
-    TeachersModule,
     StudentsModule,
+    TeachersModule,
     UsersModule,
+    WordsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

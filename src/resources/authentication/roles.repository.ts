@@ -1,7 +1,7 @@
 import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
-import { Roles } from "entities/roles.entities";
+import { Roles } from "entities/role.entities";
 
 @Injectable()
 export class RolesRepository {

@@ -1,4 +1,4 @@
-import { Roles } from "entities/roles.entities";
+import { Roles } from "entities/role.entities";
 import { Type } from "class-transformer";
 import { UserEntityDto } from "resources/users/dto/users.dto";
 import {
