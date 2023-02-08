@@ -1,7 +1,67 @@
-import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { Expose } from "class-transformer";
-import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Timestamp,
+} from "typeorm";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
+import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
+import { User } from "./user.entities";
+
+@Entity({ name: "students" })
+export class Student {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
+  @Column({ type: "text" })
+  studentId!: string;
+
+  @Column({ type: "text" })
+  name!: string;
+
+  @Column({ type: "timestamptz", default: () => "NOW()" })
+  updatedAt!: Date;
+
+  @Column({ type: "uuid" })
+  updatedBy: string | null = null;
+
+  @OneToMany(() => StudentUser, (studentUser) => studentUser.studentId)
+  studentUsers: StudentUser[] | null = null;
+}
+
+@Entity({ name: "student_users" })
+export class StudentUser {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
+  @Column({ type: "uuid" })
+  userId!: string;
+
+  @Column({ type: "uuid" })
+  studentId!: string;
+
+  @Column({ type: "timestamptz", default: () => "NOW()" })
+  createdAt!: Date;
+
+  @Column({ type: "uuid", nullable: true })
+  createdBy: string | null = null;
+
+  @Column({ type: "timestamptz", nullable: true })
+  deletedAt: Date | null = null;
+
+  @Column({ type: "uuid", nullable: true })
+  deletedBy: string | null = null;
+
+  @ManyToOne(() => Student, (student) => student.studentUsers)
+  student!: Student;
+
+  @ManyToOne(() => User, (user) => user.studentUsers)
+  user!: User;
+}
 
 export class StudentDatum {
   @Expose()

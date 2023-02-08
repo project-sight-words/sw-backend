@@ -1,14 +1,16 @@
-import * as Joi from "joi";
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { TypeOrmModule } from "@nestjs/typeorm";
 import { AppController } from "app.controller";
 import { AppService } from "app.service";
+import * as Joi from "joi";
 import { AuthenticationModule } from "resources/authentication/authentication.module";
-import { ConfigModule } from "@nestjs/config";
-import { Module } from "@nestjs/common";
 import { CentresModule } from "resources/centres/centres.module";
 import { ClassesModule } from "resources/classes/classes.module";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
 import { UsersModule } from "resources/users/users.module";
+import { DatabaseModule } from "./database/database.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -38,6 +40,21 @@ const ConfigurationModule = ConfigModule.forRoot({
     TeachersModule,
     StudentsModule,
     UsersModule,
+    DatabaseModule,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: "postgres" as const,
+        host: configService.getOrThrow<string>("DB_HOST"),
+        port: configService.getOrThrow<number>("DB_PORT"),
+        username: configService.getOrThrow<string>("DB_USER"),
+        password: configService.getOrThrow<string>("DB_PASSWORD"),
+        database: configService.getOrThrow<string>("DB_NAME"),
+        entities: [__dirname + "/entities/**/*.{js,ts}"],
+        logging: true,
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
