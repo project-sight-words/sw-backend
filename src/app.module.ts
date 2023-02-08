@@ -48,8 +48,9 @@ const ConfigurationModule = ConfigModule.forRoot({
         username: configService.getOrThrow<string>('DB_USER'),
         password: configService.getOrThrow<string>('DB_PASSWORD'),
         database: configService.getOrThrow<string>('DB_NAME'),
-        entities: [__dirname + '/**/*.entity.ts']
-      })
+        entities: [__dirname + '/entities/*.entity.ts'],
+      }),
+      inject: [ConfigService],
     }),
   ],
   controllers: [AppController],
