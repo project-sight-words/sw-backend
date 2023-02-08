@@ -2,7 +2,7 @@ import * as Uuid from "utils/uuid";
 import { NotFoundException } from "@nestjs/common/exceptions";
 import { TeachersService } from "./teachers.service";
 import {
-  CreateTeacherDto,
+  TeacherDatumDto,
   TeacherDto,
   UpdateTeacherDto,
 } from "./dto/teachers.dto";
@@ -22,16 +22,6 @@ import {
 export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 
-  @Post()
-  @HttpCode(201)
-  async create(
-    @Body(new ParseArrayPipe({ items: CreateTeacherDto }))
-    body: CreateTeacherDto[],
-  ): Promise<TeacherDto[]> {
-    const teachers = await this.teachersService.createMany(body);
-    return teachers;
-  }
-
   @Get()
   async get(): Promise<TeacherDto[]> {
     const teachers = await this.teachersService.get();
@@ -46,6 +36,16 @@ export class TeachersController {
     return teacher;
   }
 
+  @Post()
+  @HttpCode(201)
+  async create(
+    @Body(new ParseArrayPipe({ items: TeacherDatumDto }))
+    body: TeacherDatumDto[],
+  ): Promise<TeacherDto[]> {
+    const teachers = await this.teachersService.createMany(body);
+    return teachers;
+  }
+
   @Put(":id")
   async updateById(
     @Param("id") id: string,
@@ -53,7 +53,7 @@ export class TeachersController {
   ): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const teacher = await this.teachersService.updateByTeacherId(id, body);
+    const teacher = await this.teachersService.updateById(id, body);
     return teacher;
   }
 
@@ -61,7 +61,9 @@ export class TeachersController {
   async deleteById(@Param("id") id: string): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const teacher = await this.teachersService.deleteById(id);
+    // TODO: Change this to search by id
+    const teacher = await this.teachersService.getById(id);
+    await this.teachersService.deleteById(id);
     return teacher;
   }
 }

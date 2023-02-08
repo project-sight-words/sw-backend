@@ -1,12 +1,13 @@
 import { AuthenticationService } from "./authentication.service";
 import { Body, Controller, NotFoundException, Post, Res } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
+import { UserEntityDto } from "resources/users/dto/users.dto";
 import {
   LoginWithGoogleDto,
   LoggedInDto,
   LoginInDevelopmentDto,
 } from "./dto/authenticate.dto";
-import { ConfigService } from "@nestjs/config";
 
 @Controller("authentication")
 export class AuthenticationController {
@@ -23,10 +24,12 @@ export class AuthenticationController {
     const environment = this.configService.getOrThrow<string>("NODE_ENV");
     if (environment !== "development") throw new NotFoundException();
     const session = await this.authenticationService.login(data.email);
-    const { accessTokenCookie, user } = session;
+    const { accessTokenCookie, user: userEntity } = session;
     response.setHeader("Set-Cookie", accessTokenCookie);
-    const roles = await this.authenticationService.getRolesByUserId(user.id);
-    return { user, roles };
+    const roles = await this.authenticationService.getRolesByUserId(
+      userEntity.identifier.id,
+    );
+    return { user: UserEntityDto.fromUserEntity(userEntity), roles };
   }
 
   @Post("google")
@@ -34,10 +37,12 @@ export class AuthenticationController {
     @Body() data: LoginWithGoogleDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<LoggedInDto> {
-    const { accessTokenCookie, user } =
+    const { accessTokenCookie, user: userEntity } =
       await this.authenticationService.loginWithGoogle(data);
     response.setHeader("Set-Cookie", accessTokenCookie);
-    const roles = await this.authenticationService.getRolesByUserId(user.id);
-    return { user, roles };
+    const roles = await this.authenticationService.getRolesByUserId(
+      userEntity.identifier.id,
+    );
+    return { user: UserEntityDto.fromUserEntity(userEntity), roles };
   }
 }

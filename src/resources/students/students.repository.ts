@@ -1,77 +1,13 @@
 import { DatabaseService } from "database/database.service";
-import { Injectable } from "@nestjs/common";
-import { NewStudent, Student, StudentUser } from "entities/student.entities";
-import { plainToInstance } from "class-transformer";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { Querier } from "database/database.types";
+import { StudentDatum, StudentEntity } from "entities/student.entities";
 
 @Injectable()
 export class StudentsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async getById(id: string): Promise<Student[]> {
-    const rows = await this.databaseService.query(
-      `
-        SELECT
-          students.id AS id,
-          users.email AS email,
-          students.student_id AS student_id,
-          students.name AS name
-        FROM students
-        JOIN student_users
-          ON students.id = student_users.student_id
-        JOIN users
-          ON student_users.user_id = users.id
-        WHERE students.id = $1;
-      `,
-      [id],
-    );
-    const students = plainToInstance(Student, rows);
-    return students;
-  }
-
-  async getByEmail(email: string): Promise<Student[]> {
-    const rows = await this.databaseService.query(
-      `
-        SELECT
-          students.id AS id,
-          users.email AS email,
-          students.student_id AS student_id,
-          students.name AS name
-        FROM students
-        JOIN student_users
-          ON students.id = student_users.student_id
-        JOIN users
-          ON student_users.user_id = users.id
-        WHERE users.email = $1;
-      `,
-      [email],
-    );
-    const students = plainToInstance(Student, rows);
-    return students;
-  }
-
-  async getIncludingDeletedByStudentId(studentId: string): Promise<Student[]> {
-    const rows = await this.databaseService.query(
-      `
-        SELECT
-          students.id AS id,
-          users.email AS email,
-          students.student_id AS student_id,
-          students.name AS name
-        FROM students
-        LEFT JOIN student_users
-          ON students.id = student_users.student_id
-        LEFT JOIN users
-          ON student_users.user_id = users.id
-        WHERE students.student_id = $1;
-      `,
-      [studentId],
-    );
-    const students = plainToInstance(Student, rows);
-    return students;
-  }
-
-  async get(): Promise<Student[]> {
+  async searchByEmail(email: string): Promise<StudentEntity[]> {
     const rows = await this.databaseService.query(
       `
         SELECT
@@ -79,22 +15,120 @@ export class StudentsRepository {
           users.email AS email,
           students.student_id AS student_id,
           students.name AS name,
-          students.updated_at as updated_at,
-          students.updated_by as updated_by
+          student_users.created_at AS created_at,
+          student_users.created_by AS created_by,
+          students.updated_at AS updated_at,
+          students.updated_by AS updated_by,
+          student_users.deleted_at AS deleted_at,
+          student_users.deleted_by AS deleted_by
         FROM students
         JOIN student_users
-          ON students.id = student_users.student_id
+          ON students.id = student_users.student_id AND student_users.deleted_at IS NULL
+        JOIN users
+          ON student_users.user_id = users.id
+        WHERE users.email = $1;
+      `,
+      [email],
+    );
+    const students = rows.map((r) => StudentEntity.fromObject(r));
+    return students;
+  }
+
+  async searchById(id: string): Promise<StudentEntity[]> {
+    const students = await this.searchByIds(new Set([id]));
+    return students;
+  }
+
+  async searchByIds(ids: Set<string>): Promise<StudentEntity[]> {
+    const idsArray = Array.from(ids);
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          students.id AS id,
+          users.email AS email,
+          students.student_id AS student_id,
+          students.name AS name,
+          student_users.created_at AS created_at,
+          student_users.created_by AS created_by,
+          students.updated_at AS updated_at,
+          students.updated_by AS updated_by,
+          student_users.deleted_at AS deleted_at,
+          student_users.deleted_by AS deleted_by
+        FROM students
+        JOIN student_users
+          ON students.id = student_users.student_id AND student_users.deleted_at IS NULL
+        JOIN users
+          ON student_users.user_id = users.id
+        WHERE students.id = ANY($1::UUID[]);
+      `,
+      [idsArray],
+    );
+    const students = rows.map((r) => StudentEntity.fromObject(r));
+    return students;
+  }
+
+  async getIncludingDeletedByStudentId(
+    studentId: string,
+  ): Promise<StudentEntity[]> {
+    const rows = await this.databaseService.query(
+      `
+        WITH most_recent_student_users AS (
+          SELECT DISTINCT ON (user_id, student_id, deleted_at) *
+          FROM student_users
+          ORDER BY deleted_at DESC
+        )
+        SELECT
+          students.id AS id,
+          users.email AS email,
+          students.student_id AS student_id,
+          students.name AS name,
+          most_recent_student_users.created_at AS created_at,
+          most_recent_student_users.created_by AS created_by,
+          students.updated_at AS updated_at,
+          students.updated_by AS updated_by,
+          most_recent_student_users.deleted_at AS deleted_at,
+          most_recent_student_users.deleted_by AS deleted_by
+        FROM students
+        JOIN most_recent_student_users
+          ON students.id = most_recent_student_users.student_id
+        LEFT JOIN users
+          ON most_recent_student_users.user_id = users.id
+        WHERE students.student_id = $1;
+      `,
+      [studentId],
+    );
+    const students = rows.map((r) => StudentEntity.fromObject(r));
+    return students;
+  }
+
+  async get(): Promise<StudentEntity[]> {
+    const rows = await this.databaseService.query(
+      `
+        SELECT
+          students.id AS id,
+          users.email AS email,
+          students.student_id AS student_id,
+          students.name AS name,
+          student_users.created_at AS created_at,
+          student_users.created_by AS created_by,
+          students.updated_at AS updated_at,
+          students.updated_by AS updated_by,
+          student_users.deleted_at AS deleted_at,
+          student_users.deleted_by AS deleted_by
+        FROM students
+        JOIN student_users
+          ON students.id = student_users.student_id AND student_users.deleted_at IS NULL
         JOIN users
           ON student_users.user_id = users.id;
       `,
     );
-    const students = plainToInstance(Student, rows);
+    const students = rows.map((r) => StudentEntity.fromObject(r));
     return students;
   }
 
   async insert(
     query: Querier,
-    student: Omit<NewStudent, "email">,
+    student: Omit<StudentDatum, "email">,
   ): Promise<string> {
     const { studentId, name } = student;
     const rows = (await query(
@@ -108,14 +142,16 @@ export class StudentsRepository {
     return rows[0].id;
   }
 
-  async update(
+  // TODO: Fix this to return properly in SQL
+  async updateById(
     uuid: string,
-    student: Omit<NewStudent, "email">,
-  ): Promise<Student> {
+    student: Omit<StudentDatum, "email">,
+    updatedBy: string | null = null,
+  ): Promise<StudentEntity> {
     const rows = await this.databaseService.query(
       `
         UPDATE students
-        SET name = $1, student_id = $2, updated_at = NOW()
+        SET name = $2, student_id = $3, updated_at = NOW(), updated_by = $1
         FROM (
           SELECT
             students.id as student_uuid,
@@ -126,7 +162,7 @@ export class StudentsRepository {
             ON students.id = student_users.student_id
           JOIN users
             ON student_users.user_id = users.id
-          WHERE students.id = $3
+          WHERE students.id = $4
         ) AS subquery
         WHERE students.id = subquery.student_uuid
         RETURNING
@@ -135,13 +171,13 @@ export class StudentsRepository {
           students.name AS name,
           subquery.email AS email;
       `,
-      [student.name, student.studentId, uuid],
+      [updatedBy, student.name, student.studentId, uuid],
     );
-    const students = plainToInstance(Student, rows);
+    const students = rows.map((r) => StudentEntity.fromObject(r));
     return students[0];
   }
 
-  async upsertByStudentId(student: NewStudent): Promise<Student> {
+  async upsertByStudentId(student: StudentDatum): Promise<StudentEntity> {
     const rows = await this.databaseService.query(
       `
         INSERT INTO students (student_id, name)
@@ -153,8 +189,10 @@ export class StudentsRepository {
       `,
       [student.studentId, student.name],
     );
-    const newStudent = plainToInstance(Student, rows[0]);
-    newStudent.email = student.email;
+    const newStudent = StudentEntity.fromObject({
+      ...rows[0],
+      email: student.email,
+    });
     return newStudent;
   }
 
@@ -172,21 +210,18 @@ export class StudentsRepository {
     );
   }
 
-  async getStudentUser(
+  async deleteStudentUserByStudentId(
     studentId: string,
-    userId: string,
-  ): Promise<StudentUser[]> {
+    deletedBy: string | null = null,
+  ): Promise<void> {
     const rows = await this.databaseService.query(
       `
-        SELECT *
-        FROM users
-          INNER JOIN student_users ON users.id = student_users.user_id
-          INNER JOIN students ON student_users.student_id = students.id
-        WHERE users.id = $1 AND students.id = $2;
+        UPDATE student_users
+        SET deleted_at = NOW(), deleted_by = $1
+        WHERE students.id = $2 AND deleted_at IS NULl;
       `,
-      [userId, studentId],
+      [deletedBy, studentId],
     );
-    const studentUsers = plainToInstance(StudentUser, rows);
-    return studentUsers;
+    if (rows.length !== 1) throw new InternalServerErrorException();
   }
 }

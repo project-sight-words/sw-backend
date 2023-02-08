@@ -1,6 +1,7 @@
-import { LoginWithGoogleDto } from "./dto/authenticate.dto";
 import { GoogleService } from "./google.service";
 import { Injectable } from "@nestjs/common";
+import { JwtPayload } from "entities/jwt.entities";
+import { LoginWithGoogleDto } from "./dto/authenticate.dto";
 import { Roles } from "entities/roles.entities";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
@@ -20,7 +21,8 @@ export class AuthenticationService {
       email: email,
       lastLoggedIn: new Date(),
     });
-    const jwtToken = this.sessionService.sign(user);
+    const jwtPayload = JwtPayload.fromUserEntity(user);
+    const jwtToken = this.sessionService.sign(jwtPayload);
     const accessTokenCookie =
       this.sessionService.createCookieWithToken(jwtToken);
     // TODO: Create refresh token cookie

@@ -10,5 +10,6 @@ import { UsersRepository } from "resources/users/users.repository";
   imports: [DatabaseModule, UsersModule],
   controllers: [StudentsController],
   providers: [UsersRepository, StudentsService, StudentsRepository],
+  exports: [StudentsService],
 })
 export class StudentsModule {}
