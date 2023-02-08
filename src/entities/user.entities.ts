@@ -1,7 +1,24 @@
 import { Expose } from "class-transformer";
-import { Identifier } from "./common";
-import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { IsDate, IsEmail, IsNotEmpty } from "class-validator";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
+import { Identifier } from "./common";
+import { StudentUser } from "./student.entities";
+
+@Entity({ name: "users" })
+export class User {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
+  @Column({ type: "text" })
+  email!: string;
+
+  @Column({ name: "last_logged_in", type: "date", nullable: true })
+  lastLoggedIn: Date | null = null;
+
+  @OneToMany(() => StudentUser, studentUser => studentUser.userId)
+  studentUsers: StudentUser[] | null = null;
+}
 
 export class UserDatum {
   @Expose()
