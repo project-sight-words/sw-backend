@@ -5,7 +5,9 @@ import { User } from "../../entities/user.entities";
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
 
   getByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOneBy({ email });

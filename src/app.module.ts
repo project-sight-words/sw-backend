@@ -43,19 +43,16 @@ const ConfigurationModule = ConfigModule.forRoot({
     DatabaseModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => {
-        console.log(__dirname)
-        return ({
-          type: 'postgres' as 'postgres',
-          host: configService.getOrThrow<string>('DB_HOST'),
-          port: configService.getOrThrow<number>('DB_PORT'),
-          username: configService.getOrThrow<string>('DB_USER'),
-          password: configService.getOrThrow<string>('DB_PASSWORD'),
-          database: configService.getOrThrow<string>('DB_NAME'),
-          entities: [__dirname + '/entities/**/*.{js,ts}'],
-          logging: true,
-        });
-      },
+      useFactory: (configService: ConfigService) => ({
+        type: "postgres" as const,
+        host: configService.getOrThrow<string>("DB_HOST"),
+        port: configService.getOrThrow<number>("DB_PORT"),
+        username: configService.getOrThrow<string>("DB_USER"),
+        password: configService.getOrThrow<string>("DB_PASSWORD"),
+        database: configService.getOrThrow<string>("DB_NAME"),
+        entities: [__dirname + "/entities/**/*.{js,ts}"],
+        logging: true,
+      }),
       inject: [ConfigService],
     }),
   ],
@@ -63,4 +60,4 @@ const ConfigurationModule = ConfigModule.forRoot({
   providers: [AppService],
 })
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class AppModule { }
+export class AppModule {}

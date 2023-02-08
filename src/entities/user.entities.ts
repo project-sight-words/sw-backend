@@ -16,7 +16,7 @@ export class User {
   @Column({ name: "last_logged_in", type: "date", nullable: true })
   lastLoggedIn: Date | null = null;
 
-  @OneToMany(() => StudentUser, studentUser => studentUser.userId)
+  @OneToMany(() => StudentUser, (studentUser) => studentUser.userId)
   studentUsers: StudentUser[] | null = null;
 }
 
