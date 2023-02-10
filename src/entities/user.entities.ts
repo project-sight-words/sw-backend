@@ -5,7 +5,7 @@ import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { Identifier } from "./common";
 import { StudentUser } from "./student.entities";
 
-@Entity({ name: "users" })
+@Entity("users")
 export class User {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
