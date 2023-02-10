@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User, UserDatum } from "entities/user.entities";
+import { plainToInstance } from "utils/transformer";
 
 @Injectable()
 export class UsersService {
@@ -13,8 +14,7 @@ export class UsersService {
     return this.userRepository.findOneBy({ email });
   }
 
-  async upsertByEmail(user: UserDatum): Promise<User> {
-    const { email, lastLoggedIn } = user;
+  async upsertByEmail(email: string, lastLoggedIn: Date): Promise<User> {
     const { generatedMaps } = await this.userRepository
       .createQueryBuilder()
       .insert()
@@ -23,7 +23,7 @@ export class UsersService {
       .orUpdate(["last_logged_in"], ["email"])
       .returning("*")
       .execute();
-    return generatedMaps[0] as User;
+    return plainToInstance(User, generatedMaps[0]);
   }
 
   create(email: string): Promise<User> {
