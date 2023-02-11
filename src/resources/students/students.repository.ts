@@ -84,41 +84,6 @@ export class StudentsRepository {
     return rows[0].id;
   }
 
-  // TODO: Fix this to return properly in SQL
-  async updateById(
-    uuid: string,
-    student: Omit<StudentDatum, "email">,
-    updatedBy: string | null = null,
-  ): Promise<StudentEntity> {
-    const rows = await this.databaseService.query(
-      `
-        UPDATE students
-        SET name = $2, student_id = $3, updated_at = NOW(), updated_by = $1
-        FROM (
-          SELECT
-            students.id as student_uuid,
-            students.student_id AS student_id,
-            users.email AS email
-          FROM students
-          JOIN student_users
-            ON students.id = student_users.student_id
-          JOIN users
-            ON student_users.user_id = users.id
-          WHERE students.id = $4
-        ) AS subquery
-        WHERE students.id = subquery.student_uuid
-        RETURNING
-          students.id AS id,
-          students.student_id AS student_id,
-          students.name AS name,
-          subquery.email AS email;
-      `,
-      [updatedBy, student.name, student.studentId, uuid],
-    );
-    const students = rows.map((r) => StudentEntity.fromObject(r));
-    return students[0];
-  }
-
   async upsertByStudentId(student: StudentDatum): Promise<StudentEntity> {
     const rows = await this.databaseService.query(
       `

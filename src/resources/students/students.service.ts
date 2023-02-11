@@ -85,6 +85,45 @@ export class StudentsService {
     return this.studentUserToStudentDto(studentUser);
   }
 
+  async updateById(
+    uuid: string,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<StudentDto> {
+    // Must use raw queries as subquery in update is not supported by TypeORM
+    // TODO: Fix this to return properly in SQL
+    const students = await this.dataSource.query(
+      `
+        UPDATE students
+        SET name = $2, student_id = $3, updated_at = NOW(), updated_by = $1
+        FROM (
+          SELECT
+            students.id as student_uuid,
+            students.student_id AS student_id,
+            users.email AS email
+          FROM students
+          JOIN student_users
+            ON students.id = student_users.student_id
+          JOIN users
+            ON student_users.user_id = users.id
+          WHERE students.id = $4
+        ) AS subquery
+        WHERE students.id = subquery.student_uuid
+        RETURNING
+          students.id AS id,
+          students.student_id AS student_id,
+          students.name AS name,
+          subquery.email AS email;
+      `,
+      [null, updateStudentDto.name, updateStudentDto.studentId, uuid]
+    ) as { id: string, student_id: string, name: string, email: string }[]
+    const studentDto = {
+      id: students[0].id,
+      email: students[0].email,
+      name: students[0].name,
+      studentId: students[0].student_id
+    }
+    return studentDto;
+  }
   async createMany(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
     const errorMessages = await this.validateAll(studentDtos);
     if (errorMessages.length !== 0)
