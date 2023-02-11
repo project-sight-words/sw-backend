@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DatabaseService } from "database/database.service";
@@ -68,12 +69,20 @@ export class StudentsService {
     return studentDtos;
   }
 
-  async getById(id: string): Promise<StudentDto> {
-    const entities = await this.studentsRepository.searchById(id);
-    if (entities.length !== 1) throw new InternalServerErrorException();
-    const student = entities[0];
-    const studentDto = this.studentToDto(student);
-    return studentDto;
+  async getById(uuid: string): Promise<StudentDto> {
+    const studentUser = await this.studentUserRepository.findOne({
+      relations: {
+        user: true,
+        student: true
+      },
+      withDeleted: false,
+      where: {
+        studentId: uuid
+      }
+    })
+    // Throw Not Found instead since it's more logical to do so for students that cannot be found
+    if (!studentUser) throw new NotFoundException();
+    return this.studentUserToStudentDto(studentUser);
   }
 
   async createMany(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
@@ -185,6 +194,15 @@ export class StudentsService {
 
   private studentToDto_(student: Student): StudentDto {
     return plainToInstance(StudentDto, student);
+  }
+
+  private studentUserToStudentDto(studentUser: StudentUser): StudentDto {
+    return {
+      id: studentUser.studentId,
+      email: studentUser.user.email,
+      name: studentUser.student.name,
+      studentId: studentUser.student.studentId
+    }
   }
 
   private async validateAll(studentDtos: CreateStudentDto[]) {
