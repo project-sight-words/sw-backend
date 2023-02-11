@@ -40,8 +40,19 @@ export class StudentsService {
   }
 
   async get(): Promise<StudentDto[]> {
-    const students = await this.studentsRepository.get();
-    const studentDtos = students.map((student) => this.studentToDto(student));
+    const students = await this.studentUserRepository.find({
+      relations: {
+        user: true,
+        student: true
+      },
+      withDeleted: false,
+    })
+    const studentDtos = students.map(su => ({
+      id: su.studentId,
+      email: su.user.email,
+      name: su.student.name,
+      studentId: su.student.studentId
+    }));
     return studentDtos;
   }
 

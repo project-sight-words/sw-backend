@@ -101,31 +101,6 @@ export class StudentsRepository {
     return students;
   }
 
-  async get(): Promise<StudentEntity[]> {
-    const rows = await this.databaseService.query(
-      `
-        SELECT
-          students.id AS id,
-          users.email AS email,
-          students.student_id AS student_id,
-          students.name AS name,
-          student_users.created_at AS created_at,
-          student_users.created_by AS created_by,
-          students.updated_at AS updated_at,
-          students.updated_by AS updated_by,
-          student_users.deleted_at AS deleted_at,
-          student_users.deleted_by AS deleted_by
-        FROM students
-        JOIN student_users
-          ON students.id = student_users.student_id AND student_users.deleted_at IS NULL
-        JOIN users
-          ON student_users.user_id = users.id;
-      `,
-    );
-    const students = rows.map((r) => StudentEntity.fromObject(r));
-    return students;
-  }
-
   async insert(
     query: Querier,
     student: Omit<StudentDatum, "email">,
