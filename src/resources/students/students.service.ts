@@ -34,9 +34,21 @@ export class StudentsService {
 
   private readonly loggerService = new Logger("StudentsService");
 
-  async searchByIds(ids: Set<string>): Promise<StudentEntity[]> {
-    const students = await this.studentsRepository.searchByIds(ids);
-    return students;
+  async searchByIds(ids: Set<string>): Promise<Student[]> {
+    const students = await this.studentUserRepository.find({
+      relations: {
+        user: true,
+        student: true
+      },
+      withDeleted: false,
+      where: {
+        student: {
+          studentId: In(Array.from(ids))
+        }
+      }
+    })
+
+    return students.map(su => su.student)
   }
 
   async get(): Promise<StudentDto[]> {

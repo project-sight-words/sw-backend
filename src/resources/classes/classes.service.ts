@@ -2,7 +2,7 @@ import { CentreEntity } from "entities/centre.entity";
 import { CentresRepository } from "resources/centres/centres.repository";
 import { ClassesRepository } from "./classes.repository";
 import { getOrError } from "utils/map";
-import { StudentEntity } from "entities/student.entities";
+import { Student, StudentEntity } from "entities/student.entities";
 import { StudentsService } from "resources/students/students.service";
 import { TeacherEntity } from "entities/teacher.entities";
 import { TeachersService } from "resources/teachers/teachers.service";
@@ -27,7 +27,7 @@ export class ClassesService {
     private centresRepository: CentresRepository, // TODO: Change this to service
     private studentsService: StudentsService,
     private teachersService: TeachersService,
-  ) {}
+  ) { }
 
   private readonly loggerService = new Logger("ClassesService");
 
@@ -115,11 +115,9 @@ export class ClassesService {
       studentIds.add(studentId);
     });
     const studentEntities = await this.studentsService.searchByIds(studentIds);
-    const studentEntityMap = new Map<string, StudentEntity>();
+    const studentEntityMap = new Map<string, Student>();
     studentEntities.forEach((entity) => {
-      const { identifier } = entity;
-      const { id } = identifier;
-      studentEntityMap.set(id, entity);
+      studentEntityMap.set(entity.id, entity);
     });
     const studentEntitesMap = new Map<string, StudentEntity[]>();
     classStudentEntities.forEach((entity) => {
