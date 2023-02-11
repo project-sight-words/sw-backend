@@ -116,19 +116,4 @@ export class StudentsRepository {
       [userId, studentId],
     );
   }
-
-  async deleteStudentUserByStudentId(
-    studentId: string,
-    deletedBy: string | null = null,
-  ): Promise<void> {
-    const rows = await this.databaseService.query(
-      `
-        UPDATE student_users
-        SET deleted_at = NOW(), deleted_by = $1
-        WHERE students.id = $2 AND deleted_at IS NULl;
-      `,
-      [deletedBy, studentId],
-    );
-    if (rows.length !== 1) throw new InternalServerErrorException();
-  }
 }

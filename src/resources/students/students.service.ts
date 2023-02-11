@@ -124,6 +124,19 @@ export class StudentsService {
     }
     return studentDto;
   }
+
+  async deleteById(uuid: string): Promise<void> {
+    const results = await this.studentUserRepository
+      .createQueryBuilder()
+      .update()
+      .set({ deletedAt: "now()", deletedBy: null })
+      .where("student_id = :studentId", { studentId: uuid })
+      .andWhere("deleted_at IS NULL")
+      .execute()
+    if (results.affected && results.affected !== 1) throw new InternalServerErrorException()
+  }
+
+
   async createMany(studentDtos: CreateStudentDto[]): Promise<StudentDto[]> {
     const errorMessages = await this.validateAll(studentDtos);
     if (errorMessages.length !== 0)
