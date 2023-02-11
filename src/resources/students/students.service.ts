@@ -165,15 +165,7 @@ export class StudentsService {
   }
 
   private async validateAll(studentDtos: CreateStudentDto[]) {
-    /**
-     * Possible errors:
-     * 1. Same email but different name
-     * 2. Same email but different student id
-     * 3. Same student id but different name
-     * 4. Same student id but different email
-     */
-
-    // Existing students can either be identified using their student id or email
+    // Only retrieve the latest status of the relationship (NULL if not deleted or latest deleted_at date)
     const existingStudents = await this.studentUserRepository
       .createQueryBuilder("student_users")
       .innerJoinAndSelect("student_users.student", "students")
@@ -184,18 +176,24 @@ export class StudentsService {
       .orWhere("students.student_id IN (:...studentIds)", {
         studentIds: studentDtos.map((s) => s.studentId),
       })
-      .distinctOn(["users.id", "students.id", "student_users.deleted_at"])
+      .distinctOn(["students.id", "users.id"])
+      .orderBy("student_users.deleted_at", "DESC", "NULLS FIRST")
       .getMany();
 
     // Convert the DTOs into a dictionary to achieve O(1) read access
-    const emailDtos: Record<
-      string,
-      { row: number; name: string; studentId: string }
-    > = {};
-    const studentIdDtos: Record<
-      string,
-      { row: number; name: string; email: string }
-    > = {};
+    interface insertRow {
+      row: number;
+      name: string;
+    }
+    interface insertStudentIdRow extends insertRow {
+      studentId: string;
+    }
+    interface insertEmailRow extends insertRow {
+      email: string;
+    }
+
+    const emailDtos: Record<string, insertStudentIdRow> = {};
+    const studentIdDtos: Record<string, insertEmailRow> = {};
     for (let i = 0; i < studentDtos.length; i++) {
       const studentDto = studentDtos[i];
       // TODO: Consider checking for duplicate entries?
@@ -216,34 +214,33 @@ export class StudentsService {
       const emailDto = emailDtos[es.user.email];
       const studentIdDto = studentIdDtos[es.student.studentId];
 
-      if (emailDto && studentIdDto) {
-        // Different name
-        if (emailDto.name !== es.student.name) {
-          errorMessages.push({
-            index: emailDto.row,
-            message: `Student ${es.user.email} already exists as ${es.student.name}.`,
-          });
-        } else if (studentIdDto.name !== es.student.name) {
+      if (studentIdDto) {
+        // If the attempted insert's student ID already exists
+        if (studentIdDto.email !== es.user.email) {
+          // If the student ID exists, then it must be unique (tied to only 1 email)
           errorMessages.push({
             index: studentIdDto.row,
-            message: `Student ${es.student.studentId} already exists as ${es.student.name}.`,
+            message: `Student ${es.student.studentId} already exists as ${es.user.email}.`,
+          });
+        } else if (studentIdDto.name !== es.student.name) {
+          // If the student ID and email match, then the name cannot change
+          errorMessages.push({
+            index: studentIdDto.row,
+            message: `Student ${es.student.studentId} cannot be renamed as it already exists as ${es.student.name}.`,
           });
         }
-      } else if (!emailDto) {
-        // Same student id, different email
-        errorMessages.push({
-          index: studentIdDto.row,
-          message: `Student ${es.student.studentId} already exists as ${es.user.email}.`,
-        });
-      } else if (!studentIdDto) {
-        // Same email, different student id
-        errorMessages.push({
-          index: emailDto.row,
-          message: `Student ${es.user.email} already exists as ${es.student.studentId}.`,
-        });
+      } else {
+        // If the attempted insert's email already exists
+        if (!es.deletedAt && emailDto.studentId !== es.student.studentId) {
+          // If the student has not been deleted yet, then the insert's student ID must match the current student ID
+          errorMessages.push({
+            index: emailDto.row,
+            message: `Student ${emailDto.studentId} cannot be created again as it already exists as ${es.student.studentId}.`,
+          });
+        }
       }
-    }
 
-    return errorMessages;
+      return errorMessages;
+    }
   }
 }
