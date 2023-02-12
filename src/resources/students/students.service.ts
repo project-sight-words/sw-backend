@@ -101,20 +101,19 @@ export class StudentsService {
     updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
     const { name, studentId } = updateStudentDto;
-    const studentUser = await this.studentUserRepository.findOne({
-      relations: {
-        user: true,
-        student: true,
-      },
-      withDeleted: true,
-      where: { studentId: uuid },
-    });
-    if (!studentUser) throw new NotFoundException();
-    studentUser.student.name = name;
-    studentUser.student.studentId = studentId;
-    studentUser.student.updatedBy = null;
-    await this.studentUserRepository.save(studentUser);
-    return this.studentUserToStudentDto(studentUser);
+    await this.studentRepository
+      .createQueryBuilder()
+      .select()
+      .from(Student, "students")
+      .where({ id: uuid })
+      .update()
+      .set({
+        name,
+        studentId,
+        updatedBy: null,
+      })
+      .execute();
+    return this.getById(uuid);
   }
 
   async deleteById(uuid: string): Promise<void> {
