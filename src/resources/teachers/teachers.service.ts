@@ -87,7 +87,7 @@ export class TeachersService {
       },
       withDeleted: false,
       where: {
-        id: uuid,
+        teacherId: uuid,
       },
     });
     if (!teacherUser) throw new NotFoundException();
@@ -97,6 +97,7 @@ export class TeachersService {
   async updateById(
     uuid: string,
     updateTeacherDto: UpdateTeacherDto,
+    updatedBy: string | null = null,
   ): Promise<TeacherDto> {
     const { name, staffId } = updateTeacherDto;
     await this.teacherRepository
@@ -108,7 +109,7 @@ export class TeachersService {
       .set({
         name,
         staffId,
-        updatedBy: null,
+        updatedBy,
       })
       .execute();
     return this.findOneById(uuid);

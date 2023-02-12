@@ -53,7 +53,7 @@ export class TeachersController {
   ): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const teacher = await this.teachersService.updateById(id, body);
+    const teacher = await this.teachersService.updateById(id, body, null); // TODO: add updatedBy
     return teacher;
   }
 

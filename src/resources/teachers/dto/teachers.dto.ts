@@ -82,7 +82,7 @@ export class TeacherDto extends CreateTeacherDto {
 
   static fromTeacherUser(teacherUser: TeacherUser): TeacherDto {
     return {
-      id: teacherUser.id,
+      id: teacherUser.teacherId,
       email: teacherUser.user.email,
       name: teacherUser.teacher.name,
       staffId: teacherUser.teacher.staffId,
