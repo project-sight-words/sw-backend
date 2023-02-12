@@ -29,10 +29,10 @@ export class TeachersController {
   }
 
   @Get(":id")
-  async getById(@Param("id") id: string): Promise<TeacherDto> {
+  async findOneById(@Param("id") id: string): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const teacher = await this.teachersService.getById(id);
+    const teacher = await this.teachersService.findOneById(id);
     return teacher;
   }
 
@@ -61,8 +61,7 @@ export class TeachersController {
   async deleteById(@Param("id") id: string): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    // TODO: Change this to search by id
-    const teacher = await this.teachersService.getById(id);
+    const teacher = await this.teachersService.findOneById(id);
     await this.teachersService.deleteById(id);
     return teacher;
   }
