@@ -240,12 +240,6 @@ export class StudentsService {
             message: `Student ${studentId} has email ${studentUser.user.email}.`,
           });
           break;
-        default:
-          errorMessages.push({
-            index,
-            message: `Student ${studentId} ${studentUser.user.email} already exists.`,
-          });
-          break;
       }
     }
 
