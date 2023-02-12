@@ -27,7 +27,7 @@ export class ClassesService {
     private centresRepository: CentresRepository, // TODO: Change this to service
     private studentsService: StudentsService,
     private teachersService: TeachersService,
-  ) { }
+  ) {}
 
   private readonly loggerService = new Logger("ClassesService");
 

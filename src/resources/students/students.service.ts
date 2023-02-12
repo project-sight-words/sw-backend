@@ -6,26 +6,19 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DatabaseService } from "database/database.service";
-import { Student, StudentEntity, StudentUser } from "entities/student.entities";
-import { UsersRepository } from "resources/users/users.repository";
+import { Student, StudentUser } from "entities/student.entities";
 import { DataSource, EntityManager, In, Repository } from "typeorm";
-import { plainToInstance } from "utils/transformer";
 import { UsersService } from "../users/users.service";
 import {
   CreateStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
-import { StudentsRepository } from "./students.repository";
 
 @Injectable()
 export class StudentsService {
   constructor(
-    private readonly studentsRepository: StudentsRepository,
-    private readonly usersRepository: UsersRepository,
     private readonly usersService: UsersService,
-    private readonly databaseService: DatabaseService,
     private readonly dataSource: DataSource,
     @InjectRepository(Student)
     private readonly studentRepository: Repository<Student>,
@@ -60,15 +53,7 @@ export class StudentsService {
       },
       withDeleted: false,
     });
-    const studentDtos = students.map(
-      (su) =>
-        ({
-          id: su.studentId,
-          email: su.user.email,
-          name: su.student.name,
-          studentId: su.student.studentId,
-        } as StudentDto),
-    );
+    const studentDtos = students.map((su) => this.studentUserToStudentDto(su));
     return studentDtos;
   }
 
@@ -92,40 +77,21 @@ export class StudentsService {
     uuid: string,
     updateStudentDto: UpdateStudentDto,
   ): Promise<StudentDto> {
-    // Must use raw queries as subquery in update is not supported by TypeORM
-    // TODO: Fix this to return properly in SQL
-    const students = (await this.dataSource.query(
-      `
-          UPDATE students
-          SET name       = $2,
-              student_id = $3,
-              updated_at = NOW(),
-              updated_by = $1
-          FROM (SELECT students.id         as student_uuid,
-                       students.student_id AS student_id,
-                       users.email         AS email
-                FROM students
-                         JOIN student_users
-                              ON students.id = student_users.student_id
-                         JOIN users
-                              ON student_users.user_id = users.id
-                WHERE students.id = $4) AS subquery
-          WHERE students.id = subquery.student_uuid
-          RETURNING
-              students.id AS id,
-              students.student_id AS student_id,
-              students.name AS name,
-              subquery.email AS email;
-      `,
-      [null, updateStudentDto.name, updateStudentDto.studentId, uuid],
-    )) as { id: string; student_id: string; name: string; email: string }[];
-    const studentDto: StudentDto = {
-      id: students[0].id,
-      email: students[0].email,
-      name: students[0].name,
-      studentId: students[0].student_id,
-    };
-    return studentDto;
+    const { name, studentId } = updateStudentDto;
+    const studentUser = await this.studentUserRepository.findOne({
+      relations: {
+        user: true,
+        student: true,
+      },
+      withDeleted: true,
+      where: { studentId: uuid },
+    });
+    if (!studentUser) throw new NotFoundException();
+    studentUser.student.name = name;
+    studentUser.student.studentId = studentId;
+    studentUser.student.updatedBy = null;
+    await this.studentUserRepository.save(studentUser);
+    return this.studentUserToStudentDto(studentUser);
   }
 
   async deleteById(uuid: string): Promise<void> {
@@ -170,9 +136,8 @@ export class StudentsService {
     if (!user) user = await this.usersService.create(email);
 
     let student = await entityManager.findOneBy(Student, { studentId });
-    if (!student) {
+    if (!student)
       student = await entityManager.save(Student, { name, studentId });
-    }
 
     if (student.name !== name)
       throw new BadRequestException(
@@ -196,15 +161,6 @@ export class StudentsService {
       name,
       studentId,
     };
-  }
-
-  private studentToDto(entity: StudentEntity): StudentDto {
-    const plain = StudentEntity.toObject(entity);
-    return plainToInstance(StudentDto, plain);
-  }
-
-  private studentToDto_(student: Student): StudentDto {
-    return plainToInstance(StudentDto, student);
   }
 
   private studentUserToStudentDto(studentUser: StudentUser): StudentDto {
