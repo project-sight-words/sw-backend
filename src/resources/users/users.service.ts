@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { plainToInstance } from "class-transformer";
 import { User, UserDatum } from "entities/user.entities";
 import { Repository } from "typeorm";
+import { plainToInstance } from "utils/transformer";
 
 @Injectable()
 export class UsersService {
