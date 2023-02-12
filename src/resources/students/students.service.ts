@@ -119,8 +119,7 @@ export class StudentsService {
   async deleteById(uuid: string): Promise<void> {
     const results = await this.studentUserRepository
       .createQueryBuilder()
-      .update()
-      .set({ deletedAt: "now()", deletedBy: null })
+      .softDelete()
       .where("student_id = :studentId", { studentId: uuid })
       .andWhere("deleted_at IS NULL")
       .execute();
