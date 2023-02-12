@@ -1,10 +1,3 @@
-import { DatabaseService } from "database/database.service";
-import { plainToInstance } from "utils/transformer";
-import { Querier } from "database/database.types";
-import { TeacherEntity } from "entities/teacher.entities";
-import { TeachersRepository } from "./teachers.repository";
-import { UserEntity } from "entities/user.entities";
-import { UsersRepository } from "resources/users/users.repository";
 import {
   BadRequestException,
   Injectable,
@@ -18,180 +11,227 @@ import {
   UpdateTeacherDto,
 } from "./dto/teachers.dto";
 
+import { Teacher, TeacherEntity, TeacherUser } from "entities/teacher.entities";
+import { UsersService } from "resources/users/users.service";
+import { InjectRepository } from "@nestjs/typeorm";
+import { DataSource, EntityManager, In, Repository } from "typeorm";
+import { CreateStamp, DeleteStamp, UpdateStamp } from "entities/common";
+
 @Injectable()
 export class TeachersService {
   constructor(
-    private readonly teachersRepository: TeachersRepository,
-    private readonly usersRepository: UsersRepository,
-    private readonly databaseService: DatabaseService,
+    private readonly usersService: UsersService,
+    private readonly dataSource: DataSource,
+    @InjectRepository(Teacher)
+    private readonly teacherRepository: Repository<Teacher>,
+    @InjectRepository(TeacherUser)
+    private readonly teacherUserRepository: Repository<TeacherUser>,
   ) {}
 
   private readonly loggerService = new Logger("TeachersService");
 
   async searchByIds(ids: Set<string>): Promise<TeacherEntity[]> {
-    const teachers = await this.teachersRepository.searchByIds(ids);
-    return teachers;
+    const teachers = await this.teacherUserRepository.find({
+      relations: {
+        user: true,
+        teacher: true,
+      },
+      withDeleted: false,
+      where: {
+        teacher: {
+          staffId: In(Array.from(ids)),
+        },
+      },
+    });
+
+    // TODO: Use Teacher entity
+    return teachers.map((tu) => {
+      const te = new TeacherEntity();
+      te.identifier.id = tu.teacherId;
+      te.datum.staffId = tu.teacher.staffId;
+      te.datum.email = tu.user.email;
+      te.datum.name = tu.teacher.name;
+      const createStamp = new CreateStamp();
+      createStamp.createdAt = tu.createdAt;
+      createStamp.createdBy = tu.createdBy;
+      te.createStamp = createStamp;
+      const updateStamp = new UpdateStamp();
+      updateStamp.updatedAt = tu.teacher.updatedAt;
+      updateStamp.updatedBy = tu.teacher.updatedBy;
+      te.updateStamp = updateStamp;
+      const deleteStamp = new DeleteStamp();
+      deleteStamp.deletedAt = tu.deletedAt;
+      deleteStamp.deletedBy = tu.deletedBy ? tu.deletedBy : "";
+      te.deleteStamp = deleteStamp;
+      return te;
+    });
   }
 
   async get(): Promise<TeacherDto[]> {
-    const teachers = await this.teachersRepository.get();
-    const teacherDtos = teachers.map((teacher) => this.teacherToDto(teacher));
+    const teachers = await this.teacherUserRepository.find({
+      relations: {
+        user: true,
+        teacher: true,
+      },
+      withDeleted: false,
+    });
+    const teacherDtos = teachers.map((tu) => TeacherDto.fromTeacherUser(tu));
     return teacherDtos;
   }
 
-  async getById(id: string): Promise<TeacherDto> {
-    const entities = await this.teachersRepository.searchById(id);
-    if (entities.length !== 1) throw new InternalServerErrorException();
-    const teacher = entities[0];
-    const teacherDto = this.teacherToDto(teacher);
-    return teacherDto;
+  async findOneById(uuid: string): Promise<TeacherDto> {
+    const teacherUser = await this.teacherUserRepository.findOne({
+      relations: {
+        user: true,
+        teacher: true,
+      },
+      withDeleted: false,
+      where: {
+        id: uuid,
+      },
+    });
+    if (!teacherUser) throw new NotFoundException();
+    return TeacherDto.fromTeacherUser(teacherUser);
   }
 
-  // TODO: Refactor to take in TeacherDatum and return TeacherEntity
+  async updateById(
+    uuid: string,
+    updateTeacherDto: UpdateTeacherDto,
+  ): Promise<TeacherDto> {
+    const { name, staffId } = updateTeacherDto;
+    await this.teacherRepository
+      .createQueryBuilder()
+      .select()
+      .from(Teacher, "teachers")
+      .where({ id: uuid })
+      .update()
+      .set({
+        name,
+        staffId,
+        updatedBy: null,
+      })
+      .execute();
+    return this.findOneById(uuid);
+  }
+
+  async deleteById(uuid: string): Promise<void> {
+    const results = await this.teacherUserRepository
+      .createQueryBuilder()
+      .softDelete()
+      .where("teacher_id = :teacherId", { teacherId: uuid })
+      .andWhere("deleted_at IS NULL")
+      .execute();
+    if (results.affected && results.affected !== 1)
+      throw new InternalServerErrorException();
+  }
+
   async createMany(teacherDtos: CreateTeacherDto[]): Promise<TeacherDto[]> {
-    const teachers = await this.databaseService.transaction(async (query) => {
+    return await this.dataSource.transaction(async (entityManager) => {
       const createdTeachers = [];
       for (const teacherDto of teacherDtos) {
         try {
-          const createdTeacher = await this.createOne(query, teacherDto);
-          createdTeachers.push(createdTeacher);
-        } catch (error) {
-          this.loggerService.error(error);
-          const validationMessages = await this.validateAll(teacherDtos);
-          throw new BadRequestException(validationMessages);
+          const teacher = await this.createOne(teacherDto, entityManager);
+          createdTeachers.push(teacher);
+        } catch (e: unknown) {
+          this.loggerService.error(e);
+          const errorMessages = await this.validateAll(
+            teacherDtos,
+            entityManager,
+          );
+          throw new BadRequestException(errorMessages);
         }
       }
       return createdTeachers;
     });
-    return teachers;
   }
 
-  // TODO: Refactor to take TeacherDatum and return TeacherEntity
   async createOne(
-    query: Querier,
     teacherDto: CreateTeacherDto,
+    entityManager: EntityManager,
   ): Promise<TeacherDto> {
     const { email, name, staffId } = teacherDto;
 
-    const usersWithEmail = await this.usersRepository.getByEmail(email);
-    let user: UserEntity;
-    if (usersWithEmail.length > 0) {
-      user = usersWithEmail[0];
-    } else {
-      user = await this.usersRepository.insert(query, {
-        email,
-        lastLoggedIn: null,
-      });
-    }
+    let user = await this.usersService.findOneByEmail(email);
+    if (!user) user = await this.usersService.create(email);
 
-    const teachersWithStaffId =
-      await this.teachersRepository.getIncludingDeletedByStaffId(staffId);
+    let teacher = await entityManager.findOneBy(Teacher, { staffId });
+    if (!teacher)
+      teacher = await entityManager.save(Teacher, { name, staffId });
 
-    if (teachersWithStaffId.length === 0) {
-      const teacherId = await this.teachersRepository.insert(query, {
-        name,
-        staffId,
-      });
-      await this.teachersRepository.insertTeacherUser(
-        query,
-        teacherId,
-        user.identifier.id,
-      );
-      return {
-        email,
-        id: teacherId,
-        name,
-        staffId,
-      };
-    }
-
-    const teacher = teachersWithStaffId[0];
-    if (teacher.datum.email !== null)
-      throw new BadRequestException("Teacher already exists.");
-    if (teacher.datum.name !== name)
+    if (teacher.name !== name)
       throw new BadRequestException(
-        "Teacher's recorded name does not match given name.",
+        "Teacher's recorded naem does not match given name.",
       );
 
-    await this.teachersRepository.insertTeacherUser(
-      query,
-      teacher.identifier.id,
-      user.identifier.id,
-    );
+    const isExisting = await entityManager.findOneBy(TeacherUser, {
+      teacherId: teacher.id,
+      userId: user.id,
+    });
+    if (!isExisting) {
+      await entityManager.save(TeacherUser, {
+        teacher,
+        user,
+      });
+    }
+
     return {
       email,
-      id: teacher.identifier.id,
+      id: teacher.id,
       name,
       staffId,
     };
   }
 
-  async updateById(
-    id: string,
-    updateTeacherDto: UpdateTeacherDto,
-  ): Promise<TeacherDto> {
-    const updatedTeacher = await this.teachersRepository.updateById(
-      id,
-      updateTeacherDto,
-    );
-    const teacherDto = this.teacherToDto(updatedTeacher);
-    return teacherDto;
-  }
-
-  async deleteById(id: string): Promise<void> {
-    await this.teachersRepository.deleteTeacherUserByTeacherId(id);
-  }
-
-  private teacherToDto(entity: TeacherEntity): TeacherDto {
-    const plain = TeacherEntity.toObject(entity);
-    return plainToInstance(TeacherDto, plain);
-  }
-
-  private async validateAll(teacherDtos: CreateTeacherDto[]) {
-    const invalidTeachers = [];
+  private async validateAll(
+    teacherDtos: CreateTeacherDto[],
+    entityManager: EntityManager,
+  ) {
+    const errorMessages = [];
     for (let index = 0; index < teacherDtos.length; index++) {
       const { email, name, staffId } = teacherDtos[index];
-      const teachersWithStaffId =
-        await this.teachersRepository.getIncludingDeletedByStaffId(staffId);
-      if (teachersWithStaffId.length === 0) {
-        const teachersWithEmail = await this.teachersRepository.searchByEmail(
-          email,
-        );
-        if (teachersWithEmail.length > 0) {
-          const teacherWithEmail = teachersWithEmail[0];
-          invalidTeachers.push({
+      let teacherUser = await entityManager.findOne(TeacherUser, {
+        relations: {
+          user: true,
+          teacher: true,
+        },
+        withDeleted: true,
+        where: { teacher: { staffId } },
+      });
+      if (!teacherUser) {
+        teacherUser = await entityManager.findOne(TeacherUser, {
+          relations: {
+            user: true,
+            teacher: true,
+          },
+          withDeleted: false,
+          where: { user: { email: email } },
+        });
+        if (teacherUser?.teacher) {
+          errorMessages.push({
             index,
-            message: `Email ${email} belongs to Teacher ${teacherWithEmail.datum.staffId}.`,
+            message: `Email ${email} belongs to Teacher ${staffId}.`,
           });
         }
+
         continue;
       }
 
-      const teacherWithStaffId = teachersWithStaffId[0];
-      if (teacherWithStaffId.datum.email === null) continue;
-
       switch (true) {
-        case teacherWithStaffId.datum.name !== name:
-          invalidTeachers.push({
+        case teacherUser.teacher.name !== name:
+          errorMessages.push({
             index,
-            message: `Teacher ${staffId} already exists as ${teacherWithStaffId.datum.name}.`,
+            message: `Teacher ${staffId} already exists as ${teacherUser.teacher.name}.`,
           });
           break;
-        case teacherWithStaffId.datum.email !== email:
-          invalidTeachers.push({
+        case teacherUser.user.email !== email:
+          errorMessages.push({
             index,
-            message: `Teacher ${staffId} has email ${teacherWithStaffId.datum.email}.`,
-          });
-          break;
-        default:
-          invalidTeachers.push({
-            index,
-            message: `Teacher ${staffId} ${teacherWithStaffId.datum.name} already exists.`,
+            message: `Teacher ${staffId} has email ${teacherUser.user.email}.`,
           });
           break;
       }
     }
 
-    return invalidTeachers;
+    return errorMessages;
   }
 }
