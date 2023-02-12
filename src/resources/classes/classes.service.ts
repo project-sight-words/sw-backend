@@ -2,7 +2,7 @@ import { CentreEntity } from "entities/centre.entity";
 import { CentresRepository } from "resources/centres/centres.repository";
 import { ClassesRepository } from "./classes.repository";
 import { getOrError } from "utils/map";
-import { Student, StudentEntity } from "entities/student.entities";
+import { StudentEntity } from "entities/student.entities";
 import { StudentsService } from "resources/students/students.service";
 import { TeacherEntity } from "entities/teacher.entities";
 import { TeachersService } from "resources/teachers/teachers.service";
@@ -115,9 +115,11 @@ export class ClassesService {
       studentIds.add(studentId);
     });
     const studentEntities = await this.studentsService.searchByIds(studentIds);
-    const studentEntityMap = new Map<string, Student>();
+    const studentEntityMap = new Map<string, StudentEntity>();
     studentEntities.forEach((entity) => {
-      studentEntityMap.set(entity.id, entity);
+      const { identifier } = entity;
+      const { id } = identifier;
+      studentEntityMap.set(id, entity);
     });
     const studentEntitesMap = new Map<string, StudentEntity[]>();
     classStudentEntities.forEach((entity) => {

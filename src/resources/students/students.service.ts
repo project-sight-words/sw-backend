@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Student, StudentUser } from "entities/student.entities";
+import { Student, StudentEntity, StudentUser } from "entities/student.entities";
 import { DataSource, EntityManager, In, Repository } from "typeorm";
 import { UsersService } from "../users/users.service";
 import {
@@ -14,6 +14,7 @@ import {
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
+import { CreateStamp, DeleteStamp, UpdateStamp } from "entities/common";
 
 @Injectable()
 export class StudentsService {
@@ -28,7 +29,7 @@ export class StudentsService {
 
   private readonly loggerService = new Logger("StudentsService");
 
-  async searchByIds(ids: Set<string>): Promise<Student[]> {
+  async searchByIds(ids: Set<string>): Promise<StudentEntity[]> {
     const students = await this.studentUserRepository.find({
       relations: {
         user: true,
@@ -42,7 +43,29 @@ export class StudentsService {
       },
     });
 
-    return students.map((su) => su.student);
+    return students.map((su) => {
+      // TODO: Use Student properly
+      const se = new StudentEntity();
+      se.identifier.id = su.studentId;
+      se.datum.studentId = su.student.studentId;
+      se.datum.email = su.user.email;
+      se.datum.name = su.student.name;
+      const createStamp = new CreateStamp();
+      createStamp.createdAt = su.createdAt;
+      createStamp.createdBy = su.createdBy;
+      se.createStamp = createStamp;
+      const updateStamp = new UpdateStamp();
+      updateStamp.updatedAt = su.student.updatedAt
+        ? su.student.updatedAt
+        : new Date();
+      updateStamp.updatedBy = su.student.updatedBy;
+      se.updateStamp = updateStamp;
+      const deleteStamp = new DeleteStamp();
+      deleteStamp.deletedAt = su.deletedAt;
+      deleteStamp.deletedBy = su.deletedBy ? su.deletedBy : "";
+      se.deleteStamp = deleteStamp;
+      return se;
+    });
   }
 
   async get(): Promise<StudentDto[]> {
