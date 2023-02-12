@@ -2,7 +2,11 @@ import { Expose } from "class-transformer";
 import { Identifier } from "entities/common";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
-import { TeacherDatum, TeacherEntity } from "entities/teacher.entities";
+import {
+  TeacherDatum,
+  TeacherEntity,
+  TeacherUser,
+} from "entities/teacher.entities";
 
 export class TeacherDatumDto extends TeacherDatum {
   static fromObject(object: object): TeacherDatumDto {
@@ -75,4 +79,13 @@ export class TeacherDto extends CreateTeacherDto {
   @IsString()
   @IsNotEmpty()
   id!: string;
+
+  static fromTeacherUser(teacherUser: TeacherUser): TeacherDto {
+    return {
+      id: teacherUser.id,
+      email: teacherUser.user.email,
+      name: teacherUser.teacher.name,
+      staffId: teacherUser.teacher.staffId,
+    };
+  }
 }
