@@ -105,7 +105,7 @@ export class ClassesService {
   // Why classes got no soft delete??
   async deleteById(id: string): Promise<Class> {
     const entity = await this.classesRepository.findOneByOrFail({ id });
-    const deletedEntity = await this.classesRepository.remove(entity);
-    return deletedEntity;
+    await this.classesRepository.delete({ id });
+    return entity;
   }
 }
