@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
 import { User, UserDatum } from "entities/user.entities";
+import { Repository } from "typeorm";
+import { plainToInstance } from "utils/transformer";
 
 @Injectable()
 export class UsersService {
@@ -23,7 +24,7 @@ export class UsersService {
       .orUpdate(["last_logged_in"], ["email"])
       .returning("*")
       .execute();
-    return generatedMaps[0] as User;
+    return plainToInstance(User, generatedMaps[0]);
   }
 
   create(email: string): Promise<User> {

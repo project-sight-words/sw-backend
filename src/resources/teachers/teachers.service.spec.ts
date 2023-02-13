@@ -1,5 +1,4 @@
 import { DatabaseService } from "database/database.service";
-import { TeachersRepository } from "./teachers.repository";
 import { TeachersService } from "./teachers.service";
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersRepository } from "resources/users/users.repository";
@@ -9,12 +8,7 @@ describe("TeachersService", () => {
 
   beforeEach(async () => {
     const teachers: TestingModule = await Test.createTestingModule({
-      providers: [
-        TeachersService,
-        TeachersRepository,
-        UsersRepository,
-        DatabaseService,
-      ],
+      providers: [TeachersService, UsersRepository, DatabaseService],
     }).compile();
 
     teacherService = teachers.get<TeachersService>(TeachersService);
