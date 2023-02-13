@@ -73,7 +73,7 @@ export class Class {
   classCentre!: ClassCentre;
 
   @Expose()
-  classes!: Class[];
+  teachers!: Teacher[];
 
   @Expose()
   students!: Student[];
