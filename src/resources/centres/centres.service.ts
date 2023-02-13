@@ -11,7 +11,7 @@ export class CentresService {
     return entities;
   }
 
-  async getById(id: string): Promise<Centre> {
+  async getById(id: string): Promise<Centre | null> {
     const entity = await this.centresRepository.findOneByOrFail({ id });
     return entity;
   }
