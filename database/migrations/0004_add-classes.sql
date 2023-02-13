@@ -1,8 +1,11 @@
 CREATE TABLE classes (
-  id            UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-  day_time      TIMESTAMPTZ   NOT NULL, 
+  id            UUID             PRIMARY KEY DEFAULT gen_random_uuid(),
+  start_day     INTEGER          NOT NULL,
+  start_time    TIMETZ           NOT NULL,
+  end_day       INTEGER          NOT NULL,
+  end_time      TIMETZ           NOT NULL, 
   updated_at    TIMESTAMPTZ,
-  updated_by    UUID          REFERENCES users(id)
+  updated_by    UUID             REFERENCES users(id)
 );
 
 
