@@ -1,7 +1,17 @@
 import * as Uuid from "utils/uuid";
 import { CentresService } from "./centres.service";
-import { Controller, Get, NotFoundException, Param } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from "@nestjs/common";
 import { Centre } from "entities/centre.entity";
+import { CreateClassCentreDto } from "./dto/centres.dto";
+import { Class } from "entities/class.entity";
 
 @Controller("centres")
 export class CentresController {
@@ -21,6 +31,40 @@ export class CentresController {
     const entity = await this.centresService.getById(id);
     if (!entity) throw new NotFoundException();
     return entity;
+  }
+
+  @Post(":id/classes")
+  async addClassToCentre(
+    @Param("id") id: string,
+    @Body() classCentreDto: CreateClassCentreDto,
+  ): Promise<void> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const { classId } = classCentreDto;
+    const isClassUuid = Uuid.test(classId);
+    if (!isClassUuid) throw new NotFoundException();
+    await this.centresService.addClassToCentre(id, classId);
+  }
+
+  @Delete(":id/classes/:classId")
+  async removeClassFromCentre(
+    @Param("id") id: string,
+    @Param("classId") classId: string,
+  ): Promise<void> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const isClassUuid = Uuid.test(classId);
+    if (!isClassUuid) throw new NotFoundException();
+
+    await this.centresService.removeClassFromCentre(id, classId);
+  }
+
+  @Get(":id/classes")
+  async getClassesByCentreId(@Param("id") id: string): Promise<Class[]> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const classes = await this.centresService.getClassesByCentreId(id);
+    return classes;
   }
 
   // CUD not supported

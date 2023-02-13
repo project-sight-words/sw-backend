@@ -21,7 +21,7 @@ export class Centre {
   @Expose()
   id!: string;
 
-  @Column({ name: "centre_name", type: "varchar", nullable: false })
+  @Column({ name: "name", type: "varchar", nullable: false })
   @IsString()
   @Expose()
   name!: string;
@@ -47,7 +47,7 @@ export class ClassCentre {
   @Expose()
   id!: string;
 
-  @Column({ name: "centre_id", type: "uuid", nullable: false })
+  @Column({ name: "class_id", type: "uuid", nullable: false })
   @IsUUID()
   @Expose()
   classId!: string;

@@ -91,17 +91,24 @@ export class Class {
   // this can be expensive and unnecessary to load always
   @AfterLoad()
   loadStudents() {
-    this.students = this.classStudents.map((classStudent) => {
-      return classStudent.student;
-    });
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (this.classStudents) {
+      // Eager loading does not work when used with query builder
+      this.students = this.classStudents.map((classStudent) => {
+        return classStudent.student;
+      });
+    }
   }
 
   // Use after Teacher entity is refactor
   @AfterLoad()
   loadTeachers() {
-    this.teachers = this.classTeachers.map((classTeacher) => {
-      return classTeacher.teacher;
-    });
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (this.classTeachers) {
+      this.teachers = this.classTeachers.map((classTeacher) => {
+        return classTeacher.teacher;
+      });
+    }
   }
 }
 

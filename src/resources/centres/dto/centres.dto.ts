@@ -1,3 +1,6 @@
-export class CentreDatumDto {}
+import { PickType } from "@nestjs/mapped-types";
+import { ClassCentre } from "entities/centre.entity";
 
-export class CentreEntityDto extends CentreDatumDto {}
+export class CentreDto {}
+
+export class CreateClassCentreDto extends PickType(ClassCentre, ["classId"]) {}
