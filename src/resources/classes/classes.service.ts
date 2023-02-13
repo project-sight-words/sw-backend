@@ -4,6 +4,7 @@ import { Class, ClassStudent, ClassTeacher } from "entities/class.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Student } from "entities/student.entities";
+import { CreateClassDto, UpdateClassDto } from "./dto/classes.dto";
 
 @Injectable()
 export class ClassesService {
@@ -29,8 +30,9 @@ export class ClassesService {
     return classEntity;
   }
 
-  async create(classEntity: Class): Promise<Class> {
-    const createdClass = await this.classesRepository.save(classEntity);
+  async create(classEntity: CreateClassDto): Promise<Class> {
+    const createdClass = this.classesRepository.create(classEntity);
+    await this.classesRepository.save(createdClass);
     return createdClass;
   }
 
@@ -62,11 +64,13 @@ export class ClassesService {
     });
   }
 
-  async updateById(id: string, classEntity: Class): Promise<Class> {
-    classEntity.updatedAt = new Date();
+  async updateById(id: string, classDto: UpdateClassDto): Promise<Class> {
+    // classEntity.updatedAt = new Date(); // Consider using afterUpdate() listener
     // classEntity.updatedBy = null; // TODO: Change after authentication
-    await this.classesRepository.update(id, classEntity);
-    return classEntity;
+    const classEntity = await this.classesRepository.findOneByOrFail({ id });
+    const updatedClass = this.classesRepository.merge(classEntity, classDto);
+    await this.classesRepository.save(updatedClass);
+    return updatedClass;
   }
 
   // Example of relations with Query Builder

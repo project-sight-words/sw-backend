@@ -1,5 +1,5 @@
 import * as Uuid from "utils/uuid";
-import { Class, ClassStudent, ClassTeacher } from "entities/class.entity";
+import { Class } from "entities/class.entity";
 import { ClassesService } from "./classes.service";
 import {
   Controller,
@@ -14,6 +14,12 @@ import {
 import { plainToInstance } from "class-transformer";
 import { StudentsService } from "resources/students/students.service";
 import { TeachersService } from "resources/teachers/teachers.service";
+import {
+  CreateClassDto,
+  CreateClassStudentDto,
+  CreateClassTeacherDto,
+  UpdateClassDto,
+} from "./dto/classes.dto";
 
 @Controller("classes")
 export class ClassesController {
@@ -39,7 +45,7 @@ export class ClassesController {
   }
 
   @Post()
-  async create(@Body() body: Class): Promise<Class> {
+  async create(@Body() body: CreateClassDto): Promise<Class> {
     const classEntity = await this.classesService.create(body);
     return classEntity;
   }
@@ -47,7 +53,7 @@ export class ClassesController {
   @Post(":id/teachers")
   async createClassTeacher(
     @Param("id") classId: string,
-    @Body() body: ClassTeacher,
+    @Body() body: CreateClassTeacherDto,
   ): Promise<void> {
     const isUuid = Uuid.test(classId);
     if (!isUuid) throw new NotFoundException();
@@ -61,7 +67,7 @@ export class ClassesController {
   @Post(":id/students")
   async createClassStudent(
     @Param("id") classId: string,
-    @Body() body: ClassStudent,
+    @Body() body: CreateClassStudentDto,
   ): Promise<void> {
     const isUuid = Uuid.test(classId);
     if (!isUuid) throw new NotFoundException();
@@ -75,7 +81,7 @@ export class ClassesController {
   @Put(":id")
   async updateByid(
     @Param("id") id: string,
-    @Body() body: Class,
+    @Body() body: UpdateClassDto,
   ): Promise<Class> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
