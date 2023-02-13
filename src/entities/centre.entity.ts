@@ -10,6 +10,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm";
 import { Class } from "./class.entity";
 
@@ -28,6 +29,15 @@ export class Centre {
   @OneToMany(() => ClassCentre, (classCentre) => classCentre.centre)
   @Exclude()
   classCentres!: ClassCentre[];
+
+  @UpdateDateColumn({ name: "updated_at", default: new Date() })
+  @Expose()
+  updatedAt!: Date;
+
+  @Column({ name: "updated_by", type: "uuid" })
+  @IsUUID()
+  @Expose()
+  updatedBy!: string;
 }
 
 @Entity("class_centres")

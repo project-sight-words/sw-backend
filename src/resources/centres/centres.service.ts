@@ -1,28 +1,31 @@
-import { CentreDatum, CentreEntity } from "entities/centre.entity";
 import { CentresRepository } from "./centres.repository";
 import { Injectable } from "@nestjs/common";
+import { Centre } from "entities/centre.entity";
 
 @Injectable()
 export class CentresService {
-  constructor(private readonly centreRepository: CentresRepository) {}
+  constructor(private readonly centresRepository: CentresRepository) {}
 
-  async get(): Promise<CentreEntity[]> {
-    const entities = await this.centreRepository.get();
+  async get(): Promise<Centre[]> {
+    const entities = await this.centresRepository.find();
     return entities;
   }
 
-  async getById(id: string): Promise<CentreEntity[]> {
-    const entities = await this.centreRepository.getById(id);
-    return entities;
-  }
-
-  async create(data: CentreDatum): Promise<CentreEntity> {
-    const entity = await this.centreRepository.insert(data);
+  async getById(id: string): Promise<Centre> {
+    const entity = await this.centresRepository.findOneByOrFail({ id });
     return entity;
   }
 
-  async updateById(id: string, data: CentreDatum): Promise<CentreEntity> {
-    const entity = await this.centreRepository.updateById(id, data);
-    return entity;
-  }
+  // CUD not supported
+  // async create(centre: Centre): Promise<Centre> {
+  //   const entity = await this.centresRepository.save(centre);
+  //   return entity;
+  // }
+
+  // async updateById(id: string, centre: Centre): Promise<Centre> {
+  //   centre.updatedAt = new Date();
+  //   // centre.updatedBy = null; // TODO: Change after authentication
+  //   await this.centresRepository.update(id, centre);
+  //   return centre;
+  // }
 }
