@@ -114,7 +114,7 @@ export class ClassesController {
     const teacherIdIsUuid = Uuid.test(teacherId);
     if (!classIdIsUuid || !teacherIdIsUuid) throw new NotFoundException();
     const classEntity = await this.classesService.searchById(classId);
-    const teacher = await this.teachersService.getById(teacherId);
+    const teacher = await this.teachersService.findOneById(teacherId);
     if (!classEntity || !teacher) throw new NotFoundException();
     await this.classesService.removeTeacherFromClass(classId, teacherId);
   }

@@ -15,6 +15,7 @@ import { instanceToPlain, plainToInstance } from "utils/transformer";
 
 import { Expose } from "class-transformer";
 import { User } from "./user.entities";
+import { ClassTeacher } from "./class.entity";
 
 @Entity("teachers")
 export class Teacher {
@@ -35,6 +36,9 @@ export class Teacher {
 
   @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.teacher)
   teacherUsers: TeacherUser[] | null = null;
+
+  @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.teacher)
+  classTeachers!: ClassTeacher[];
 }
 
 @Entity("teacher_users")
