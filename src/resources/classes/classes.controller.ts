@@ -57,11 +57,15 @@ export class ClassesController {
   ): Promise<void> {
     const isUuid = Uuid.test(classId);
     if (!isUuid) throw new NotFoundException();
-    const { teacherId } = body;
+    const { teacherId, isFormTeacher = false } = body;
     await this.classesService.searchById(classId);
     // await this.teachersService.getById(teacherId);  Use after Teachers refactor
     if (!classId || !teacherId) throw new NotFoundException();
-    await this.classesService.addTeacherToClass(classId, teacherId);
+    await this.classesService.addTeacherToClass(
+      classId,
+      teacherId,
+      isFormTeacher,
+    );
   }
 
   @Post(":id/students")

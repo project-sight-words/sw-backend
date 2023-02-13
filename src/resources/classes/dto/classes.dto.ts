@@ -16,4 +16,5 @@ export class CreateClassStudentDto extends PickType(ClassStudent, [
 
 export class CreateClassTeacherDto extends PickType(ClassTeacher, [
   "teacherId",
+  "isFormTeacher",
 ] as const) {}

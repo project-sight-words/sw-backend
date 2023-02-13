@@ -142,6 +142,7 @@ export class ClassTeacher {
   })
   @IsBoolean()
   @Expose()
+  @IsOptional()
   isFormTeacher!: boolean;
 
   @CreateDateColumn({ name: "created_at", default: new Date() })

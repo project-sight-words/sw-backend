@@ -43,13 +43,17 @@ export class ClassesService {
     });
   }
 
-  async addTeacherToClass(classId: string, teacherId: string) {
+  async addTeacherToClass(
+    classId: string,
+    teacherId: string,
+    isFormTeacher: boolean,
+  ) {
     await this.ClassTeacherRepository.insert({
       classId: classId,
       teacherId: teacherId,
+      isFormTeacher: isFormTeacher,
     });
   }
-
   async removeTeacherFromClass(classId: string, teacherId: string) {
     await this.ClassTeacherRepository.softDelete({
       classId: classId,
