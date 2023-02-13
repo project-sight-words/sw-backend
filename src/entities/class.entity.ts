@@ -9,6 +9,7 @@ import {
   Min,
 } from "class-validator";
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -61,11 +62,15 @@ export class Class {
   @Column({ name: "updated_by", type: "uuid" })
   updatedBy!: string;
 
-  @OneToMany(() => ClassStudent, (classStudent) => classStudent.class)
+  @OneToMany(() => ClassStudent, (classStudent) => classStudent.class, {
+    eager: true,
+  })
   @Exclude()
   classStudents!: ClassStudent[];
 
-  @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class)
+  @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class, {
+    eager: true,
+  })
   @Exclude()
   classTeachers!: ClassTeacher[];
 
@@ -77,6 +82,24 @@ export class Class {
 
   @Expose()
   students!: Student[];
+
+  // Possible way to hydrate classes but check if needed
+  // Can just use queryBuilder to hydrate when needed since
+  // this can be expensive and unnecessary to load always
+  @AfterLoad()
+  loadStudents() {
+    this.students = this.classStudents.map((classStudent) => {
+      return classStudent.student;
+    });
+  }
+
+  // Use after Teacher entity is refactor
+  @AfterLoad()
+  loadTeachers() {
+    this.teachers = this.classTeachers.map((classTeacher) => {
+      return classTeacher.teacher;
+    });
+  }
 }
 
 @Entity("class_teachers")
@@ -91,7 +114,7 @@ export class ClassTeacher {
   @Expose()
   classId!: string;
 
-  @OneToMany(() => Class, (classEntity) => classEntity.classTeachers)
+  @ManyToOne(() => Class, (classEntity) => classEntity.classTeachers)
   @JoinColumn({ name: "class_id" })
   @Expose()
   class!: Class;
@@ -102,6 +125,7 @@ export class ClassTeacher {
   @Expose()
   teacherId!: string;
 
+  // Add eager load if needed after teacher refactored
   @ManyToOne(() => Teacher, (teacher) => teacher.classTeachers)
   @JoinColumn({ name: "teacher_id" })
   @Expose()
@@ -160,7 +184,7 @@ export class ClassStudent {
   @Expose()
   studentId!: string;
 
-  @ManyToOne(() => Student)
+  @ManyToOne(() => Student, { eager: true })
   @JoinColumn({ name: "student_id" })
   @Expose()
   student!: Student;
