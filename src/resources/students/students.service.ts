@@ -76,7 +76,7 @@ export class StudentsService {
       },
       withDeleted: false,
     });
-    const studentDtos = students.map((su) => this.studentUserToStudentDto(su));
+    const studentDtos = students.map((su) => StudentDto.from(su));
     return studentDtos;
   }
 
@@ -93,7 +93,7 @@ export class StudentsService {
     });
     // Throw Not Found instead since it's more logical to do so for students that cannot be found
     if (!studentUser) throw new NotFoundException();
-    return this.studentUserToStudentDto(studentUser);
+    return StudentDto.from(studentUser);
   }
 
   async updateById(
@@ -182,15 +182,6 @@ export class StudentsService {
       id: student.id,
       name,
       studentId,
-    };
-  }
-
-  private studentUserToStudentDto(studentUser: StudentUser): StudentDto {
-    return {
-      id: studentUser.studentId,
-      email: studentUser.user.email,
-      name: studentUser.student.name,
-      studentId: studentUser.student.studentId,
     };
   }
 
