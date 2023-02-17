@@ -99,6 +99,7 @@ export class StudentsService {
   async updateById(
     uuid: string,
     updateStudentDto: UpdateStudentDto,
+    updatedBy: string | null = null,
   ): Promise<StudentDto> {
     const { name, studentId } = updateStudentDto;
     await this.studentRepository
@@ -110,7 +111,7 @@ export class StudentsService {
       .set({
         name,
         studentId,
-        updatedBy: null,
+        updatedBy,
       })
       .execute();
     return this.findOneById(uuid);
