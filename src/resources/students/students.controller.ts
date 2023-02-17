@@ -11,10 +11,9 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import * as Uuid from "utils/uuid";
-import { Roles } from "../../decorators/roles.decorator";
-import { Role } from "../../entities/roles.entities";
-import { JwtAuthGuard } from "../authentication/guards/jwt-auth.guard";
-import { RolesGuard } from "../authentication/guards/roles.guard";
+import { Roles } from "decorators/roles.decorator";
+import { Role } from "entities/roles.entities";
+import { JwtAuthGuard } from "resources/authentication/guards/jwt-auth.guard";
 import {
   CreateStudentDto,
   StudentDto,

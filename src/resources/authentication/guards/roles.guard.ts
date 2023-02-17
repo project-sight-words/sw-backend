@@ -5,10 +5,10 @@ import {
   Logger,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { ROLES_KEY } from "../../../decorators/roles.decorator";
-import { Role } from "../../../entities/roles.entities";
-import { extractJwt } from "../../../utils/access";
-import { SessionService } from "../session.service";
+import { ROLES_KEY } from "decorators/roles.decorator";
+import { Role } from "entities/roles.entities";
+import { extractJwt } from "utils/access";
+import { SessionService } from "resources/authentication/session.service";
 
 @Injectable()
 export class RolesGuard implements CanActivate {

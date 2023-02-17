@@ -5,11 +5,11 @@ import {
   Logger,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { ABAC } from "../../../entities/abac.entities";
-import { Role } from "../../../entities/roles.entities";
-import { extractJwt, extractParams } from "../../../utils/access";
-import { TeachersRepository } from "../../teachers/teachers.repository";
-import { SessionService } from "../session.service";
+import { ABAC } from "entities/abac.entities";
+import { Role } from "entities/roles.entities";
+import { extractJwt, extractParams } from "utils/access";
+import { TeachersRepository } from "resources/teachers/teachers.repository";
+import { SessionService } from "resources/authentication/session.service";
 
 @Injectable()
 export class TeacherSelfGuard implements CanActivate {

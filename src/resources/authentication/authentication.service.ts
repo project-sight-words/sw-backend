@@ -1,20 +1,32 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { Role } from "entities/roles.entities";
 import { UsersRepository } from "resources/users/users.repository";
-import { JwtPayload } from "../../entities/jwt.entities";
+import { JwtPayload } from "entities/jwt.entities";
 import { LoginWithGoogleDto } from "./dto/authenticate.dto";
 import { GoogleService } from "./google.service";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthenticationService {
+  private readonly accessDuration: number;
+  private readonly refreshDuration: number;
+
   constructor(
+    private readonly configService: ConfigService,
     private readonly googleService: GoogleService,
     private readonly rolesRepository: RolesRepository,
     private readonly sessionService: SessionService,
     private readonly usersRepository: UsersRepository,
-  ) {}
+  ) {
+    this.accessDuration = configService.getOrThrow<number>(
+      "JWT_EXPIRATION_SECONDS",
+    );
+    this.refreshDuration = configService.getOrThrow<number>(
+      "JWT_REFRESH_EXPIRATION_SECONDS",
+    );
+  }
 
   async login(email: string) {
     const user = await this.usersRepository.upsertByEmail({
@@ -27,13 +39,14 @@ export class AuthenticationService {
       email: user.email,
       roles: roles,
     };
+
     const accessTokenCookie = this.sessionService.generateCookie(
       payload,
-      "access",
+      this.accessDuration,
     );
     const refreshTokenCookie = this.sessionService.generateCookie(
       payload,
-      "refresh",
+      this.refreshDuration,
     );
     return { accessTokenCookie, refreshTokenCookie, user };
   }
@@ -63,11 +76,11 @@ export class AuthenticationService {
 
     const accessTokenCookie = this.sessionService.generateCookie(
       accessPayload,
-      "access",
+      this.accessDuration,
     );
     const refreshTokenCookie = this.sessionService.generateCookie(
       refreshPayload,
-      "refresh",
+      this.refreshDuration,
     );
 
     return { accessTokenCookie, refreshTokenCookie };

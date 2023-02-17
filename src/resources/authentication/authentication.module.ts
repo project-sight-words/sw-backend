@@ -4,7 +4,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
 import { DatabaseModule } from "database/database.module";
 import { UsersModule } from "resources/users/users.module";
-import { TeachersModule } from "../teachers/teachers.module";
+import { TeachersModule } from "resources/teachers/teachers.module";
 import { AuthenticationController } from "./authentication.controller";
 import { AuthenticationService } from "./authentication.service";
 import { GoogleService } from "./google.service";

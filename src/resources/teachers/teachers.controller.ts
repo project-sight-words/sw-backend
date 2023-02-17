@@ -9,11 +9,11 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common";
-import { Access } from "../../decorators/abac.decorator";
-import { Roles } from "../../decorators/roles.decorator";
-import { ABAC } from "../../entities/abac.entities";
-import { Role } from "../../entities/roles.entities";
-import { JwtAuthGuard } from "../authentication/guards/jwt-auth.guard";
+import { Access } from "decorators/abac.decorator";
+import { Roles } from "decorators/roles.decorator";
+import { ABAC } from "entities/abac.entities";
+import { Role } from "entities/roles.entities";
+import { JwtAuthGuard } from "resources/authentication/guards/jwt-auth.guard";
 import {
   CreateTeacherDto,
   DeleteTeacherDto,
