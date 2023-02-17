@@ -7,7 +7,7 @@ import {
 import { Reflector } from "@nestjs/core";
 import { ABAC } from "entities/abac.entities";
 import { Role } from "entities/roles.entities";
-import { extractJwt, extractParams } from "utils/access";
+import { extractJwt, extractParams, getMetadata } from "utils/access";
 import { TeachersRepository } from "resources/teachers/teachers.repository";
 import { SessionService } from "resources/authentication/session.service";
 
@@ -22,11 +22,25 @@ export class TeacherSelfGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isTeacherSelf = this.reflector.getAllAndOverride<boolean>(
+    const isTeacherSelf = getMetadata<boolean>(
+      this.reflector,
+      context,
       ABAC.TeacherSelf,
-      [context.getHandler(), context.getClass()],
     );
     if (!isTeacherSelf) return true;
+
+    // Get JWT
+    const jwt = extractJwt(context);
+    if (!jwt) return false;
+
+    // Get the current user's id
+    const user = this.sessionService.getPayload(jwt);
+    if (!user) {
+      this.logger.error("Unable to retrieve JWT payload user. Internal error.");
+      return false;
+    }
+
+    if (user.roles.includes(Role.admin)) return true;
 
     // Get the teacher ID to use
     const params = extractParams<{ id: string }>(context);
@@ -37,23 +51,7 @@ export class TeacherSelfGuard implements CanActivate {
       return false;
     }
 
-    // Get JWT
-    const jwt = extractJwt(context);
-    if (!jwt) {
-      this.logger.error(
-        "JWT should be provided in header already. Ensure that JwtAuthGuard is added to the controller. Internal error.",
-      );
-      return false;
-    }
-
-    // Get the current user's id
-    const user = this.sessionService.getPayload(jwt);
-    if (!user) {
-      this.logger.error("Unable to retrieve JWT payload user. Internal error.");
-      return false;
-    }
-
     const target = await this.teachersRepository.getByStaffId(params.id);
-    return target.id === user.id || user.roles.includes(Role.admin);
+    return target.id === user.id;
   }
 }

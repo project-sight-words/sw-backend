@@ -1,7 +1,10 @@
 /**
  * Parses the body of a request.
  */
-import { ExecutionContext } from "@nestjs/common";
+import { ExecutionContext, Logger } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+
+const logger = new Logger("AccessUtils");
 
 export function extractJwt(context: ExecutionContext): string | null {
   // Retrieve the user from the request using the JWT token
@@ -12,7 +15,9 @@ export function extractJwt(context: ExecutionContext): string | null {
     }
   ).authorization;
   if (!jwtHeader) {
-    // TODO: Log that JWT must be enforced together with this
+    logger.error(
+      "JWT should be provided in header already. Ensure that JwtAuthGuard is added to the controller. Internal error.",
+    );
     return null;
   }
 
@@ -27,4 +32,15 @@ export function extractParams<T>(context: ExecutionContext): T | null {
       params: T;
     }
   ).params;
+}
+
+export function getMetadata<T>(
+  reflector: Reflector,
+  context: ExecutionContext,
+  key: string,
+): T | null {
+  return reflector.getAllAndOverride<T>(key, [
+    context.getHandler(),
+    context.getClass(),
+  ]);
 }
