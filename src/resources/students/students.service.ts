@@ -128,6 +128,72 @@ export class StudentsService {
       throw new InternalServerErrorException();
   }
 
+  async findByIds(
+    ids: string[],
+    entityManager: EntityManager | null = null,
+  ): Promise<StudentDto[]> {
+    let studentUsers;
+    const options = {
+      relations: {
+        user: true,
+        student: true,
+      },
+      withDeleted: false,
+      where: { id: In(ids) },
+    };
+
+    if (!entityManager)
+      studentUsers = await this.studentUserRepository.find(options);
+    else studentUsers = await entityManager.find(StudentUser, options);
+
+    return studentUsers.map((su) => StudentDto.from(su));
+  }
+
+  async createManyStudentsIfNotExists(
+    students: CreateStudentDto[],
+    entityManager: EntityManager | null = null,
+  ) {
+    await (!entityManager ? this.studentRepository : entityManager)
+      .createQueryBuilder()
+      .insert()
+      .values(
+        students.map((s) => ({
+          name: s.name,
+          studentId: s.studentId,
+        })),
+      )
+      .orIgnore()
+      .execute();
+  }
+
+  async bulkInsertStudentUsers(
+    students: CreateStudentDto[],
+    entityManager: EntityManager | null = null,
+  ): Promise<string[]> {
+    const association = students
+      .map((s) => `('${s.email}', '${s.studentId}')`)
+      .join(", ");
+
+    // Using a raw query here since it's the most optimised version of the query
+    const insertedStudentUsers: { id: string }[] = await (!entityManager
+      ? this.dataSource
+      : entityManager
+    ).query(`
+        INSERT INTO student_users (user_id, student_id)
+        SELECT p.uid, p.sid
+        FROM (SELECT users.id AS uid, students.id AS sid, users.email AS email, students.student_id AS student_id
+              FROM students,
+                   users) AS p
+                 JOIN (VALUES ${association}) AS t (e, s)
+                      ON t.e = p.email AND t.s = p.student_id
+        ON CONFLICT (student_id)
+            DO UPDATE SET id = excluded.id
+        RETURNING *;
+    `);
+
+    return insertedStudentUsers.map(({ id }) => id);
+  }
+
   async createMany(students: CreateStudentDto[]): Promise<StudentDto[]> {
     return this.dataSource.transaction(async (entityManager) => {
       const errors = await this.validate(students, entityManager);
@@ -138,50 +204,15 @@ export class StudentsService {
       // The data is guaranteed to be clean at this point so bulk inserts can happen
       // Insert all the users if they do not exist yet
       await this.usersService.createManyIfNotExists(emails, entityManager);
+
       // Insert all the students if they do not exist yet (ignore rows that cause conflict since it just means that the student exists already)
-      await entityManager
-        .createQueryBuilder()
-        .insert()
-        .values(
-          students.map((s) => ({
-            name: s.name,
-            studentId: s.studentId,
-          })),
-        )
-        .orIgnore()
-        .execute();
+      await this.createManyStudentsIfNotExists(students, entityManager);
 
       // Since we know that email and student id are both uniquely identifying, we can retrieve all of the associated user/student ids using them as candidate keys
-      // Using a raw query here since it's the most optimised version of the query
-      const association = students
-        .map((s) => `('${s.email}', '${s.studentId}')`)
-        .join(", ");
-      const insertedStudentUsers: { id: string }[] = await entityManager.query(`
-          INSERT INTO student_users (user_id, student_id)
-          SELECT p.uid, p.sid
-          FROM (SELECT users.id AS uid, students.id AS sid, users.email AS email, students.student_id AS student_id
-                FROM students,
-                     users) AS p
-                   JOIN (VALUES ${association}) AS t (e, s)
-                        ON t.e = p.email AND t.s = p.student_id
-          ON CONFLICT (student_id)
-              DO UPDATE SET id = excluded.id
-          RETURNING *;
-      `);
+      const ids = await this.bulkInsertStudentUsers(students, entityManager);
 
       // Retrieve the inserted students to convert to DTOs
-      const studentUsers = await entityManager.find(StudentUser, {
-        relations: {
-          user: true,
-          student: true,
-        },
-        withDeleted: false,
-        where: {
-          id: In(insertedStudentUsers.map(({ id }) => id)),
-        },
-      });
-
-      return studentUsers.map((su) => StudentDto.from(su));
+      return this.findByIds(ids);
     });
   }
 
