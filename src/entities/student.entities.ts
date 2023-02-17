@@ -9,7 +9,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
   UpdateDateColumn,
 } from "typeorm";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
@@ -27,8 +26,8 @@ export class Student {
   @Column({ type: "text" })
   name!: string;
 
-  @UpdateDateColumn({ name: "updated_at", nullable: true })
-  updatedAt: Date | null = null;
+  @UpdateDateColumn({ name: "updated_at", default: () => "NOW()" })
+  updatedAt!: Date;
 
   @Column({ name: "updated_by", type: "uuid", nullable: true })
   updatedBy: string | null = null;
