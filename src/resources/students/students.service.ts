@@ -80,7 +80,7 @@ export class StudentsService {
     return studentDtos;
   }
 
-  async getById(uuid: string): Promise<StudentDto> {
+  async findOneById(uuid: string): Promise<StudentDto> {
     const studentUser = await this.studentUserRepository.findOne({
       relations: {
         user: true,
@@ -113,7 +113,7 @@ export class StudentsService {
         updatedBy: null,
       })
       .execute();
-    return this.getById(uuid);
+    return this.findOneById(uuid);
   }
 
   async deleteById(uuid: string): Promise<void> {
