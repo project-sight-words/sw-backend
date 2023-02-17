@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "entities/user.entities";
-import { In, Repository } from "typeorm";
+import { EntityManager, In, Repository } from "typeorm";
 import { plainToInstance } from "utils/transformer";
 
 @Injectable()
@@ -40,8 +40,11 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async createManyIfNotExists(emails: string[]): Promise<User[]> {
-    const { generatedMaps } = await this.userRepository
+  async createManyIfNotExists(
+    emails: string[],
+    entityManager: EntityManager,
+  ): Promise<User[]> {
+    const { generatedMaps } = await entityManager
       .createQueryBuilder()
       .insert()
       .values(emails.map((email) => ({ email })))

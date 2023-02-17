@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Student, StudentEntity, StudentUser } from "entities/student.entities";
-import { DataSource, In, Repository } from "typeorm";
+import { DataSource, EntityManager, In, Repository } from "typeorm";
 import { UsersService } from "resources/users/users.service";
 import {
   CreateStudentDto,
@@ -128,64 +128,67 @@ export class StudentsService {
       throw new InternalServerErrorException();
   }
 
-  // TODO: Wrap this in a transaction
-  async createMany_(students: CreateStudentDto[]): Promise<StudentDto[]> {
-    const errors = await this.validate(students);
-    if (errors.length !== 0) throw new BadRequestException(errors);
+  async createMany(students: CreateStudentDto[]): Promise<StudentDto[]> {
+    return this.dataSource.transaction(async (entityManager) => {
+      const errors = await this.validate(students, entityManager);
+      if (errors.length !== 0) throw new BadRequestException(errors);
 
-    const emails = students.map((s) => s.email);
+      const emails = students.map((s) => s.email);
 
-    // The data is guaranteed to be clean at this point so bulk inserts can happen
-    // Insert all the users if they do not exist yet
-    await this.usersService.createManyIfNotExists(emails);
-    // Insert all the students if they do not exist yet (ignore rows that cause conflict since it just means that the student exists already)
-    await this.studentRepository
-      .createQueryBuilder()
-      .insert()
-      .values(
-        students.map((s) => ({
-          name: s.name,
-          studentId: s.studentId,
-        })),
-      )
-      .orIgnore()
-      .execute();
+      // The data is guaranteed to be clean at this point so bulk inserts can happen
+      // Insert all the users if they do not exist yet
+      await this.usersService.createManyIfNotExists(emails, entityManager);
+      // Insert all the students if they do not exist yet (ignore rows that cause conflict since it just means that the student exists already)
+      await entityManager
+        .createQueryBuilder()
+        .insert()
+        .values(
+          students.map((s) => ({
+            name: s.name,
+            studentId: s.studentId,
+          })),
+        )
+        .orIgnore()
+        .execute();
 
-    // Since we know that email and student id are both uniquely identifying, we can retrieve all of the associated user/student ids using them as candidate keys
-    // Using a raw query here since it's the most optimised version of the query
-    const association = students
-      .map((s) => `('${s.email}', '${s.studentId}')`)
-      .join(", ");
-    const insertedStudentUsers: { id: string }[] = await this.dataSource.query(`
-        INSERT INTO student_users (user_id, student_id)
-        SELECT p.uid, p.sid
-        FROM (SELECT users.id AS uid, students.id AS sid, users.email AS email, students.student_id AS student_id
-              FROM students,
-                   users) AS p
-                 JOIN (VALUES ${association}) AS t (e, s)
-                      ON t.e = p.email AND t.s = p.student_id
-        ON CONFLICT (student_id)
-            DO UPDATE SET id = excluded.id
-        RETURNING *;
-    `);
+      // Since we know that email and student id are both uniquely identifying, we can retrieve all of the associated user/student ids using them as candidate keys
+      // Using a raw query here since it's the most optimised version of the query
+      const association = students
+        .map((s) => `('${s.email}', '${s.studentId}')`)
+        .join(", ");
+      const insertedStudentUsers: { id: string }[] = await entityManager.query(`
+          INSERT INTO student_users (user_id, student_id)
+          SELECT p.uid, p.sid
+          FROM (SELECT users.id AS uid, students.id AS sid, users.email AS email, students.student_id AS student_id
+                FROM students,
+                     users) AS p
+                   JOIN (VALUES ${association}) AS t (e, s)
+                        ON t.e = p.email AND t.s = p.student_id
+          ON CONFLICT (student_id)
+              DO UPDATE SET id = excluded.id
+          RETURNING *;
+      `);
 
-    // Retrieve the inserted students to convert to DTOs
-    const studentUsers = await this.studentUserRepository.find({
-      relations: {
-        user: true,
-        student: true,
-      },
-      withDeleted: false,
-      where: {
-        id: In(insertedStudentUsers.map(({ id }) => id)),
-      },
+      // Retrieve the inserted students to convert to DTOs
+      const studentUsers = await entityManager.find(StudentUser, {
+        relations: {
+          user: true,
+          student: true,
+        },
+        withDeleted: false,
+        where: {
+          id: In(insertedStudentUsers.map(({ id }) => id)),
+        },
+      });
+
+      return studentUsers.map((su) => StudentDto.from(su));
     });
-
-    return studentUsers.map((su) => StudentDto.from(su));
   }
 
-  // TODO: Run the query in a transaction
-  private async validate(students: CreateStudentDto[]) {
+  private async validate(
+    students: CreateStudentDto[],
+    entityManager: EntityManager,
+  ) {
     interface propertyFirstBase {
       row: number;
       name: string;
@@ -242,7 +245,7 @@ export class StudentsService {
     if (errors.length > 0) return errors;
 
     // Get all existing student users that match the given list of emails or student ids
-    const existingStudents = await this.studentUserRepository.find({
+    const existingStudents = await entityManager.find(StudentUser, {
       relations: {
         user: true,
         student: true,
