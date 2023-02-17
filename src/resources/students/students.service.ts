@@ -237,4 +237,131 @@ export class StudentsService {
 
     return errorMessages;
   }
+
+  private async validate(students: CreateStudentDto[]) {
+    interface propertyFirstBase {
+      row: number;
+      name: string;
+    }
+
+    interface emailFirstInterface extends propertyFirstBase {
+      studentId: string;
+    }
+
+    interface studentIdFirstInterface extends propertyFirstBase {
+      email: string;
+    }
+
+    const errors: { index: number; message: string }[] = [];
+
+    const emailFirst: Record<string, emailFirstInterface> = {};
+    const studentIdFirst: Record<string, studentIdFirstInterface> = {};
+    for (let i = 0; i < students.length; i++) {
+      const student = students[i];
+      if (student.email in emailFirst) {
+        errors.push({
+          index: i,
+          message: `Duplicate email ${student.email} on row ${
+            emailFirst[student.email].row
+          }`,
+        });
+        continue;
+      }
+
+      if (student.studentId in studentIdFirst) {
+        errors.push({
+          index: i,
+          message: `Duplicate student id ${student.studentId} on row ${
+            studentIdFirst[student.studentId].row
+          }`,
+        });
+        continue;
+      }
+
+      emailFirst[student.email] = {
+        row: i,
+        name: student.name,
+        studentId: student.studentId,
+      };
+
+      studentIdFirst[student.studentId] = {
+        row: i,
+        name: student.name,
+        email: student.email,
+      };
+    }
+
+    // Early return since we won't want to query the database for nothing
+    if (errors.length > 0) return errors;
+
+    // Get all existing student users that match the given list of emails or student ids
+    const existingStudents = await this.studentUserRepository.find({
+      relations: {
+        user: true,
+        student: true,
+      },
+      withDeleted: true,
+      where: {
+        student: {
+          studentId: In(students.map((s) => s.studentId)),
+        },
+        user: {
+          email: In(students.map((s) => s.email)),
+        },
+      },
+    });
+
+    // For each of the existing students, ensure that the input (if any) does not violate
+    for (const existingStudent of existingStudents) {
+      // Get input student with the same student id
+      const matchingStudentByStudentId =
+        studentIdFirst[existingStudent.student.studentId];
+      if (matchingStudentByStudentId) {
+        // If student with same student id already exists, ensure that the email is the same
+        if (existingStudent.user.email !== matchingStudentByStudentId.email) {
+          errors.push({
+            index: matchingStudentByStudentId.row,
+            message: `Student ID ${existingStudent.student.studentId} already in use by another student with email ${existingStudent.user.email}`,
+          });
+          continue;
+        }
+
+        // Once email is the same, ensure that the name was not changed from the existing entry
+        if (existingStudent.student.name !== matchingStudentByStudentId.name) {
+          errors.push({
+            index: matchingStudentByStudentId.row,
+            message: `Student ID ${existingStudent.student.studentId} paired with ${existingStudent.user.email} has name of ${existingStudent.student.name} but ${matchingStudentByStudentId.name} was given instead.`,
+          });
+          continue;
+        }
+      }
+
+      // Get input student with same email
+      // Assured that the student id does not pose an issue so we can check the emails now
+      const matchingStudentByEmail = emailFirst[existingStudent.user.email];
+      if (matchingStudentByEmail) {
+        // If existing student is deleted, the entry is allowed
+        if (existingStudent.deletedAt) continue;
+
+        // Existing student with email must have same student id as given input
+        if (
+          existingStudent.student.studentId !== matchingStudentByEmail.studentId
+        ) {
+          errors.push({
+            index: matchingStudentByEmail.row,
+            message: `Email ${existingStudent.user.email} already in use by another student with student id ${existingStudent.student.studentId}`,
+          });
+          continue;
+        }
+
+        // Existing student with email must have the same name
+        if (existingStudent.student.name !== matchingStudentByEmail.name) {
+          errors.push({
+            index: matchingStudentByStudentId.row,
+            message: `Student ID ${existingStudent.student.studentId} paired with ${existingStudent.user.email} has name of ${existingStudent.student.name} but ${matchingStudentByStudentId.name} was given instead.`,
+          });
+        }
+      }
+    }
+  }
 }
