@@ -175,7 +175,7 @@ export class StudentsService {
       .join(", ");
 
     // Using a raw query here since it's the most optimised version of the query
-    const insertedStudentUsers: { id: string }[] = await (!entityManager
+    const insertedStudentUsers: { id: string }[] = (await (!entityManager
       ? this.dataSource
       : entityManager
     ).query(`
@@ -189,7 +189,7 @@ export class StudentsService {
         ON CONFLICT (student_id)
             DO UPDATE SET id = excluded.id
         RETURNING *;
-    `);
+    `)) as { id: string }[];
 
     return insertedStudentUsers.map(({ id }) => id);
   }
