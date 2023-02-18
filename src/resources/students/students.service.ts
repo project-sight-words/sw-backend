@@ -45,8 +45,7 @@ export class StudentsService {
     private readonly studentRepository: Repository<Student>,
     @InjectRepository(StudentUser)
     private readonly studentUserRepository: Repository<StudentUser>,
-  ) {
-  }
+  ) {}
 
   private readonly loggerService = new Logger("StudentsService");
 
@@ -220,8 +219,8 @@ export class StudentsService {
 
     // Using a raw query here since it's the most optimised version of the query
     const insertedStudentUsers: { id: string }[] = (await (!entityManager
-        ? this.dataSource
-        : entityManager
+      ? this.dataSource
+      : entityManager
     ).query(`
         INSERT INTO student_users (user_id, student_id)
         SELECT p.uid, p.sid
@@ -265,10 +264,10 @@ export class StudentsService {
   ):
     | [false, CreateStudentErrorDto[]]
     | [
-    true,
-    Record<string, propertyFirstBase>,
-    Record<string, propertyFirstBase>,
-  ] {
+        true,
+        Record<string, propertyFirstBase>,
+        Record<string, propertyFirstBase>,
+      ] {
     const errors: CreateStudentErrorDto[] = [];
     const emailFirst: Record<string, emailFirstInterface> = {};
     const studentIdFirst: Record<string, studentIdFirstInterface> = {};
