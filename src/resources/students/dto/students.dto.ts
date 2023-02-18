@@ -1,7 +1,7 @@
 import { Exclude, Expose } from "class-transformer";
 import { Identifier } from "entities/common";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
-import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
+import { IsEmail, IsInt, IsNotEmpty, IsString, IsUUID } from "class-validator";
 import {
   StudentDatum,
   StudentEntity,
@@ -89,4 +89,15 @@ export class StudentDto extends CreateStudentDto {
       studentId: studentUser.student.studentId,
     };
   }
+}
+
+export class CreateStudentErrorDto {
+  @Expose()
+  @IsInt()
+  index!: number;
+
+  @Expose()
+  @IsString()
+  @IsNotEmpty()
+  message!: string;
 }

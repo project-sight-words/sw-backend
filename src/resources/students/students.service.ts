@@ -17,10 +17,24 @@ import {
 import { UsersService } from "resources/users/users.service";
 import {
   CreateStudentDto,
+  CreateStudentErrorDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
 import { CreateStamp, DeleteStamp, UpdateStamp } from "entities/common";
+
+interface propertyFirstBase {
+  row: number;
+  name: string;
+}
+
+interface emailFirstInterface extends propertyFirstBase {
+  studentId: string;
+}
+
+interface studentIdFirstInterface extends propertyFirstBase {
+  email: string;
+}
 
 @Injectable()
 export class StudentsService {
@@ -31,7 +45,8 @@ export class StudentsService {
     private readonly studentRepository: Repository<Student>,
     @InjectRepository(StudentUser)
     private readonly studentUserRepository: Repository<StudentUser>,
-  ) {}
+  ) {
+  }
 
   private readonly loggerService = new Logger("StudentsService");
 
@@ -134,6 +149,26 @@ export class StudentsService {
       throw new InternalServerErrorException();
   }
 
+  async findExistingStudentsByEmailOrStudentId(
+    emails: string[],
+    studentIds: string[],
+    entityManager: EntityManager | null = null,
+  ) {
+    const options = {
+      relations: {
+        user: true,
+        student: true,
+      },
+      withDeleted: true,
+      where: [
+        { student: { studentId: In(studentIds) } },
+        { user: { email: In(emails) } },
+      ],
+    };
+    if (!entityManager) return this.studentUserRepository.find(options);
+    else return entityManager.find(StudentUser, options);
+  }
+
   async findByIds(
     ids: string[],
     entityManager: EntityManager | null = null,
@@ -185,8 +220,8 @@ export class StudentsService {
 
     // Using a raw query here since it's the most optimised version of the query
     const insertedStudentUsers: { id: string }[] = (await (!entityManager
-      ? this.dataSource
-      : entityManager
+        ? this.dataSource
+        : entityManager
     ).query(`
         INSERT INTO student_users (user_id, student_id)
         SELECT p.uid, p.sid
@@ -225,25 +260,16 @@ export class StudentsService {
     });
   }
 
-  private async validate(
+  private validateRawInput(
     students: CreateStudentDto[],
-    entityManager: EntityManager,
-  ) {
-    interface propertyFirstBase {
-      row: number;
-      name: string;
-    }
-
-    interface emailFirstInterface extends propertyFirstBase {
-      studentId: string;
-    }
-
-    interface studentIdFirstInterface extends propertyFirstBase {
-      email: string;
-    }
-
-    const errors: { index: number; message: string }[] = [];
-
+  ):
+    | [false, CreateStudentErrorDto[]]
+    | [
+    true,
+    Record<string, propertyFirstBase>,
+    Record<string, propertyFirstBase>,
+  ] {
+    const errors: CreateStudentErrorDto[] = [];
     const emailFirst: Record<string, emailFirstInterface> = {};
     const studentIdFirst: Record<string, studentIdFirstInterface> = {};
     for (let i = 0; i < students.length; i++) {
@@ -281,50 +307,50 @@ export class StudentsService {
       };
     }
 
+    if (errors.length > 0) return [false, errors];
+    return [true, emailFirst, studentIdFirst];
+  }
+
+  private async validate(
+    students: CreateStudentDto[],
+    entityManager: EntityManager,
+  ) {
+    const [status, ...rest] = this.validateRawInput(students);
     // Early return since we won't want to query the database for nothing
-    if (errors.length > 0) return errors;
+    if (!status) return rest[0];
+
+    const errors: CreateStudentErrorDto[] = [];
+    const [emailFirst, studentIdFirst] = rest as [
+      Record<string, emailFirstInterface>,
+      Record<string, studentIdFirstInterface>,
+    ];
 
     // Get all existing student users that match the given list of emails or student ids
-    const existingStudents = await entityManager.find(StudentUser, {
-      relations: {
-        user: true,
-        student: true,
-      },
-      withDeleted: true,
-      where: [
-        {
-          student: {
-            studentId: In(students.map((s) => s.studentId)),
-          },
-        },
-        {
-          user: {
-            email: In(students.map((s) => s.email)),
-          },
-        },
-      ],
-    });
+    const existingStudents = await this.findExistingStudentsByEmailOrStudentId(
+      students.map(({ email }) => email),
+      students.map(({ studentId }) => studentId),
+      entityManager,
+    );
 
     // For each of the existing students, ensure that the input (if any) does not violate
-    for (const existingStudent of existingStudents) {
+    for (const es of existingStudents) {
       // Get input student with the same student id
-      const matchingStudentByStudentId =
-        studentIdFirst[existingStudent.student.studentId];
+      const matchingStudentByStudentId = studentIdFirst[es.student.studentId];
       if (matchingStudentByStudentId) {
-        // If student with same student id already exists, ensure that the email is the same
-        if (existingStudent.user.email !== matchingStudentByStudentId.email) {
+        // Ensure that attached email is the same
+        if (es.user.email !== matchingStudentByStudentId.email) {
           errors.push({
             index: matchingStudentByStudentId.row,
-            message: `Student ID ${existingStudent.student.studentId} already in use by another student with email ${existingStudent.user.email}`,
+            message: `Student ID ${es.student.studentId} already in use by another student with email ${es.user.email}`,
           });
           continue;
         }
 
-        // Once email is the same, ensure that the name was not changed from the existing entry
-        if (existingStudent.student.name !== matchingStudentByStudentId.name) {
+        // Ensure that associated name is not changed
+        if (es.student.name !== matchingStudentByStudentId.name) {
           errors.push({
             index: matchingStudentByStudentId.row,
-            message: `Student ID ${existingStudent.student.studentId} paired with ${existingStudent.user.email} has name of ${existingStudent.student.name} but ${matchingStudentByStudentId.name} was given instead.`,
+            message: `Student ID ${es.student.studentId} paired with ${es.user.email} has name of ${es.student.name} but ${matchingStudentByStudentId.name} was given instead.`,
           });
           continue;
         }
@@ -332,27 +358,25 @@ export class StudentsService {
 
       // Get input student with same email
       // Assured that the student id does not pose an issue so we can check the emails now
-      const matchingStudentByEmail = emailFirst[existingStudent.user.email];
+      const matchingStudentByEmail = emailFirst[es.user.email];
       if (matchingStudentByEmail) {
         // If existing student is deleted, the entry is allowed
-        if (existingStudent.deletedAt) continue;
+        if (es.deletedAt) continue;
 
-        // Existing student with email must have same student id as given input
-        if (
-          existingStudent.student.studentId !== matchingStudentByEmail.studentId
-        ) {
+        // Ensure that attached student id is the same
+        if (es.student.studentId !== matchingStudentByEmail.studentId) {
           errors.push({
             index: matchingStudentByEmail.row,
-            message: `Email ${existingStudent.user.email} already in use by another student with student id ${existingStudent.student.studentId}`,
+            message: `Email ${es.user.email} already in use by another student with student id ${es.student.studentId}`,
           });
           continue;
         }
 
-        // Existing student with email must have the same name
-        if (existingStudent.student.name !== matchingStudentByEmail.name) {
+        // Ensure that associated name is not changed
+        if (es.student.name !== matchingStudentByEmail.name) {
           errors.push({
             index: matchingStudentByStudentId.row,
-            message: `Student ID ${existingStudent.student.studentId} paired with ${existingStudent.user.email} has name of ${existingStudent.student.name} but ${matchingStudentByStudentId.name} was given instead.`,
+            message: `Student ID ${es.student.studentId} paired with ${es.user.email} has name of ${es.student.name} but ${matchingStudentByStudentId.name} was given instead.`,
           });
         }
       }
