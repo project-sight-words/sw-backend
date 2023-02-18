@@ -42,10 +42,11 @@ export class UsersService {
 
   async createManyIfNotExists(
     emails: string[],
-    entityManager: EntityManager,
+    entityManager: EntityManager | null = null,
   ): Promise<User[]> {
-    const { generatedMaps } = await entityManager
-      .createQueryBuilder()
+    let qb = this.userRepository.createQueryBuilder();
+    if (entityManager) qb = entityManager.createQueryBuilder(User, "users");
+    const { generatedMaps } = await qb
       .insert()
       .values(emails.map((email) => ({ email })))
       .orIgnore()

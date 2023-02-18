@@ -7,7 +7,13 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Student, StudentEntity, StudentUser } from "entities/student.entities";
-import { DataSource, EntityManager, In, Repository } from "typeorm";
+import {
+  DataSource,
+  EntityManager,
+  In,
+  Repository,
+  SelectQueryBuilder,
+} from "typeorm";
 import { UsersService } from "resources/users/users.service";
 import {
   CreateStudentDto,
@@ -153,8 +159,11 @@ export class StudentsService {
     students: CreateStudentDto[],
     entityManager: EntityManager | null = null,
   ) {
-    await (!entityManager ? this.studentRepository : entityManager)
-      .createQueryBuilder()
+    let qb: SelectQueryBuilder<any> =
+      this.studentRepository.createQueryBuilder();
+    if (entityManager)
+      qb = entityManager.createQueryBuilder(Student, "students");
+    await qb
       .insert()
       .values(
         students.map((s) => ({
@@ -212,7 +221,7 @@ export class StudentsService {
       const ids = await this.bulkInsertStudentUsers(students, entityManager);
 
       // Retrieve the inserted students to convert to DTOs
-      return this.findByIds(ids);
+      return await this.findByIds(ids, entityManager);
     });
   }
 
