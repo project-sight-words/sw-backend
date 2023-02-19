@@ -1,14 +1,16 @@
 import { AdminsController } from "./admins.controller";
-import { AdminsRepository } from "./admins.repository";
 import { AdminsService } from "./admins.service";
-import { DatabaseModule } from "database/database.module";
 import { Module } from "@nestjs/common";
 import { UsersModule } from "resources/users/users.module";
-import { UsersRepository } from "resources/users/users.repository";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { User } from "entities/user.entities";
+import { Admin, AdminUser } from "entities/admin.entities";
+import { UsersService } from "resources/users/users.service";
 
 @Module({
-  imports: [DatabaseModule, UsersModule],
+  imports: [TypeOrmModule.forFeature([User, Admin, AdminUser]), UsersModule],
   controllers: [AdminsController],
-  providers: [UsersRepository, AdminsService, AdminsRepository],
+  providers: [UsersService, AdminsService],
+  exports: [AdminsService],
 })
 export class AdminsModule {}
