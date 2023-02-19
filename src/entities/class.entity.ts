@@ -21,7 +21,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { isTimeWithTimezone } from "utils/validator";
+import { IsTimeWithTimezone } from "utils/validator";
 import { ClassCentre } from "./centre.entity";
 import { Student } from "./student.entities";
 import { Teacher } from "./teacher.entities";
@@ -44,7 +44,7 @@ export class Class {
 
   @Expose()
   @Column({ name: "start_time", type: "time with time zone", nullable: false })
-  @isTimeWithTimezone()
+  @IsTimeWithTimezone()
   startTime!: string;
 
   @Expose()
@@ -56,7 +56,7 @@ export class Class {
 
   @Expose()
   @Column({ name: "end_time", type: "time with time zone", nullable: false })
-  @isTimeWithTimezone()
+  @IsTimeWithTimezone()
   endTime!: string;
 
   @UpdateDateColumn({ name: "updated_at" })

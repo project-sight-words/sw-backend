@@ -3,13 +3,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { registerDecorator, ValidationOptions } from "class-validator";
 
-export function isTimeWithTimezone(
+export function IsTimeWithTimezone(
   property?: string,
   validationOptions?: ValidationOptions,
 ) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
-      name: "isTimeWithTimezone",
+      name: "IsTimeWithTimezone",
       target: object.constructor,
       propertyName: propertyName,
       constraints: [property],
