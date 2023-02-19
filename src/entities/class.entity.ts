@@ -28,35 +28,35 @@ import { Teacher } from "./teacher.entities";
 
 @Entity("classes")
 export class Class {
+  @Expose()
   @PrimaryGeneratedColumn("uuid")
   @IsOptional()
   @IsUUID()
-  @Expose()
   id!: string;
 
+  @Expose()
   @Column({ name: "start_day", type: "int", nullable: false })
   @IsInt()
   @Min(0)
   @Max(6)
   @IsNotEmpty()
-  @Expose()
   startDay!: number;
 
+  @Expose()
   @Column({ name: "start_time", type: "time with time zone", nullable: false })
   @isTimeWithTimezone()
-  @Expose()
   startTime!: string;
 
+  @Expose()
   @Column({ name: "end_day", type: "int", nullable: false })
   @Min(0)
   @Max(6)
   @IsNotEmpty()
-  @Expose()
   endDay!: number;
 
+  @Expose()
   @Column({ name: "end_time", type: "time with time zone", nullable: false })
   @isTimeWithTimezone()
-  @Expose()
   endTime!: string;
 
   @UpdateDateColumn({ name: "updated_at" })
@@ -65,16 +65,16 @@ export class Class {
   @Column({ name: "updated_by", type: "uuid" })
   updatedBy!: string;
 
+  @Exclude()
   @OneToMany(() => ClassStudent, (classStudent) => classStudent.class, {
     eager: true,
   })
-  @Exclude()
   classStudents!: ClassStudent[];
 
+  @Exclude()
   @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class, {
     eager: true,
   })
-  @Exclude()
   classTeachers!: ClassTeacher[];
 
   @OneToOne(() => ClassCentre, (classCentre) => classCentre.class)
@@ -114,33 +114,34 @@ export class Class {
 
 @Entity("class_teachers")
 export class ClassTeacher {
+  @Expose()
   @PrimaryGeneratedColumn("uuid")
   @IsUUID()
-  @Expose()
   id!: string;
 
+  @Expose()
   @Column({ name: "class_id", type: "uuid", nullable: false })
   @IsUUID()
-  @Expose()
   classId!: string;
 
+  @Expose()
   @ManyToOne(() => Class, (classEntity) => classEntity.classTeachers)
   @JoinColumn({ name: "class_id" })
-  @Expose()
   class!: Class;
 
+  @Expose()
   @Column({ name: "teacher_id", type: "uuid", nullable: false })
   @IsNotEmpty()
   @IsUUID()
-  @Expose()
   teacherId!: string;
 
   // Add eager load if needed after teacher refactored
+  @Expose()
   @ManyToOne(() => Teacher, (teacher) => teacher.classTeachers)
   @JoinColumn({ name: "teacher_id" })
-  @Expose()
   teacher!: Teacher;
 
+  @Expose()
   @Column({
     name: "is_form_teacher",
     type: "boolean",
@@ -148,74 +149,73 @@ export class ClassTeacher {
     default: false,
   })
   @IsBoolean()
-  @Expose()
   @IsOptional()
   isFormTeacher!: boolean;
 
-  @CreateDateColumn({ name: "created_at", default: new Date() })
   @Expose()
+  @CreateDateColumn({ name: "created_at", default: new Date() })
   createdAt!: Date;
 
-  @Column({ name: "created_by", type: "uuid" })
   @Expose()
+  @Column({ name: "created_by", type: "uuid" })
   @IsUUID()
   createdBy!: string;
 
-  @DeleteDateColumn({ name: "deleted_at" })
   @Expose()
+  @DeleteDateColumn({ name: "deleted_at" })
   deletedAt!: Date;
 
-  @Column({ name: "deleted_by", type: "uuid" })
   @Expose()
+  @Column({ name: "deleted_by", type: "uuid" })
   @IsUUID()
   deletedBy!: string;
 }
 
 @Entity("class_students")
 export class ClassStudent {
+  @Expose()
   @PrimaryGeneratedColumn("uuid")
   @IsUUID()
-  @Expose()
   id!: string;
 
+  @Expose()
   @Column({ name: "class_id", type: "uuid", nullable: false })
   @JoinColumn()
   @IsUUID()
-  @Expose()
   classId!: string;
 
+  @Expose()
   @ManyToOne(() => Class, (classEntity) => classEntity.classStudents)
   @JoinColumn({ name: "class_id" })
-  @Expose()
   class!: Class;
 
+  @Expose()
   @Column({ name: "student_id", type: "uuid", nullable: false })
   @JoinColumn()
   @IsUUID()
-  @Expose()
   studentId!: string;
 
+  @Expose()
   @ManyToOne(() => Student, { eager: true })
   @JoinColumn({ name: "student_id" })
-  @Expose()
   student!: Student;
 
-  @CreateDateColumn({ name: "created_at", default: new Date() })
   @Expose()
+  @CreateDateColumn({ name: "created_at", default: new Date() })
   createdAt!: Date;
 
+  @Expose()
   @Column({ name: "created_by", type: "uuid" })
   @IsUUID()
-  @Expose()
   createdBy!: string;
 
-  @DeleteDateColumn({ name: "deleted_at" })
   @Expose()
+  @DeleteDateColumn({ name: "deleted_at" })
   deletedAt!: Date;
 
+  @Expose()
   @Column({ name: "deleted_by", type: "uuid" })
   @IsUUID()
-  @Expose()
   deletedBy!: string;
 
   // TODO: See if fromObject/toObject is needed

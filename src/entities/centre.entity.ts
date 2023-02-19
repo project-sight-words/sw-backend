@@ -16,72 +16,72 @@ import { Class } from "./class.entity";
 
 @Entity("centres")
 export class Centre {
+  @Expose()
   @PrimaryGeneratedColumn("uuid")
   @IsUUID()
-  @Expose()
   id!: string;
 
+  @Expose()
   @Column({ name: "name", type: "varchar", nullable: false })
   @IsString()
-  @Expose()
   name!: string;
 
-  @OneToMany(() => ClassCentre, (classCentre) => classCentre.centre)
   @Exclude()
+  @OneToMany(() => ClassCentre, (classCentre) => classCentre.centre)
   classCentres!: ClassCentre[];
 
-  @UpdateDateColumn({ name: "updated_at", default: new Date() })
   @Expose()
+  @UpdateDateColumn({ name: "updated_at", default: new Date() })
   updatedAt!: Date;
 
+  @Expose()
   @Column({ name: "updated_by", type: "uuid" })
   @IsUUID()
-  @Expose()
   updatedBy!: string;
 }
 
 @Entity("class_centres")
 export class ClassCentre {
+  @Expose()
   @PrimaryGeneratedColumn("uuid")
   @IsUUID()
-  @Expose()
   id!: string;
 
+  @Expose()
   @Column({ name: "class_id", type: "uuid", nullable: false })
   @IsUUID()
-  @Expose()
   classId!: string;
 
+  @Expose()
   @OneToOne(() => Class, (classEntity) => classEntity.classCentre)
   @JoinColumn({ name: "class_id" })
-  @Expose()
   class!: Class;
 
+  @Expose()
   @Column({ name: "centre_id", type: "uuid", nullable: false })
   @IsUUID()
-  @Expose()
   centreId!: string;
 
+  @Expose()
   @ManyToOne(() => Centre, (centreEntity) => centreEntity.classCentres)
   @JoinColumn({ name: "centre_id" })
-  @Expose()
   centre!: Centre;
 
-  @CreateDateColumn({ name: "created_at", default: new Date() })
   @Expose()
+  @CreateDateColumn({ name: "created_at", default: new Date() })
   createdAt!: Date;
 
+  @Expose()
   @Column({ name: "created_by", type: "uuid" })
   @IsUUID()
-  @Expose()
   createdBy!: string;
 
-  @DeleteDateColumn({ name: "deleted_at" })
   @Expose()
+  @DeleteDateColumn({ name: "deleted_at" })
   deletedAt!: Date;
 
+  @Expose()
   @Column({ name: "deleted_by", type: "uuid" })
   @IsUUID()
-  @Expose()
   deletedBy!: string;
 }
