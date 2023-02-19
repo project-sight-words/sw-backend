@@ -21,7 +21,7 @@ export class User {
   @OneToMany(() => StudentUser, (studentUser) => studentUser.userId)
   studentUsers: StudentUser[] | null = null;
 
-  @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.userId)
+  @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.user)
   teacherUsers: TeacherUser[] | null = null;
 
   static fromObject(object: object): User {

@@ -10,12 +10,10 @@ import {
   TeacherDto,
   UpdateTeacherDto,
 } from "./dto/teachers.dto";
-
-import { Teacher, TeacherEntity, TeacherUser } from "entities/teacher.entities";
+import { Teacher, TeacherUser } from "entities/teacher.entities";
 import { UsersService } from "resources/users/users.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, EntityManager, In, Repository } from "typeorm";
-import { CreateStamp, DeleteStamp, UpdateStamp } from "entities/common";
 
 @Injectable()
 export class TeachersService {
@@ -30,8 +28,8 @@ export class TeachersService {
 
   private readonly loggerService = new Logger("TeachersService");
 
-  async searchByIds(ids: Set<string>): Promise<TeacherEntity[]> {
-    const teachers = await this.teacherUserRepository.find({
+  async searchByIds(ids: Set<string>): Promise<Teacher[]> {
+    const teacherUsers = await this.teacherUserRepository.find({
       relations: {
         user: true,
         teacher: true,
@@ -43,43 +41,23 @@ export class TeachersService {
         },
       },
     });
-
-    // TODO: Use Teacher entity
-    return teachers.map((tu) => {
-      const te = new TeacherEntity();
-      te.identifier.id = tu.teacherId;
-      te.datum.staffId = tu.teacher.staffId;
-      te.datum.email = tu.user.email;
-      te.datum.name = tu.teacher.name;
-      const createStamp = new CreateStamp();
-      createStamp.createdAt = tu.createdAt;
-      createStamp.createdBy = tu.createdBy;
-      te.createStamp = createStamp;
-      const updateStamp = new UpdateStamp();
-      updateStamp.updatedAt = tu.teacher.updatedAt;
-      updateStamp.updatedBy = tu.teacher.updatedBy;
-      te.updateStamp = updateStamp;
-      const deleteStamp = new DeleteStamp();
-      deleteStamp.deletedAt = tu.deletedAt;
-      deleteStamp.deletedBy = tu.deletedBy ? tu.deletedBy : "";
-      te.deleteStamp = deleteStamp;
-      return te;
-    });
+    const teachers = teacherUsers.map((tu) => Teacher.fromTeacherUser(tu));
+    return teachers;
   }
 
-  async get(): Promise<TeacherDto[]> {
-    const teachers = await this.teacherUserRepository.find({
+  async get(): Promise<Teacher[]> {
+    const teacherUsers = await this.teacherUserRepository.find({
       relations: {
         user: true,
         teacher: true,
       },
       withDeleted: false,
     });
-    const teacherDtos = teachers.map((tu) => TeacherDto.fromTeacherUser(tu));
-    return teacherDtos;
+    const teachers = teacherUsers.map((tu) => Teacher.fromTeacherUser(tu));
+    return teachers;
   }
 
-  async findOneById(uuid: string): Promise<TeacherDto> {
+  async findOneById(uuid: string): Promise<Teacher> {
     const teacherUser = await this.teacherUserRepository.findOne({
       relations: {
         user: true,
@@ -87,18 +65,19 @@ export class TeachersService {
       },
       withDeleted: false,
       where: {
-        teacherId: uuid,
+        teacher: { id: uuid },
       },
     });
     if (!teacherUser) throw new NotFoundException();
-    return TeacherDto.fromTeacherUser(teacherUser);
+    const teacher = Teacher.fromTeacherUser(teacherUser);
+    return teacher;
   }
 
   async updateById(
     uuid: string,
     updateTeacherDto: UpdateTeacherDto,
     updatedBy: string | null = null,
-  ): Promise<TeacherDto> {
+  ): Promise<Teacher> {
     const { name, staffId } = updateTeacherDto;
     await this.teacherRepository
       .createQueryBuilder()
@@ -149,6 +128,7 @@ export class TeachersService {
   async createOne(
     teacherDto: CreateTeacherDto,
     entityManager: EntityManager,
+    createdBy: string | null = null,
   ): Promise<TeacherDto> {
     const { email, name, staffId } = teacherDto;
 
@@ -161,7 +141,7 @@ export class TeachersService {
 
     if (teacher.name !== name)
       throw new BadRequestException(
-        "Teacher's recorded naem does not match given name.",
+        "Teacher's recorded name does not match given name.",
       );
 
     const isExisting = await entityManager.findOneBy(TeacherUser, {

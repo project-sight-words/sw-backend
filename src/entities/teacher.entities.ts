@@ -35,6 +35,10 @@ export class Teacher {
 
   @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.teacher)
   teacherUsers: TeacherUser[] | null = null;
+
+  static fromTeacherUser(teacherUser: TeacherUser): Teacher {
+    return teacherUser.teacher;
+  }
 }
 
 @Entity("teacher_users")
@@ -42,11 +46,13 @@ export class TeacherUser {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ name: "user_id", type: "uuid" })
-  userId!: string;
+  @ManyToOne(() => Teacher, (teacher) => teacher.teacherUsers)
+  @JoinColumn({ name: "teacher_id" })
+  teacher!: Teacher;
 
-  @Column({ name: "teacher_id", type: "uuid" })
-  teacherId!: string;
+  @ManyToOne(() => User, (user) => user.teacherUsers)
+  @JoinColumn({ name: "user_id" })
+  user!: User;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
@@ -59,14 +65,6 @@ export class TeacherUser {
 
   @Column({ name: "deleted_by", type: "uuid", nullable: true })
   deletedBy: string | null = null;
-
-  @ManyToOne(() => Teacher, (teacher) => teacher.teacherUsers)
-  @JoinColumn({ name: "teacher_id" })
-  teacher!: Teacher;
-
-  @ManyToOne(() => User, (user) => user.teacherUsers)
-  @JoinColumn({ name: "user_id" })
-  user!: User;
 }
 
 export class TeacherDatum {
