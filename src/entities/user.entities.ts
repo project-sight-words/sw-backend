@@ -23,6 +23,10 @@ export class User {
 
   @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.userId)
   teacherUsers: TeacherUser[] | null = null;
+
+  static fromObject(object: object): User {
+    return plainToInstance(User, object);
+  }
 }
 
 export class UserDatum {
