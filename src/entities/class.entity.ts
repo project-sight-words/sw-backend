@@ -112,7 +112,6 @@ export class ClassTeacher {
     default: false,
   })
   @IsBoolean()
-  @IsOptional()
   isFormTeacher!: boolean;
 
   @Expose()

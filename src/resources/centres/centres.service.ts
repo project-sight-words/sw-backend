@@ -1,18 +1,18 @@
-import { CentresRepository } from "./centres.repository";
 import { Injectable } from "@nestjs/common";
 import { Centre, ClassCentre } from "entities/centre.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { ClassesRepository } from "resources/classes/classes.repository";
 import { Class } from "entities/class.entity";
 
 @Injectable()
 export class CentresService {
   constructor(
-    private readonly centresRepository: CentresRepository,
-    private readonly classesReportory: ClassesRepository,
+    @InjectRepository(Centre)
+    private readonly centresRepository: Repository<Centre>,
+    @InjectRepository(Class)
+    private readonly classesReportory: Repository<Class>,
     @InjectRepository(ClassCentre)
-    private classCentreRepository: Repository<ClassCentre>,
+    private readonly classCentreRepository: Repository<ClassCentre>,
   ) {}
 
   async get(): Promise<Centre[]> {

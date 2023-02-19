@@ -1,4 +1,3 @@
-import { ClassesRepository } from "./classes.repository";
 import { Injectable, Logger } from "@nestjs/common";
 import { Class, ClassStudent, ClassTeacher } from "entities/class.entity";
 import { Repository } from "typeorm";
@@ -9,13 +8,14 @@ import { CreateClassDto, UpdateClassDto } from "./dto/classes.dto";
 @Injectable()
 export class ClassesService {
   constructor(
-    private classesRepository: ClassesRepository,
+    @InjectRepository(Class)
+    private readonly classesRepository: Repository<Class>,
     @InjectRepository(ClassStudent)
-    private ClassStudentRepository: Repository<ClassStudent>,
+    private readonly ClassStudentRepository: Repository<ClassStudent>,
     @InjectRepository(ClassTeacher)
-    private ClassTeacherRepository: Repository<ClassTeacher>,
+    private readonly ClassTeacherRepository: Repository<ClassTeacher>,
     @InjectRepository(Student)
-    private studentsRepository: Repository<Student>,
+    private readonly studentsRepository: Repository<Student>,
   ) {}
 
   private readonly loggerService = new Logger("ClassesService");
