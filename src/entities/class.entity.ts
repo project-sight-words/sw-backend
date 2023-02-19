@@ -9,7 +9,6 @@ import {
   Min,
 } from "class-validator";
 import {
-  AfterLoad,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -66,50 +65,15 @@ export class Class {
   updatedBy!: string;
 
   @Exclude()
-  @OneToMany(() => ClassStudent, (classStudent) => classStudent.class, {
-    eager: true,
-  })
+  @OneToMany(() => ClassStudent, (classStudent) => classStudent.class)
   classStudents!: ClassStudent[];
 
   @Exclude()
-  @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class, {
-    eager: true,
-  })
+  @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class)
   classTeachers!: ClassTeacher[];
 
   @OneToOne(() => ClassCentre, (classCentre) => classCentre.class)
   classCentre!: ClassCentre;
-
-  @Expose()
-  teachers!: Teacher[];
-
-  @Expose()
-  students!: Student[];
-
-  // Possible way to hydrate classes but check if needed
-  // Can just use queryBuilder to hydrate when needed since
-  // this can be expensive and unnecessary to load always
-  @AfterLoad()
-  loadStudents() {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.classStudents) {
-      // Eager loading does not work when used with query builder
-      this.students = this.classStudents.map((classStudent) => {
-        return classStudent.student;
-      });
-    }
-  }
-
-  // Use after Teacher entity is refactor
-  @AfterLoad()
-  loadTeachers() {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.classTeachers) {
-      this.teachers = this.classTeachers.map((classTeacher) => {
-        return classTeacher.teacher;
-      });
-    }
-  }
 }
 
 @Entity("class_teachers")
@@ -135,7 +99,6 @@ export class ClassTeacher {
   @IsUUID()
   teacherId!: string;
 
-  // Add eager load if needed after teacher refactored
   @Expose()
   @ManyToOne(() => Teacher, (teacher) => teacher.classTeachers)
   @JoinColumn({ name: "teacher_id" })
@@ -196,7 +159,7 @@ export class ClassStudent {
   studentId!: string;
 
   @Expose()
-  @ManyToOne(() => Student, { eager: true })
+  @ManyToOne(() => Student)
   @JoinColumn({ name: "student_id" })
   student!: Student;
 
