@@ -10,7 +10,7 @@ export class CentresService {
     @InjectRepository(Centre)
     private readonly centresRepository: Repository<Centre>,
     @InjectRepository(Class)
-    private readonly classesReportory: Repository<Class>,
+    private readonly classesRepository: Repository<Class>,
     @InjectRepository(ClassCentre)
     private readonly classCentreRepository: Repository<ClassCentre>,
   ) {}
@@ -40,7 +40,7 @@ export class CentresService {
   }
 
   async getClassesByCentreId(centreId: string): Promise<Class[]> {
-    const classes = await this.classesReportory
+    const classes = await this.classesRepository
       .createQueryBuilder()
       .leftJoin(
         "class_centres",

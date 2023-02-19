@@ -57,9 +57,9 @@ export class ClassesController {
   ): Promise<void> {
     const isUuid = Uuid.test(classId);
     if (!isUuid) throw new NotFoundException();
-    const { teacherId, isFormTeacher = false } = body;
+    const { teacherId, isFormTeacher } = body;
     await this.classesService.searchById(classId);
-    // await this.teachersService.getById(teacherId);  Use after Teachers refactor
+    // TODO: await this.teachersService.getById(teacherId);  Use after Teachers refactor
     if (!classId || !teacherId) throw new NotFoundException();
     await this.classesService.addTeacherToClass(
       classId,
