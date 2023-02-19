@@ -26,10 +26,8 @@ export class AdminsController {
   @Get(":id")
   async getById(@Param("id") id: string): Promise<AdminDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) {
-      throw new NotFoundException();
-    }
-    const admin = await this.adminsService.getById(id);
+    if (!isUuid) throw new NotFoundException();
+    const admin = await this.adminsService.findOneById(id);
     return admin;
   }
 
@@ -46,10 +44,9 @@ export class AdminsController {
   @Delete(":id")
   async deleteById(@Param("id") id: string): Promise<AdminDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) {
-      throw new NotFoundException();
-    }
-    const admin = await this.adminsService.deleteById(id);
+    if (!isUuid) throw new NotFoundException();
+    const admin = await this.adminsService.findOneById(id);
+    await this.adminsService.deleteById(id);
     return admin;
   }
 }
