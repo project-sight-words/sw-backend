@@ -1,6 +1,6 @@
-import { GetUserDto } from "resources/users/dto/users.dto";
 import { Roles } from "entities/roles.entities";
 import { Type } from "class-transformer";
+import { UserEntityDto } from "resources/users/dto/users.dto";
 import {
   IsDefined,
   IsEmail,
@@ -29,8 +29,8 @@ export class LoggedInDto {
   @IsNotEmptyObject()
   @IsObject()
   @ValidateNested()
-  @Type(() => GetUserDto)
-  user!: GetUserDto;
+  @Type(() => UserEntityDto)
+  user!: UserEntityDto;
 
   @IsEnum(Roles, { each: true })
   @IsNotEmpty()
