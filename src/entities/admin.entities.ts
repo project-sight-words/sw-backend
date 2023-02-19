@@ -1,47 +1,50 @@
-import { Expose } from "class-transformer";
-import { IsDate, IsEmail, IsNotEmpty, IsUUID } from "class-validator";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { User } from "./user.entities";
 
-export class NewAdmin {
-  @IsNotEmpty()
-  @IsEmail()
-  email!: string;
-}
-
+@Entity("admins")
 export class Admin {
-  @IsNotEmpty()
-  @IsUUID()
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @IsEmail()
-  email!: string | null;
+  @OneToMany(() => AdminUser, (adminuser) => adminuser.admin)
+  adminUsers: AdminUser[] | null = null;
+
+  static fromAdminUser(adminUser: AdminUser): Admin {
+    return adminUser.admin;
+  }
 }
 
-export class NewAdminUser {
-  @Expose({ name: "user_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  userId!: string;
+@Entity("admin_users")
+export class AdminUser {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-  @Expose({ name: "admin_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  adminId!: string;
-}
+  @ManyToOne(() => Admin, (admin) => admin.adminUsers)
+  @JoinColumn({ name: "admin_id" })
+  admin!: Admin;
 
-export class AdminUser extends NewAdminUser {
-  @Expose({ name: "created_by" })
-  @IsUUID()
-  createdBy!: string | null;
+  @ManyToOne(() => User, (user) => user.adminUsers)
+  @JoinColumn({ name: "user_id" })
+  user!: User;
 
-  @Expose({ name: "created_at" })
-  @IsDate()
+  @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
 
-  @Expose({ name: "deleted_by" })
-  @IsUUID()
-  deletedBy!: string | null;
+  @Column({ name: "created_by", type: "uuid", nullable: true })
+  createdBy: string | null = null;
 
-  @Expose({ name: "deleted_at" })
-  @IsDate()
-  deletedAt!: Date | null;
+  @DeleteDateColumn({ name: "deleted_at", nullable: true })
+  deletedAt: Date | null = null;
+
+  @Column({ name: "deleted_by", type: "uuid", nullable: true })
+  deletedBy: string | null = null;
 }

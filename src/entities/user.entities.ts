@@ -6,6 +6,7 @@ import { Expose } from "class-transformer";
 import { Identifier } from "./common";
 import { StudentUser } from "./student.entities";
 import { TeacherUser } from "./teacher.entities";
+import { AdminUser } from "./admin.entities";
 
 @Entity({ name: "users" })
 export class User {
@@ -23,6 +24,9 @@ export class User {
 
   @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.user)
   teacherUsers: TeacherUser[] | null = null;
+
+  @OneToMany(() => AdminUser, (adminUser) => adminUser.user)
+  adminUsers: AdminUser[] | null = null;
 
   static fromObject(object: object): User {
     return plainToInstance(User, object);
