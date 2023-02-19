@@ -163,12 +163,12 @@ export class ClassTeacher {
 
   @Expose()
   @DeleteDateColumn({ name: "deleted_at" })
-  deletedAt!: Date;
+  deletedAt!: Date | null;
 
   @Expose()
   @Column({ name: "deleted_by", type: "uuid" })
   @IsUUID()
-  deletedBy!: string;
+  deletedBy!: string | null;
 }
 
 @Entity("class_students")
@@ -211,12 +211,12 @@ export class ClassStudent {
 
   @Expose()
   @DeleteDateColumn({ name: "deleted_at" })
-  deletedAt!: Date;
+  deletedAt!: Date | null;
 
   @Expose()
   @Column({ name: "deleted_by", type: "uuid" })
   @IsUUID()
-  deletedBy!: string;
+  deletedBy!: string | null;
 
   // TODO: See if fromObject/toObject is needed
 }
