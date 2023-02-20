@@ -1,6 +1,19 @@
-import { PickType } from "@nestjs/mapped-types";
-import { ClassCentre } from "entities/centre.entity";
+import { Expose, Type } from "class-transformer";
+import { IsArray, IsString, IsUUID, ValidateNested } from "class-validator";
+import { ClassEntityDto } from "resources/classes/dto/classes.dto";
 
-export class CentreDto {}
+export class CentreEntityDto {
+  @Expose()
+  @IsUUID()
+  id!: string;
 
-export class CreateClassCentreDto extends PickType(ClassCentre, ["classId"]) {}
+  @Expose()
+  @IsString()
+  name!: string;
+
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClassEntityDto)
+  classes?: ClassEntityDto[];
+}
