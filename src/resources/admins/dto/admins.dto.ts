@@ -1,17 +1,19 @@
-import { Exclude, Expose } from "class-transformer";
-import { IsNotEmpty, IsEmail, IsUUID } from "class-validator";
+import { Expose } from "class-transformer";
+import { IsNotEmpty, IsUUID } from "class-validator";
+import { AdminDatum, AdminUser } from "entities/admin.entities";
 
-export class CreateAdminDto {
+export class CreateAdminDto extends AdminDatum {}
+
+export class AdminDto extends AdminDatum {
   @Expose()
-  @IsNotEmpty()
-  @IsEmail()
-  email!: string;
-}
-
-@Exclude()
-export class AdminDto extends CreateAdminDto {
-  @Expose({ name: "id" })
   @IsNotEmpty()
   @IsUUID()
   id!: string;
+
+  static fromAdminUser(adminUser: AdminUser): AdminDto {
+    return {
+      id: adminUser.adminId,
+      email: adminUser.user.email,
+    };
+  }
 }
