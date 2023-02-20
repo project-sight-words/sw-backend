@@ -1,7 +1,12 @@
 import { CentresModule } from "resources/centres/centres.module";
 import { ClassesController } from "./classes.controller";
 import { ClassesService } from "./classes.service";
-import { Class, ClassStudent, ClassTeacher } from "entities/class.entity";
+import {
+  Class,
+  ClassCentre,
+  ClassStudent,
+  ClassTeacher,
+} from "entities/class.entity";
 import { Module } from "@nestjs/common";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
@@ -15,6 +20,7 @@ import { Student } from "entities/student.entities";
       Class,
       ClassStudent,
       ClassTeacher,
+      ClassCentre,
       Teacher,
       Student,
     ]),

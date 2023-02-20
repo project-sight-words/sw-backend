@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Centre, ClassCentre } from "entities/centre.entity";
+import { Centre } from "entities/centre.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Class } from "entities/class.entity";
@@ -11,8 +11,6 @@ export class CentresService {
     private readonly centresRepository: Repository<Centre>,
     @InjectRepository(Class)
     private readonly classesRepository: Repository<Class>,
-    @InjectRepository(ClassCentre)
-    private readonly classCentreRepository: Repository<ClassCentre>,
   ) {}
 
   async get(): Promise<Centre[]> {
@@ -25,31 +23,14 @@ export class CentresService {
     return entity;
   }
 
-  async addClassToCentre(centreId: string, classId: string) {
-    await this.classCentreRepository.insert({
-      centreId: centreId,
-      classId: classId,
-    });
-  }
-
-  async removeClassFromCentre(centreId: string, classId: string) {
-    await this.classCentreRepository.softDelete({
-      centreId: centreId,
-      classId: classId,
-    });
-  }
-
   async getClassesByCentreId(centreId: string): Promise<Class[]> {
-    const classes = await this.classesRepository
-      .createQueryBuilder()
-      .leftJoin(
-        "class_centres",
-        "classCentres",
-        "classCentres.classId = Class.id",
-      )
-      .where("centre_id = :centreId", { centreId })
-      .select("Class")
-      .getMany();
+    const classes = await this.classesRepository.find({
+      where: {
+        classCentre: {
+          centreId,
+        },
+      },
+    });
     return classes;
   }
   // CUD not supported
