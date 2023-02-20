@@ -10,11 +10,10 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
-import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
-import { instanceToPlain, plainToInstance } from "utils/transformer";
-
+import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { Expose } from "class-transformer";
 import { User } from "./user.entities";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
 
 @Entity("teachers")
 export class Teacher {
@@ -35,10 +34,6 @@ export class Teacher {
 
   @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.teacher)
   teacherUsers: TeacherUser[] | null = null;
-
-  static fromTeacherUser(teacherUser: TeacherUser): Teacher {
-    return teacherUser.teacher;
-  }
 }
 
 @Entity("teacher_users")
@@ -46,13 +41,11 @@ export class TeacherUser {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @ManyToOne(() => Teacher, (teacher) => teacher.teacherUsers)
-  @JoinColumn({ name: "teacher_id" })
-  teacher!: Teacher;
+  @Column({ name: "user_id", type: "uuid" })
+  userId!: string;
 
-  @ManyToOne(() => User, (user) => user.teacherUsers)
-  @JoinColumn({ name: "user_id" })
-  user!: User;
+  @Column({ name: "teacher_id", type: "uuid" })
+  teacherId!: string;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
@@ -65,13 +58,21 @@ export class TeacherUser {
 
   @Column({ name: "deleted_by", type: "uuid", nullable: true })
   deletedBy: string | null = null;
+
+  @ManyToOne(() => Teacher, (teacher) => teacher.teacherUsers)
+  @JoinColumn({ name: "teacher_id" })
+  teacher!: Teacher;
+
+  @ManyToOne(() => User, (user) => user.teacherUsers)
+  @JoinColumn({ name: "user_id" })
+  user!: User;
 }
 
 export class TeacherDatum {
   @Expose()
   @IsNotEmpty()
-  @IsEmail()
-  email!: string;
+  @IsString()
+  name!: string;
 
   @Expose({ name: "staff_id" })
   @IsNotEmpty()
@@ -80,9 +81,10 @@ export class TeacherDatum {
 
   @Expose()
   @IsNotEmpty()
-  @IsString()
-  name!: string;
+  @IsEmail()
+  email!: string;
 
+  // TODO: Remove if not used
   static fromObject(object: object): TeacherDatum {
     const datum = plainToInstance(TeacherDatum, object);
     return datum;
@@ -94,6 +96,7 @@ export class TeacherDatum {
   }
 }
 
+// TODO: Remove if not used
 export class TeacherEntity {
   identifier!: Identifier;
   datum!: TeacherDatum;
@@ -121,35 +124,4 @@ export class TeacherEntity {
       ...DeleteStamp.toObject(deleteStamp),
     };
   }
-}
-
-export class UpdateTeacher {
-  @Expose({ name: "staff_id" })
-  @IsNotEmpty()
-  @IsString()
-  staffId!: string;
-
-  @Expose()
-  @IsNotEmpty()
-  @IsString()
-  name!: string;
-}
-
-export class NewTeacher extends UpdateTeacher {
-  @Expose()
-  @IsNotEmpty()
-  @IsEmail()
-  email!: string;
-}
-
-export class NewTeacherUser {
-  @Expose({ name: "user_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  userId!: string;
-
-  @Expose({ name: "teacher_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  teacherId!: string;
 }
