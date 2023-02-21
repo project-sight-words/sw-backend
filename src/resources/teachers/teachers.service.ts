@@ -136,7 +136,7 @@ export class TeachersService {
       .join(", ");
 
     const insertedTeacherUsers: { id: string }[] = (await querier.query(`
-        INSERT INTO teacher_users (user_id, staff_id)
+        INSERT INTO teacher_users (user_id, teacher_id)
         SELECT p.uid, p.tid
         FROM (SELECT users.id AS uid, teachers.id AS tid, users.email AS email, teachers.staff_id AS staff_id
               FROM teachers,
@@ -171,7 +171,7 @@ export class TeachersService {
   }
 
   private async validate(
-    teachers: CreateTeacherDto[],
+    teachers: TeacherDatum[],
     entityManager: EntityManager,
   ) {
     type TeacherDatumWithRow = TeacherDatum & { row: number };
