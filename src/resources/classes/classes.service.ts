@@ -5,8 +5,8 @@ import {
   ClassStudent,
   ClassTeacher,
 } from "entities/class.entity";
-import { Repository } from "typeorm";
-import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, DataSource } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { Student } from "entities/student.entities";
 import { ClassDatum } from "./dto/classes.dto";
 
@@ -23,6 +23,8 @@ export class ClassesService {
     private readonly studentsRepository: Repository<Student>,
     @InjectRepository(ClassCentre)
     private readonly classCentreRepository: Repository<ClassCentre>,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {}
 
   private readonly loggerService = new Logger("ClassesService");
@@ -67,8 +69,19 @@ export class ClassesService {
   }
 
   async create(classEntity: ClassDatum): Promise<Class> {
-    const createdClass = this.classesRepository.create(classEntity);
-    await this.classesRepository.save(createdClass);
+    const newClass = this.classesRepository.create(classEntity);
+    const createdClass = await this.dataSource.transaction(
+      async (entityManager) => {
+        const createdClass = await entityManager.save(newClass);
+        console.log(
+          await entityManager.insert(ClassCentre, {
+            classId: createdClass.id,
+            centreId: classEntity.centreId,
+          }),
+        );
+        return createdClass;
+      },
+    );
     return createdClass;
   }
 

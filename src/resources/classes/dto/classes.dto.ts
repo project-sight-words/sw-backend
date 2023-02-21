@@ -150,7 +150,12 @@ export class ClassCentreDto {
   centreId!: string;
 }
 
-export class ClassDatum extends OmitType(ClassEntityDto, ["id"] as const) {}
+export class ClassDatum extends OmitType(ClassEntityDto, ["id"] as const) {
+  @Expose()
+  @IsNotEmpty()
+  @IsUUID()
+  centreId!: string;
+}
 
 export class CreateClassDto extends ClassDatum {}
 
