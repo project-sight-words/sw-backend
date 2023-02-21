@@ -19,16 +19,21 @@ export class AdminsController {
 
   @Get()
   async get(): Promise<AdminDto[]> {
-    const admins = await this.adminsService.get();
-    return admins;
+    const adminUsers = await this.adminsService.get();
+    const adminDtos = adminUsers.map((au) => AdminDto.fromAdminUser(au));
+    return adminDtos;
   }
 
   @Get(":id")
   async getById(@Param("id") id: string): Promise<AdminDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const admin = await this.adminsService.findOneById(id);
-    return admin;
+
+    const adminUser = await this.adminsService.findOneById(id);
+    if (!adminUser) throw new NotFoundException();
+
+    const adminDto = AdminDto.fromAdminUser(adminUser);
+    return adminDto;
   }
 
   @Post()
@@ -37,16 +42,22 @@ export class AdminsController {
     @Body(new ParseArrayPipe({ items: CreateAdminDto }))
     body: CreateAdminDto[],
   ): Promise<AdminDto[]> {
-    const admins = await this.adminsService.createMany(body);
-    return admins;
+    const adminUsers = await this.adminsService.createMany(body); // TODO: add createdBy
+
+    const adminDtos = adminUsers.map((au) => AdminDto.fromAdminUser(au));
+    return adminDtos;
   }
 
   @Delete(":id")
   async deleteById(@Param("id") id: string): Promise<AdminDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const admin = await this.adminsService.findOneById(id);
+
+    const adminUser = await this.adminsService.findOneById(id);
+    if (!adminUser) throw new NotFoundException();
+
     await this.adminsService.deleteById(id);
-    return admin;
+    const adminDto = AdminDto.fromAdminUser(adminUser);
+    return adminDto;
   }
 }
