@@ -58,4 +58,8 @@ export class AdminDatum {
   @IsNotEmpty()
   @IsEmail()
   email!: string;
+
+  static toCreateObjects(adminDatums: AdminDatum[]): object[] {
+    return adminDatums.map(() => ({}));
+  }
 }

@@ -16,4 +16,8 @@ export class AdminDto extends AdminDatum {
       email: adminUser.user.email,
     };
   }
+
+  static fromAdminUsers(adminUsers: AdminUser[]): AdminDto[] {
+    return adminUsers.map((adminUser) => AdminDto.fromAdminUser(adminUser));
+  }
 }

@@ -1,11 +1,14 @@
 import { Admin, AdminDatum, AdminUser } from "entities/admin.entities";
+import { CreateErrorMessage } from "utils/createErrorMessage";
 import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from "@nestjs/common";
+  DataSource,
+  EntityManager,
+  FindManyOptions,
+  In,
+  Repository,
+} from "typeorm";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, EntityManager, In, Repository } from "typeorm";
 import { UsersService } from "resources/users/users.service";
 
 @Injectable()
@@ -30,7 +33,7 @@ export class AdminsService {
     return adminUsers;
   }
 
-  async findOneById(uuid: string): Promise<AdminUser | null> {
+  async findOneById(id: string): Promise<AdminUser | null> {
     const adminUser = await this.adminUserRepository.findOne({
       relations: {
         user: true,
@@ -38,7 +41,7 @@ export class AdminsService {
       },
       withDeleted: false,
       where: {
-        admin: { id: uuid },
+        admin: { id },
       },
     });
     return adminUser;
@@ -46,10 +49,9 @@ export class AdminsService {
 
   async findByIds(
     ids: string[],
-    entityManager: EntityManager | null = null,
+    querier: EntityManager | Repository<AdminUser> = this.adminUserRepository,
   ): Promise<AdminUser[]> {
-    let adminUsers;
-    const options = {
+    const options: FindManyOptions<AdminUser> = {
       relations: {
         user: true,
         admin: true,
@@ -58,11 +60,9 @@ export class AdminsService {
       where: { id: In(ids) },
     };
 
-    if (!entityManager)
-      adminUsers = await this.adminUserRepository.find(options);
-    else adminUsers = await entityManager.find(AdminUser, options);
-
-    return adminUsers;
+    return querier instanceof EntityManager
+      ? await querier.find(AdminUser, options)
+      : await querier.find(options);
   }
 
   async createManyAdmins(
@@ -72,7 +72,7 @@ export class AdminsService {
     await querier
       .createQueryBuilder()
       .insert()
-      .values(admins.map(() => ({})))
+      .values(AdminDatum.toCreateObjects(admins))
       .execute();
   }
 
@@ -100,10 +100,10 @@ export class AdminsService {
   async createMany(
     admins: AdminDatum[],
     createdBy: string | null = null,
-  ): Promise<AdminUser[]> {
+  ): Promise<AdminUser[] | CreateErrorMessage[]> {
     return this.dataSource.transaction(async (entityManager) => {
       const errors = this.validate(admins);
-      if (errors.length !== 0) throw new BadRequestException(errors);
+      if (errors.length !== 0) return errors;
 
       const emails = admins.map((a) => a.email);
       const [ids] = await Promise.all([
@@ -116,11 +116,11 @@ export class AdminsService {
     });
   }
 
-  async deleteById(uuid: string): Promise<void> {
+  async deleteById(id: string): Promise<void> {
     const results = await this.adminUserRepository
       .createQueryBuilder()
       .softDelete()
-      .where("admin_id = :adminId", { adminId: uuid })
+      .where("admin_id = :adminId", { adminId: id })
       .andWhere("deleted_at IS NULL")
       .execute();
     if (results.affected && results.affected !== 1)
@@ -130,25 +130,26 @@ export class AdminsService {
   private validate(admins: AdminDatum[]) {
     type AdminDatumWithRow = AdminDatum & { row: number };
 
-    const emailsMap: Record<string, Omit<AdminDatumWithRow, "email">> = {};
+    const emailsMap = new Map<string, Omit<AdminDatumWithRow, "email">>();
 
     const errors: { index: number; message: string }[] = [];
 
     for (let i = 0; i < admins.length; i++) {
       const admin = admins[i];
-      if (admin.email in emailsMap) {
+      if (emailsMap.has(admin.email)) {
         errors.push({
           index: i,
           message: `Duplicate email ${admin.email} on row ${
-            emailsMap[admin.email].row
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            emailsMap.get(admin.email)!.row
           }`,
         });
         continue;
       }
 
-      emailsMap[admin.email] = {
+      emailsMap.set(admin.email, {
         row: i,
-      };
+      });
     }
 
     return errors;

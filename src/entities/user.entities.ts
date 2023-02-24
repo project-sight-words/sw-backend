@@ -1,7 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { IsDate, IsEmail, IsNotEmpty } from "class-validator";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
-
 import { Expose } from "class-transformer";
 import { Identifier } from "./common";
 import { StudentUser } from "./student.entities";
@@ -22,10 +21,10 @@ export class User {
   @OneToMany(() => StudentUser, (studentUser) => studentUser.userId)
   studentUsers: StudentUser[] | null = null;
 
-  @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.user)
+  @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.userId)
   teacherUsers: TeacherUser[] | null = null;
 
-  @OneToMany(() => AdminUser, (adminUser) => adminUser.user)
+  @OneToMany(() => AdminUser, (adminUser) => adminUser.userId)
   adminUsers: AdminUser[] | null = null;
 
   static fromObject(object: object): User {

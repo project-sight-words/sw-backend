@@ -24,6 +24,12 @@ export class TeacherDto extends TeacherDatum {
       staffId: teacherUser.teacher.staffId,
     };
   }
+
+  static fromTeacherUsers(teacherUsers: TeacherUser[]): TeacherDto[] {
+    return teacherUsers.map((teacherUser) =>
+      TeacherDto.fromTeacherUser(teacherUser),
+    );
+  }
 }
 
 // TODO: Remove if not used

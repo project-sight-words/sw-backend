@@ -84,6 +84,13 @@ export class TeacherDatum {
   @IsEmail()
   email!: string;
 
+  static toCreateObjects(teacherDatums: TeacherDatum[]): object[] {
+    return teacherDatums.map((teacherDatum) => ({
+      name: teacherDatum.name,
+      staffId: teacherDatum.staffId,
+    }));
+  }
+
   // TODO: Remove if not used
   static fromObject(object: object): TeacherDatum {
     const datum = plainToInstance(TeacherDatum, object);

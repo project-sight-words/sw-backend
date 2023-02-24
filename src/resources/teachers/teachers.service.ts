@@ -1,13 +1,15 @@
+import { CreateErrorMessage } from "utils/createErrorMessage";
 import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from "@nestjs/common";
-import { CreateTeacherDto } from "./dto/teachers.dto";
+  DataSource,
+  EntityManager,
+  FindManyOptions,
+  In,
+  Repository,
+} from "typeorm";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
 import { Teacher, TeacherDatum, TeacherUser } from "entities/teacher.entities";
 import { UsersService } from "resources/users/users.service";
-import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, EntityManager, In, Repository } from "typeorm";
 
 @Injectable()
 export class TeachersService {
@@ -47,7 +49,7 @@ export class TeachersService {
     return teacherUsers;
   }
 
-  async findOneById(uuid: string): Promise<TeacherUser | null> {
+  async findOneById(id: string): Promise<TeacherUser | null> {
     const teacherUser = await this.teacherUserRepository.findOne({
       relations: {
         user: true,
@@ -55,23 +57,23 @@ export class TeachersService {
       },
       withDeleted: false,
       where: {
-        teacher: { id: uuid },
+        teacher: { id },
       },
     });
     return teacherUser;
   }
 
   async updateById(
-    uuid: string,
-    updateTeacherDto: Omit<CreateTeacherDto, "email">,
+    id: string,
+    updateTeacher: Omit<TeacherDatum, "email">,
     updatedBy: string | null = null,
   ): Promise<TeacherUser | null> {
-    const { name, staffId } = updateTeacherDto;
+    const { name, staffId } = updateTeacher;
     await this.teacherRepository
       .createQueryBuilder()
       .select()
       .from(Teacher, "teachers")
-      .where({ id: uuid })
+      .where({ id })
       .update()
       .set({
         name,
@@ -79,14 +81,14 @@ export class TeachersService {
         updatedBy,
       })
       .execute();
-    return this.findOneById(uuid);
+    return this.findOneById(id);
   }
 
-  async deleteById(uuid: string): Promise<void> {
+  async deleteById(id: string): Promise<void> {
     const results = await this.teacherUserRepository
       .createQueryBuilder()
       .softDelete()
-      .where("teacher_id = :teacherId", { teacherId: uuid })
+      .where("teacher_id = :teacherId", { teacherId: id })
       .andWhere("deleted_at IS NULL")
       .execute();
     if (results.affected && results.affected !== 1)
@@ -95,10 +97,10 @@ export class TeachersService {
 
   async findByIds(
     ids: string[],
-    entityManager: EntityManager | null = null,
+    querier: EntityManager | Repository<TeacherUser> = this
+      .teacherUserRepository,
   ): Promise<TeacherUser[]> {
-    let teacherUsers;
-    const options = {
+    const options: FindManyOptions<TeacherUser> = {
       relations: {
         user: true,
         teacher: true,
@@ -107,11 +109,9 @@ export class TeachersService {
       where: { id: In(ids) },
     };
 
-    if (!entityManager)
-      teacherUsers = await this.teacherUserRepository.find(options);
-    else teacherUsers = await entityManager.find(TeacherUser, options);
-
-    return teacherUsers;
+    return querier instanceof EntityManager
+      ? await querier.find(TeacherUser, options)
+      : await querier.find(options);
   }
 
   async createManyTeachersIfNotExists(
@@ -121,7 +121,7 @@ export class TeachersService {
     await querier
       .createQueryBuilder()
       .insert()
-      .values(teachers.map((t) => ({ name: t.name, staffId: t.staffId })))
+      .values(TeacherDatum.toCreateObjects(teachers))
       .orIgnore()
       .execute();
   }
@@ -154,10 +154,10 @@ export class TeachersService {
   async createMany(
     teachers: TeacherDatum[],
     createdBy: string | null = null,
-  ): Promise<TeacherUser[]> {
+  ): Promise<TeacherUser[] | CreateErrorMessage[]> {
     return this.dataSource.transaction(async (entityManager) => {
       const errors = await this.validate(teachers, entityManager);
-      if (errors.length !== 0) throw new BadRequestException(errors);
+      if (errors.length !== 0) return errors;
 
       const emails = teachers.map((t) => t.email);
       const [ids] = await Promise.all([
@@ -176,51 +176,51 @@ export class TeachersService {
   ) {
     type TeacherDatumWithRow = TeacherDatum & { row: number };
 
-    const emailsMap: Record<string, Omit<TeacherDatumWithRow, "email">> = {};
-    const staffIdsMap: Record<
-      string,
-      Omit<TeacherDatumWithRow, "staffId">
-    > = {};
+    const emailsMap = new Map<string, Omit<TeacherDatumWithRow, "email">>();
+    const staffIdsMap = new Map<string, Omit<TeacherDatumWithRow, "staffId">>();
 
-    const errors: { index: number; message: string }[] = [];
+    const errors: CreateErrorMessage[] = [];
 
     for (let i = 0; i < teachers.length; i++) {
       const teacher = teachers[i];
-      if (teacher.email in emailsMap) {
+      if (emailsMap.has(teacher.email)) {
         errors.push({
           index: i,
           message: `Duplicate email ${teacher.email} on row ${
-            emailsMap[teacher.email].row
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            emailsMap.get(teacher.email)!.row
           }`,
         });
         continue;
       }
 
-      if (teacher.staffId in staffIdsMap) {
+      if (staffIdsMap.has(teacher.staffId)) {
         errors.push({
           index: i,
           message: `Duplicate staff id ${teacher.staffId} on row ${
-            staffIdsMap[teacher.staffId].row
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            staffIdsMap.get(teacher.staffId)!.row
           }`,
         });
         continue;
       }
 
-      emailsMap[teacher.email] = {
+      emailsMap.set(teacher.email, {
         row: i,
         name: teacher.name,
         staffId: teacher.staffId,
-      };
+      });
 
-      staffIdsMap[teacher.staffId] = {
+      staffIdsMap.set(teacher.staffId, {
         row: i,
         name: teacher.name,
         email: teacher.email,
-      };
+      });
     }
 
     if (errors.length > 0) return errors;
 
+    // Get all existing teacher users that match the given list of emails or staff ids
     const existingTeachers = await entityManager.find(TeacherUser, {
       relations: {
         user: true,
@@ -242,9 +242,11 @@ export class TeachersService {
     });
 
     for (const existingTeacher of existingTeachers) {
-      if (existingTeacher.teacher.staffId in staffIdsMap) {
-        const matchingTeacherByStaffId =
-          staffIdsMap[existingTeacher.teacher.staffId];
+      if (staffIdsMap.has(existingTeacher.teacher.staffId)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const matchingTeacherByStaffId = staffIdsMap.get(
+          existingTeacher.teacher.staffId,
+        )!;
 
         if (existingTeacher.user.email !== matchingTeacherByStaffId.email) {
           errors.push({
@@ -263,8 +265,11 @@ export class TeachersService {
         }
       }
 
-      if (existingTeacher.user.email in emailsMap) {
-        const matchingTeacherByEmail = emailsMap[existingTeacher.user.email];
+      if (emailsMap.has(existingTeacher.user.email)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const matchingTeacherByEmail = emailsMap.get(
+          existingTeacher.user.email,
+        )!;
 
         if (existingTeacher.deletedAt) continue;
 

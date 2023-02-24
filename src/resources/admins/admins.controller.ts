@@ -1,6 +1,8 @@
 import * as Uuid from "utils/uuid";
-import { AdminsService } from "./admins.service";
 import { AdminDto, CreateAdminDto } from "./dto/admins.dto";
+import { AdminsService } from "./admins.service";
+import { AdminUser } from "entities/admin.entities";
+import { BadRequestException } from "@nestjs/common/exceptions";
 import {
   Body,
   Controller,
@@ -20,8 +22,7 @@ export class AdminsController {
   @Get()
   async get(): Promise<AdminDto[]> {
     const adminUsers = await this.adminsService.get();
-    const adminDtos = adminUsers.map((au) => AdminDto.fromAdminUser(au));
-    return adminDtos;
+    return AdminDto.fromAdminUsers(adminUsers);
   }
 
   @Get(":id")
@@ -32,8 +33,7 @@ export class AdminsController {
     const adminUser = await this.adminsService.findOneById(id);
     if (!adminUser) throw new NotFoundException();
 
-    const adminDto = AdminDto.fromAdminUser(adminUser);
-    return adminDto;
+    return AdminDto.fromAdminUser(adminUser);
   }
 
   @Post()
@@ -42,10 +42,12 @@ export class AdminsController {
     @Body(new ParseArrayPipe({ items: CreateAdminDto }))
     body: CreateAdminDto[],
   ): Promise<AdminDto[]> {
-    const adminUsers = await this.adminsService.createMany(body); // TODO: add createdBy
-
-    const adminDtos = adminUsers.map((au) => AdminDto.fromAdminUser(au));
-    return adminDtos;
+    const results = await this.adminsService.createMany(body); // TODO: add createdBy
+    if (results.length > 0 && results[0] instanceof AdminUser) {
+      const adminUsers = results as AdminUser[];
+      return AdminDto.fromAdminUsers(adminUsers);
+    }
+    throw new BadRequestException(results);
   }
 
   @Delete(":id")
@@ -57,7 +59,6 @@ export class AdminsController {
     if (!adminUser) throw new NotFoundException();
 
     await this.adminsService.deleteById(id);
-    const adminDto = AdminDto.fromAdminUser(adminUser);
-    return adminDto;
+    return AdminDto.fromAdminUser(adminUser);
   }
 }

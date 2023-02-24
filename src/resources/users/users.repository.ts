@@ -1,4 +1,4 @@
-import { DatabaseService } from "../../database/database.service";
+import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
 import { Querier } from "database/database.types";
 import { UserDatum, UserEntity } from "entities/user.entities";
