@@ -1,11 +1,8 @@
 import * as Uuid from "utils/uuid";
-import { NotFoundException } from "@nestjs/common/exceptions";
-import { TeachersService } from "./teachers.service";
 import {
-  TeacherDatumDto,
-  TeacherDto,
-  UpdateTeacherDto,
-} from "./dto/teachers.dto";
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common/exceptions";
 import {
   Body,
   Controller,
@@ -17,6 +14,9 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
+import { CreateTeacherDto, TeacherDto } from "./dto/teachers.dto";
+import { TeachersService } from "./teachers.service";
+import { TeacherUser } from "entities/teacher.entities";
 
 @Controller("teachers")
 export class TeachersController {
@@ -24,45 +24,58 @@ export class TeachersController {
 
   @Get()
   async get(): Promise<TeacherDto[]> {
-    const teachers = await this.teachersService.get();
-    return teachers;
+    const teacherUsers = await this.teachersService.get();
+    return TeacherDto.fromTeacherUsers(teacherUsers);
   }
 
   @Get(":id")
-  async findOneById(@Param("id") id: string): Promise<TeacherDto> {
+  async getById(@Param("id") id: string): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const teacher = await this.teachersService.findOneById(id);
-    return teacher;
+
+    const teacherUser = await this.teachersService.findOneById(id);
+    if (!teacherUser) throw new NotFoundException();
+
+    return TeacherDto.fromTeacherUser(teacherUser);
   }
 
   @Post()
   @HttpCode(201)
   async create(
-    @Body(new ParseArrayPipe({ items: TeacherDatumDto }))
-    body: TeacherDatumDto[],
+    @Body(new ParseArrayPipe({ items: CreateTeacherDto }))
+    body: CreateTeacherDto[],
   ): Promise<TeacherDto[]> {
-    const teachers = await this.teachersService.createMany(body);
-    return teachers;
+    const results = await this.teachersService.createMany(body); // TODO: add createdBy
+    if (results.length > 0 && results[0] instanceof TeacherUser) {
+      const teacherUsers = results as TeacherUser[];
+      return TeacherDto.fromTeacherUsers(teacherUsers);
+    }
+    throw new BadRequestException(results);
   }
 
   @Put(":id")
   async updateById(
     @Param("id") id: string,
-    @Body() body: UpdateTeacherDto,
+    @Body() body: Omit<CreateTeacherDto, "email">,
   ): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const teacher = await this.teachersService.updateById(id, body, null); // TODO: add updatedBy
-    return teacher;
+
+    const teacherUser = await this.teachersService.updateById(id, body); // TODO: add updatedBy
+    if (!teacherUser) throw new NotFoundException();
+
+    return TeacherDto.fromTeacherUser(teacherUser);
   }
 
   @Delete(":id")
   async deleteById(@Param("id") id: string): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const teacher = await this.teachersService.findOneById(id);
+
+    const teacherUser = await this.teachersService.findOneById(id);
+    if (!teacherUser) throw new NotFoundException();
+
     await this.teachersService.deleteById(id);
-    return teacher;
+    return TeacherDto.fromTeacherUser(teacherUser);
   }
 }

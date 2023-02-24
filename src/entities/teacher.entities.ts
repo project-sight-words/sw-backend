@@ -10,11 +10,10 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
-import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
-import { instanceToPlain, plainToInstance } from "utils/transformer";
-
+import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { Expose } from "class-transformer";
 import { User } from "./user.entities";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
 
 @Entity("teachers")
 export class Teacher {
@@ -72,8 +71,8 @@ export class TeacherUser {
 export class TeacherDatum {
   @Expose()
   @IsNotEmpty()
-  @IsEmail()
-  email!: string;
+  @IsString()
+  name!: string;
 
   @Expose({ name: "staff_id" })
   @IsNotEmpty()
@@ -82,9 +81,17 @@ export class TeacherDatum {
 
   @Expose()
   @IsNotEmpty()
-  @IsString()
-  name!: string;
+  @IsEmail()
+  email!: string;
 
+  static toCreateObjects(teacherDatums: TeacherDatum[]): object[] {
+    return teacherDatums.map((teacherDatum) => ({
+      name: teacherDatum.name,
+      staffId: teacherDatum.staffId,
+    }));
+  }
+
+  // TODO: Remove if not used
   static fromObject(object: object): TeacherDatum {
     const datum = plainToInstance(TeacherDatum, object);
     return datum;
@@ -96,6 +103,7 @@ export class TeacherDatum {
   }
 }
 
+// TODO: Remove if not used
 export class TeacherEntity {
   identifier!: Identifier;
   datum!: TeacherDatum;
@@ -123,35 +131,4 @@ export class TeacherEntity {
       ...DeleteStamp.toObject(deleteStamp),
     };
   }
-}
-
-export class UpdateTeacher {
-  @Expose({ name: "staff_id" })
-  @IsNotEmpty()
-  @IsString()
-  staffId!: string;
-
-  @Expose()
-  @IsNotEmpty()
-  @IsString()
-  name!: string;
-}
-
-export class NewTeacher extends UpdateTeacher {
-  @Expose()
-  @IsNotEmpty()
-  @IsEmail()
-  email!: string;
-}
-
-export class NewTeacherUser {
-  @Expose({ name: "user_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  userId!: string;
-
-  @Expose({ name: "teacher_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  teacherId!: string;
 }

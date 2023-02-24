@@ -11,6 +11,7 @@ import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
 import { UsersModule } from "resources/users/users.module";
 import { DatabaseModule } from "database/database.module";
+import { AdminsModule } from "resources/admins/admins.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -33,6 +34,7 @@ const ConfigurationModule = ConfigModule.forRoot({
 
 @Module({
   imports: [
+    AdminsModule,
     AuthenticationModule,
     CentresModule,
     ClassesModule,
@@ -59,5 +61,6 @@ const ConfigurationModule = ConfigModule.forRoot({
   controllers: [AppController],
   providers: [AppService],
 })
+
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class AppModule {}
