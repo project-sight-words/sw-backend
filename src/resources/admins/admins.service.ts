@@ -89,7 +89,7 @@ export class AdminsService {
         FROM (SELECT users.id AS uid, admins.id AS aid, users.email AS email
               FROM admins,
                    users) AS p
-                 JOIN (VALUES ${association}) AS a (e, s)
+                 JOIN (VALUES ${association}) AS a (e)
                       ON a.e = p.email
         RETURNING *;
     `)) as { id: string }[];
