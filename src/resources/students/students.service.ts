@@ -191,13 +191,9 @@ export class StudentsService {
 
   async createManyStudentsIfNotExists(
     students: CreateStudentDto[],
-    entityManager: EntityManager | null = null,
+    queryBuilder: SelectQueryBuilder<Student> = this.studentRepository.createQueryBuilder(),
   ) {
-    let qb: SelectQueryBuilder<any> =
-      this.studentRepository.createQueryBuilder();
-    if (entityManager)
-      qb = entityManager.createQueryBuilder(Student, "students");
-    await qb
+    await queryBuilder
       .insert()
       .values(
         students.map((s) => ({
@@ -213,26 +209,33 @@ export class StudentsService {
     students: CreateStudentDto[],
     entityManager: EntityManager | null = null,
   ): Promise<string[]> {
-    const association = students
-      .map((s) => `('${s.email}', '${s.studentId}')`)
-      .join(", ");
+    // Dynamically generate the parameters list
+    const parameters: string[] = [];
+    for (let i = 1; i <= students.length * 2; i += 2) {
+      parameters.push(`($${i}, $${i + 1})`);
+    }
 
     // Using a raw query here since it's the most optimised version of the query
     const insertedStudentUsers: { id: string }[] = (await (!entityManager
       ? this.dataSource
       : entityManager
-    ).query(`
-        INSERT INTO student_users (user_id, student_id)
-        SELECT p.uid, p.sid
-        FROM (SELECT users.id AS uid, students.id AS sid, users.email AS email, students.student_id AS student_id
-              FROM students,
-                   users) AS p
-                 JOIN (VALUES ${association}) AS t (e, s)
-                      ON t.e = p.email AND t.s = p.student_id
-        ON CONFLICT (student_id)
-            DO UPDATE SET id = excluded.id
-        RETURNING *;
-    `)) as { id: string }[];
+    ).query(
+      `
+          INSERT INTO student_users (user_id, student_id)
+          SELECT p.uid, p.sid
+          FROM (SELECT users.id AS uid, students.id AS sid, users.email AS email, students.student_id AS student_id
+                FROM students,
+                     users) AS p
+                   JOIN (VALUES ${parameters.join(", ")}) AS t (e, s)
+                        ON t.e = p.email AND t.s = p.student_id
+          ON CONFLICT (user_id)
+              DO UPDATE SET user_id = excluded.user_id
+          RETURNING id;
+      `,
+      students.map((s) => [s.email, s.studentId]).flat(),
+    )) as { id: string }[];
+
+    console.log(insertedStudentUsers);
 
     return insertedStudentUsers.map(({ id }) => id);
   }
@@ -249,7 +252,10 @@ export class StudentsService {
       await this.usersService.createManyIfNotExists(emails, entityManager);
 
       // Insert all the students if they do not exist yet (ignore rows that cause conflict since it just means that the student exists already)
-      await this.createManyStudentsIfNotExists(students, entityManager);
+      await this.createManyStudentsIfNotExists(
+        students,
+        entityManager.createQueryBuilder(Student, "students"),
+      );
 
       // Since we know that email and student id are both uniquely identifying, we can retrieve all of the associated user/student ids using them as candidate keys
       const ids = await this.bulkInsertStudentUsers(students, entityManager);
