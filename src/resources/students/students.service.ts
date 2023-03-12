@@ -45,7 +45,8 @@ export class StudentsService {
     private readonly studentRepository: Repository<Student>,
     @InjectRepository(StudentUser)
     private readonly studentUserRepository: Repository<StudentUser>,
-  ) {}
+  ) {
+  }
 
   private readonly loggerService = new Logger("StudentsService");
 
@@ -217,8 +218,8 @@ export class StudentsService {
 
     // Using a raw query here since it's the most optimised version of the query
     const insertedStudentUsers: { id: string }[] = (await (!entityManager
-      ? this.dataSource
-      : entityManager
+        ? this.dataSource
+        : entityManager
     ).query(
       `
           INSERT INTO student_users (user_id, student_id)
@@ -243,17 +244,16 @@ export class StudentsService {
       const errors = await this.validate(students, entityManager);
       if (errors.length !== 0) throw new BadRequestException(errors);
 
-      const emails = students.map((s) => s.email);
-
-      // The data is guaranteed to be clean at this point so bulk inserts can happen
-      // Insert all the users if they do not exist yet
-      await this.usersService.createManyIfNotExists(emails, entityManager);
-
-      // Insert all the students if they do not exist yet (ignore rows that cause conflict since it just means that the student exists already)
-      await this.createManyStudentsIfNotExists(
-        students,
-        entityManager.createQueryBuilder(Student, "students"),
-      );
+      await Promise.all([
+        this.usersService.createManyIfNotExists(
+          students.map((s) => s.email),
+          entityManager,
+        ),
+        await this.createManyStudentsIfNotExists(
+          students,
+          entityManager.createQueryBuilder(Student, "students"),
+        ),
+      ]);
 
       // Since we know that email and student id are both uniquely identifying, we can retrieve all of the associated user/student ids using them as candidate keys
       const ids = await this.bulkInsertStudentUsers(students, entityManager);
@@ -268,10 +268,10 @@ export class StudentsService {
   ):
     | [false, CreateStudentErrorDto[]]
     | [
-        true,
-        Record<string, propertyFirstBase>,
-        Record<string, propertyFirstBase>,
-      ] {
+    true,
+    Record<string, propertyFirstBase>,
+    Record<string, propertyFirstBase>,
+  ] {
     const errors: CreateStudentErrorDto[] = [];
     const emailFirst: Record<string, emailFirstInterface> = {};
     const studentIdFirst: Record<string, studentIdFirstInterface> = {};
