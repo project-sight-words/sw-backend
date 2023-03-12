@@ -45,8 +45,7 @@ export class StudentsService {
     private readonly studentRepository: Repository<Student>,
     @InjectRepository(StudentUser)
     private readonly studentUserRepository: Repository<StudentUser>,
-  ) {
-  }
+  ) {}
 
   private readonly loggerService = new Logger("StudentsService");
 
@@ -152,7 +151,8 @@ export class StudentsService {
   async findExistingStudentsByEmailOrStudentId(
     emails: string[],
     studentIds: string[],
-    entityManager: EntityManager | null = null,
+    entityManager: EntityManager | Repository<StudentUser> = this
+      .studentUserRepository,
   ) {
     const options = {
       relations: {
@@ -165,13 +165,16 @@ export class StudentsService {
         { user: { email: In(emails) } },
       ],
     };
-    if (!entityManager) return this.studentUserRepository.find(options);
-    else return entityManager.find(StudentUser, options);
+
+    if (entityManager instanceof EntityManager)
+      return entityManager.find(StudentUser, options);
+    else return entityManager.find(options);
   }
 
   async findByIds(
     ids: string[],
-    entityManager: EntityManager | null = null,
+    entityManager: EntityManager | Repository<StudentUser> = this
+      .studentUserRepository,
   ): Promise<StudentDto[]> {
     let studentUsers;
     const options = {
@@ -183,9 +186,9 @@ export class StudentsService {
       where: { id: In(ids) },
     };
 
-    if (!entityManager)
-      studentUsers = await this.studentUserRepository.find(options);
-    else studentUsers = await entityManager.find(StudentUser, options);
+    if (entityManager instanceof EntityManager)
+      studentUsers = await entityManager.find(StudentUser, options);
+    else studentUsers = await entityManager.find(options);
 
     return studentUsers.map((su) => StudentDto.from(su));
   }
@@ -208,7 +211,8 @@ export class StudentsService {
 
   async bulkInsertStudentUsers(
     students: CreateStudentDto[],
-    entityManager: EntityManager | null = null,
+    entityManager: EntityManager | Repository<StudentUser> = this
+      .studentUserRepository,
   ): Promise<string[]> {
     // Dynamically generate the parameters list
     const parameters: string[] = [];
@@ -217,10 +221,7 @@ export class StudentsService {
     }
 
     // Using a raw query here since it's the most optimised version of the query
-    const insertedStudentUsers: { id: string }[] = (await (!entityManager
-        ? this.dataSource
-        : entityManager
-    ).query(
+    const insertedStudentUsers: { id: string }[] = (await entityManager.query(
       `
           INSERT INTO student_users (user_id, student_id)
           SELECT p.uid, p.sid
@@ -268,10 +269,10 @@ export class StudentsService {
   ):
     | [false, CreateStudentErrorDto[]]
     | [
-    true,
-    Record<string, propertyFirstBase>,
-    Record<string, propertyFirstBase>,
-  ] {
+        true,
+        Record<string, propertyFirstBase>,
+        Record<string, propertyFirstBase>,
+      ] {
     const errors: CreateStudentErrorDto[] = [];
     const emailFirst: Record<string, emailFirstInterface> = {};
     const studentIdFirst: Record<string, studentIdFirstInterface> = {};
