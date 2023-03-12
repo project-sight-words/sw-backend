@@ -1,6 +1,7 @@
 import * as Uuid from "utils/uuid";
 import { StudentsService } from "./students.service";
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -14,6 +15,7 @@ import {
 } from "@nestjs/common";
 import {
   CreateStudentDto,
+  CreateStudentErrorDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
@@ -42,8 +44,11 @@ export class StudentsController {
     @Body(new ParseArrayPipe({ items: CreateStudentDto }))
     body: CreateStudentDto[],
   ): Promise<StudentDto[]> {
-    const students = await this.studentsService.createMany(body);
-    return students;
+    const result: StudentDto[] | CreateStudentErrorDto[] =
+      await this.studentsService.createMany(body);
+    if (result instanceof Array<CreateStudentErrorDto>)
+      throw new BadRequestException(result);
+    return result;
   }
 
   @Put(":id")
