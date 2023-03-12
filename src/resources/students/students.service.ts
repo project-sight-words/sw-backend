@@ -249,7 +249,7 @@ export class StudentsService {
   ): Promise<StudentDto[] | CreateStudentErrorDto[]> {
     return this.dataSource.transaction(async (entityManager) => {
       const errors = await this.validate(students, entityManager);
-      if (errors.length !== 0) return errors as CreateStudentErrorDto[];
+      if (errors.length !== 0) return errors;
 
       await Promise.all([
         this.usersService.createManyIfNotExists(
