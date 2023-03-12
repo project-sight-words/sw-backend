@@ -235,8 +235,6 @@ export class StudentsService {
       students.map((s) => [s.email, s.studentId]).flat(),
     )) as { id: string }[];
 
-    console.log(insertedStudentUsers);
-
     return insertedStudentUsers.map(({ id }) => id);
   }
 
