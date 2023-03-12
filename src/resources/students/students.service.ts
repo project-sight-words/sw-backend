@@ -23,18 +23,23 @@ import {
 } from "./dto/students.dto";
 import { CreateStamp, DeleteStamp, UpdateStamp } from "entities/common";
 
-interface propertyFirstBase {
-  row: number;
-  name: string;
-}
+type EmailFirst = Record<
+  string,
+  {
+    row: number;
+    name: string;
+    studentId: string;
+  }
+>;
 
-interface emailFirstInterface extends propertyFirstBase {
-  studentId: string;
-}
-
-interface studentIdFirstInterface extends propertyFirstBase {
-  email: string;
-}
+type StudentIdFirst = Record<
+  string,
+  {
+    row: number;
+    name: string;
+    email: string;
+  }
+>;
 
 @Injectable()
 export class StudentsService {
@@ -266,16 +271,10 @@ export class StudentsService {
 
   private validateRawInput(
     students: CreateStudentDto[],
-  ):
-    | [false, CreateStudentErrorDto[]]
-    | [
-        true,
-        Record<string, propertyFirstBase>,
-        Record<string, propertyFirstBase>,
-      ] {
+  ): [false, CreateStudentErrorDto[]] | [true, EmailFirst, StudentIdFirst] {
     const errors: CreateStudentErrorDto[] = [];
-    const emailFirst: Record<string, emailFirstInterface> = {};
-    const studentIdFirst: Record<string, studentIdFirstInterface> = {};
+    const emailFirst: EmailFirst = {};
+    const studentIdFirst: StudentIdFirst = {};
     for (let i = 0; i < students.length; i++) {
       const student = students[i];
       if (student.email in emailFirst) {
@@ -324,10 +323,7 @@ export class StudentsService {
     if (!status) return rest[0];
 
     const errors: CreateStudentErrorDto[] = [];
-    const [emailFirst, studentIdFirst] = rest as [
-      Record<string, emailFirstInterface>,
-      Record<string, studentIdFirstInterface>,
-    ];
+    const [emailFirst, studentIdFirst] = rest as [EmailFirst, StudentIdFirst];
 
     // Get all existing student users that match the given list of emails or student ids
     const existingStudents = await this.findExistingStudentsByEmailOrStudentId(
