@@ -1,9 +1,38 @@
 import { Expose } from "class-transformer";
+import { IsNotEmpty, IsUUID } from "class-validator";
 import { Identifier } from "entities/common";
+import {
+  TeacherDatum,
+  TeacherEntity,
+  TeacherUser,
+} from "entities/teacher.entities";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
-import { IsEmail, IsNotEmpty, IsString, IsUUID } from "class-validator";
-import { TeacherDatum, TeacherEntity } from "entities/teacher.entities";
 
+export class CreateTeacherDto extends TeacherDatum {}
+
+export class TeacherDto extends TeacherDatum {
+  @Expose()
+  @IsUUID()
+  @IsNotEmpty()
+  id!: string;
+
+  static fromTeacherUser(teacherUser: TeacherUser): TeacherDto {
+    return {
+      id: teacherUser.teacherId,
+      email: teacherUser.user.email,
+      name: teacherUser.teacher.name,
+      staffId: teacherUser.teacher.staffId,
+    };
+  }
+
+  static fromTeacherUsers(teacherUsers: TeacherUser[]): TeacherDto[] {
+    return teacherUsers.map((teacherUser) =>
+      TeacherDto.fromTeacherUser(teacherUser),
+    );
+  }
+}
+
+// TODO: Remove if not used
 export class TeacherDatumDto extends TeacherDatum {
   static fromObject(object: object): TeacherDatumDto {
     const datumDto = plainToInstance(TeacherDatumDto, object);
@@ -48,31 +77,4 @@ export class TeacherEntityDto extends TeacherDatumDto {
     });
     return dto;
   }
-}
-
-export class UpdateTeacherDto {
-  @Expose({ name: "staff_id" })
-  @IsString()
-  @IsNotEmpty()
-  staffId!: string;
-
-  @Expose()
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
-}
-
-export class CreateTeacherDto extends UpdateTeacherDto {
-  @Expose()
-  @IsEmail()
-  @IsNotEmpty()
-  email!: string;
-}
-
-export class TeacherDto extends CreateTeacherDto {
-  @Expose()
-  @IsUUID()
-  @IsString()
-  @IsNotEmpty()
-  id!: string;
 }

@@ -166,10 +166,11 @@ export class ClassesService {
     });
     const teacherEntities = await this.teachersService.searchByIds(teacherIds);
     const teacherEntityMap = new Map<string, TeacherEntity>();
+
+    // TODO: Refactor to use Teacher
     teacherEntities.forEach((entity) => {
-      const { identifier } = entity;
-      const { id } = identifier;
-      teacherEntityMap.set(id, entity);
+      const { id } = entity;
+      //   teacherEntityMap.set(id, entity);
     });
     const teacherEntitesMap = new Map<string, TeacherEntity[]>();
     classTeacherEntities.forEach((entity) => {

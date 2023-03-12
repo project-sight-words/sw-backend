@@ -1,14 +1,19 @@
-import { DatabaseModule } from "database/database.module";
 import { Module } from "@nestjs/common";
+import { Teacher, TeacherUser } from "entities/teacher.entities";
 import { TeachersController } from "./teachers.controller";
-import { TeachersRepository } from "./teachers.repository";
 import { TeachersService } from "./teachers.service";
-import { UsersRepository } from "resources/users/users.repository";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { User } from "entities/user.entities";
+import { UsersModule } from "resources/users/users.module";
+import { UsersService } from "resources/users/users.service";
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [
+    TypeOrmModule.forFeature([User, Teacher, TeacherUser]),
+    UsersModule,
+  ],
   controllers: [TeachersController],
-  providers: [TeachersRepository, TeachersService, UsersRepository],
+  providers: [UsersService, TeachersService],
   exports: [TeachersService],
 })
 export class TeachersModule {}

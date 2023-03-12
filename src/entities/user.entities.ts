@@ -8,8 +8,11 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
+import { Expose } from "class-transformer";
 import { Identifier } from "./common";
 import { StudentUser } from "./student.entities";
+import { TeacherUser } from "./teacher.entities";
+import { AdminUser } from "./admin.entities";
 
 @Entity("users")
 export class User {
@@ -25,6 +28,12 @@ export class User {
   @OneToMany(() => StudentUser, (studentUser) => studentUser.userId)
   studentUsers: StudentUser[] | null = null;
 
+  @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.userId)
+  teacherUsers: TeacherUser[] | null = null;
+
+  @OneToMany(() => AdminUser, (adminUser) => adminUser.userId)
+  adminUsers: AdminUser[] | null = null;
+  
   static from(src: ObjectLiteral[]): User[] {
     return plainToInstance(User, src);
   }
