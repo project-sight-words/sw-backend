@@ -1,5 +1,12 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Expose } from "class-transformer";
 import { IsDate, IsEmail, IsNotEmpty } from "class-validator";
+import {
+  Column,
+  Entity,
+  ObjectLiteral,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { Expose } from "class-transformer";
 import { Identifier } from "./common";
@@ -7,7 +14,7 @@ import { StudentUser } from "./student.entities";
 import { TeacherUser } from "./teacher.entities";
 import { AdminUser } from "./admin.entities";
 
-@Entity({ name: "users" })
+@Entity("users")
 export class User {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
@@ -26,9 +33,9 @@ export class User {
 
   @OneToMany(() => AdminUser, (adminUser) => adminUser.userId)
   adminUsers: AdminUser[] | null = null;
-
-  static fromObject(object: object): User {
-    return plainToInstance(User, object);
+  
+  static from(src: ObjectLiteral[]): User[] {
+    return plainToInstance(User, src);
   }
 }
 
