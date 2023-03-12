@@ -6,7 +6,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -15,7 +14,6 @@ import {
 } from "@nestjs/common";
 import {
   CreateStudentDto,
-  CreateStudentErrorDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
@@ -39,16 +37,15 @@ export class StudentsController {
   }
 
   @Post()
-  @HttpCode(201)
   async create(
     @Body(new ParseArrayPipe({ items: CreateStudentDto }))
     body: CreateStudentDto[],
   ): Promise<StudentDto[]> {
-    const result: StudentDto[] | CreateStudentErrorDto[] =
-      await this.studentsService.createMany(body);
-    if (result instanceof Array<CreateStudentErrorDto>)
+    const result = await this.studentsService.createMany(body);
+    if (result[0].hasOwnProperty("index"))
       throw new BadRequestException(result);
-    return result;
+
+    return result as StudentDto[];
   }
 
   @Put(":id")
