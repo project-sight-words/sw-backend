@@ -1,6 +1,12 @@
 import { Expose } from "class-transformer";
 import { IsDate, IsEmail, IsNotEmpty } from "class-validator";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  ObjectLiteral,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { Identifier } from "./common";
 import { StudentUser } from "./student.entities";
@@ -18,6 +24,10 @@ export class User {
 
   @OneToMany(() => StudentUser, (studentUser) => studentUser.userId)
   studentUsers: StudentUser[] | null = null;
+
+  static from(src: ObjectLiteral[]): User[] {
+    return plainToInstance(User, src);
+  }
 }
 
 export class UserDatum {
