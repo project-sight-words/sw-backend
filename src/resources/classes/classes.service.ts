@@ -63,7 +63,6 @@ export class ClassesService {
         id,
       },
     });
-    console.log("classEntity", classEntity);
 
     return classEntity;
   }
@@ -73,12 +72,10 @@ export class ClassesService {
     const createdClass = await this.dataSource.transaction(
       async (entityManager) => {
         const createdClass = await entityManager.save(newClass);
-        console.log(
-          await entityManager.insert(ClassCentre, {
-            classId: createdClass.id,
-            centreId: classEntity.centreId,
-          }),
-        );
+        await entityManager.insert(ClassCentre, {
+          classId: createdClass.id,
+          centreId: classEntity.centreId,
+        });
         return createdClass;
       },
     );

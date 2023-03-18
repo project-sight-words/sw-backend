@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
-import { Expose } from "class-transformer";
 import { Identifier } from "./common";
 import { StudentUser } from "./student.entities";
 import { TeacherUser } from "./teacher.entities";
@@ -33,7 +32,7 @@ export class User {
 
   @OneToMany(() => AdminUser, (adminUser) => adminUser.userId)
   adminUsers: AdminUser[] | null = null;
-  
+
   static from(src: ObjectLiteral[]): User[] {
     return plainToInstance(User, src);
   }

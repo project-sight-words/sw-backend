@@ -35,6 +35,9 @@ export class Student {
 
   @OneToMany(() => StudentUser, (studentUser) => studentUser.student)
   studentUsers: StudentUser[] | null = null;
+
+  @OneToMany(() => ClassStudent, (studentClass) => studentClass.student)
+  classStudents: ClassStudent[] | null = null;
 }
 
 @Entity("student_users")
