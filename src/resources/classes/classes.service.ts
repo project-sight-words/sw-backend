@@ -1,233 +1,169 @@
-import { CentreEntity } from "entities/centre.entity";
-import { CentresRepository } from "resources/centres/centres.repository";
-import { ClassesRepository } from "./classes.repository";
-import { getOrError } from "utils/map";
-import { StudentEntity } from "entities/student.entities";
-import { StudentsService } from "resources/students/students.service";
-import { TeacherEntity } from "entities/teacher.entities";
-import { TeachersService } from "resources/teachers/teachers.service";
+import { Injectable, Logger } from "@nestjs/common";
 import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from "@nestjs/common";
-import {
-  ClassDatum,
-  ClassEntity,
-  ClassStudentDatum,
-  ClassStudentEntity,
-  ClassTeacherDatum,
-  ClassTeacherEntity,
+  Class,
+  ClassCentre,
+  ClassStudent,
+  ClassTeacher,
 } from "entities/class.entity";
+import { Repository, DataSource } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { Student } from "entities/student.entities";
+import { ClassDatum } from "./dto/classes.dto";
 
 @Injectable()
 export class ClassesService {
   constructor(
-    private classesRepository: ClassesRepository,
-    private centresRepository: CentresRepository, // TODO: Change this to service
-    private studentsService: StudentsService,
-    private teachersService: TeachersService,
+    @InjectRepository(Class)
+    private readonly classesRepository: Repository<Class>,
+    @InjectRepository(ClassStudent)
+    private readonly ClassStudentRepository: Repository<ClassStudent>,
+    @InjectRepository(ClassTeacher)
+    private readonly ClassTeacherRepository: Repository<ClassTeacher>,
+    @InjectRepository(Student)
+    private readonly studentsRepository: Repository<Student>,
+    @InjectRepository(ClassCentre)
+    private readonly classCentreRepository: Repository<ClassCentre>,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {}
 
   private readonly loggerService = new Logger("ClassesService");
 
-  async get(): Promise<ClassEntity[]> {
-    const entities = await this.classesRepository.get();
-    return entities;
+  async get(): Promise<Class[]> {
+    const classes = await this.classesRepository.find({
+      relations: {
+        classStudents: {
+          student: true,
+        },
+        classTeachers: {
+          teacher: true,
+        },
+        classCentre: {
+          centre: true,
+        },
+      },
+    });
+    return classes;
   }
 
-  async searchById(id: string): Promise<ClassEntity[]> {
-    const entities = await this.classesRepository.searchById(id);
-    return entities;
+  async findOneById(id: string): Promise<Class | null> {
+    const classEntity = await this.classesRepository.findOne({
+      relations: {
+        classStudents: {
+          student: true,
+        },
+        classTeachers: {
+          teacher: true,
+        },
+        classCentre: {
+          centre: true,
+        },
+      },
+      where: {
+        id,
+      },
+    });
+
+    return classEntity;
   }
 
-  async getClassesOfCentres(
-    centreEntities: CentreEntity[],
-  ): Promise<Map<string, ClassEntity[]>> {
-    const centreIds = new Set<string>();
-    centreEntities.forEach((centreEntity) => {
-      const { identifier } = centreEntity;
-      const { id: centreId } = identifier;
-      centreIds.add(centreId);
-    });
-    const classEntities: ClassEntity[] =
-      await this.classesRepository.getByCentreIds(centreIds);
-    const centreClassListMap = new Map<string, ClassEntity[]>();
-    centreIds.forEach((centreId) => centreClassListMap.set(centreId, []));
-    classEntities.forEach((classEntity) => {
-      const { datum: classObject } = classEntity;
-      const { centreId } = classObject;
-      const centreClassEntityList = centreClassListMap.get(centreId);
-      if (!centreClassEntityList) throw new InternalServerErrorException();
-      centreClassEntityList.push(classEntity);
-    });
-    return centreClassListMap;
-  }
-
-  async getCentreEntityMapOfClass(
-    entity: ClassEntity,
-  ): Promise<Map<string, CentreEntity>> {
-    const centreEntityMap = this.getCentreEntityMapOfClasses([entity]);
-    return centreEntityMap;
-  }
-
-  async getCentreEntityMapOfClasses(
-    entities: ClassEntity[],
-  ): Promise<Map<string, CentreEntity>> {
-    const centreIds = new Set<string>();
-    entities.forEach((entity) => {
-      const { datum: classObjcect } = entity;
-      const { centreId } = classObjcect;
-      centreIds.add(centreId);
-    });
-    const centreEntities = await this.centresRepository.getByIds(centreIds);
-    const centreEntityMap = new Map<string, CentreEntity>();
-    centreEntities.forEach((centreEntity) => {
-      const { identifier } = centreEntity;
-      const { id } = identifier;
-      centreEntityMap.set(id, centreEntity);
-    });
-    return centreEntityMap;
-  }
-
-  async getStudentEntitiesMapOfClass(
-    entity: ClassEntity,
-  ): Promise<Map<string, StudentEntity[]>> {
-    const studentEntitiesMap = this.getStudentEntitiesMapOfClasses([entity]);
-    return studentEntitiesMap;
-  }
-
-  async getStudentEntitiesMapOfClasses(
-    entities: ClassEntity[],
-  ): Promise<Map<string, StudentEntity[]>> {
-    const classIds = new Set<string>();
-    entities.forEach((entity) => {
-      const { identifier } = entity;
-      const { id } = identifier;
-      classIds.add(id);
-    });
-    const classStudentEntities =
-      await this.classesRepository.getClassStudentsByClassIds(classIds);
-    const studentIds = new Set<string>();
-    classStudentEntities.forEach((entity) => {
-      const { datum } = entity;
-      const { studentId } = datum;
-      studentIds.add(studentId);
-    });
-    const studentEntities = await this.studentsService.searchByIds(studentIds);
-    const studentEntityMap = new Map<string, StudentEntity>();
-    studentEntities.forEach((entity) => {
-      const { identifier } = entity;
-      const { id } = identifier;
-      studentEntityMap.set(id, entity);
-    });
-    const studentEntitesMap = new Map<string, StudentEntity[]>();
-    classStudentEntities.forEach((entity) => {
-      const { datum } = entity;
-      const { classId, studentId } = datum;
-      const studentEntity = getOrError(
-        studentEntityMap,
-        studentId,
-        this.loggerService,
-      );
-      let studentEntitiesArray = studentEntitesMap.get(classId);
-      if (!studentEntitiesArray) {
-        studentEntitiesArray = [];
-        studentEntitesMap.set(classId, studentEntitiesArray);
-      }
-      studentEntitiesArray.push(studentEntity);
-    });
-    return studentEntitesMap;
-  }
-
-  async getTeacherEntitiesMapOfClass(
-    entity: ClassEntity,
-  ): Promise<Map<string, TeacherEntity[]>> {
-    const teachersEntitiesMap = this.getTeacherEntitiesMapOfClasses([entity]);
-    return teachersEntitiesMap;
-  }
-
-  async getTeacherEntitiesMapOfClasses(
-    entities: ClassEntity[],
-  ): Promise<Map<string, TeacherEntity[]>> {
-    const classIds = new Set<string>();
-    entities.forEach((entity) => {
-      const { identifier } = entity;
-      const { id } = identifier;
-      classIds.add(id);
-    });
-    const classTeacherEntities =
-      await this.classesRepository.getClassTeachersByClassIds(classIds);
-    const teacherIds = new Set<string>();
-    classTeacherEntities.forEach((entity) => {
-      const { datum } = entity;
-      const { teacherId } = datum;
-      teacherIds.add(teacherId);
-    });
-    const teacherEntities = await this.teachersService.searchByIds(teacherIds);
-    const teacherEntityMap = new Map<string, TeacherEntity>();
-
-    // TODO: Refactor to use Teacher
-    teacherEntities.forEach((entity) => {
-      const { id } = entity;
-      //   teacherEntityMap.set(id, entity);
-    });
-    const teacherEntitesMap = new Map<string, TeacherEntity[]>();
-    classTeacherEntities.forEach((entity) => {
-      const { datum } = entity;
-      const { classId, teacherId } = datum;
-      const studentEntity = getOrError(
-        teacherEntityMap,
-        teacherId,
-        this.loggerService,
-      );
-      let teacherEntitiesArray = teacherEntitesMap.get(classId);
-      if (!teacherEntitiesArray) {
-        teacherEntitiesArray = [];
-        teacherEntitesMap.set(classId, teacherEntitiesArray);
-      }
-      teacherEntitiesArray.push(studentEntity);
-    });
-    return teacherEntitesMap;
-  }
-
-  async create(
-    datum: ClassDatum,
-    createdBy: string | null = null,
-  ): Promise<ClassEntity> {
-    const entity = await this.classesRepository.insert(datum, createdBy);
-    return entity;
-  }
-
-  async createClassTeacher(
-    datum: ClassTeacherDatum,
-    createdBy: string | null = null,
-  ): Promise<ClassTeacherEntity> {
-    const classTeacherEntity = await this.classesRepository.insertClassTeacher(
-      datum,
-      createdBy,
+  async create(classEntity: ClassDatum): Promise<Class> {
+    const newClass = this.classesRepository.create(classEntity);
+    const createdClass = await this.dataSource.transaction(
+      async (entityManager) => {
+        const createdClass = await entityManager.save(newClass);
+        await entityManager.insert(ClassCentre, {
+          classId: createdClass.id,
+          centreId: classEntity.centreId,
+        });
+        return createdClass;
+      },
     );
-    return classTeacherEntity;
+    return createdClass;
   }
 
-  async createClassStudent(
-    datum: ClassStudentDatum,
-    createdBy: string | null = null,
-  ): Promise<ClassStudentEntity> {
-    const classStudentEntity = await this.classesRepository.insertClassStudent(
-      datum,
-      createdBy,
-    );
-    return classStudentEntity;
+  async addStudentToClass(classId: string, studentId: string) {
+    await this.ClassStudentRepository.insert({
+      classId: classId,
+      studentId: studentId,
+    });
   }
 
-  async updateById(id: string, datum: ClassDatum): Promise<ClassEntity> {
-    const entity = await this.classesRepository.updateById(id, datum);
-    return entity;
+  async addTeacherToClass(
+    classId: string,
+    teacherId: string,
+    isFormTeacher: boolean,
+  ) {
+    await this.ClassTeacherRepository.insert({
+      classId: classId,
+      teacherId: teacherId,
+      isFormTeacher: isFormTeacher,
+    });
+  }
+  async removeTeacherFromClass(classId: string, teacherId: string) {
+    await this.ClassTeacherRepository.softDelete({
+      classId: classId,
+      teacherId: teacherId,
+    });
   }
 
-  async deleteById(id: string) {
-    const entity = await this.classesRepository.deleteById(id);
+  async removeStudentFromClass(classId: string, studentId: string) {
+    await this.ClassStudentRepository.softDelete({
+      classId: classId,
+      studentId: studentId,
+    });
+  }
+
+  async updateById(id: string, classDatum: ClassDatum): Promise<Class> {
+    // classEntity.updatedAt = new Date(); // Consider using afterUpdate() listener
+    // classEntity.updatedBy = null; // TODO: Change after authentication
+    const classEntity = await this.classesRepository.findOneByOrFail({ id });
+    const updatedClass = this.classesRepository.merge(classEntity, classDatum);
+    await this.classesRepository.save(updatedClass);
+    return updatedClass;
+  }
+
+  async getStudentssInClass(classId: string): Promise<Student[]> {
+    const students = await this.studentsRepository.find({
+      where: {
+        classStudents: {
+          classId: classId,
+        },
+      },
+    });
+
+    return students;
+  }
+
+  async getClassesWithStudents(): Promise<Class[]> {
+    const classes = await this.classesRepository.find({
+      relations: {
+        classStudents: {
+          student: true,
+        },
+      },
+    });
+    return classes;
+  }
+
+  async addClassToCentre(centreId: string, classId: string) {
+    await this.classCentreRepository.insert({
+      centreId: centreId,
+      classId: classId,
+    });
+  }
+
+  async removeClassFromCentre(centreId: string, classId: string) {
+    await this.classCentreRepository.softDelete({
+      centreId: centreId,
+      classId: classId,
+    });
+  }
+
+  // Why classes got no soft delete??
+  async deleteById(id: string): Promise<Class> {
+    const entity = await this.classesRepository.findOneByOrFail({ id });
+    await this.classesRepository.delete({ id });
     return entity;
   }
 }

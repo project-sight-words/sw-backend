@@ -1,4 +1,4 @@
-import { Expose } from "class-transformer";
+import { Exclude, Expose } from "class-transformer";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import {
   Column,
@@ -12,6 +12,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
+import { ClassStudent } from "./class.entity";
 import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { User } from "./user.entities";
 
@@ -34,6 +35,9 @@ export class Student {
 
   @OneToMany(() => StudentUser, (studentUser) => studentUser.student)
   studentUsers: StudentUser[] | null = null;
+
+  @OneToMany(() => ClassStudent, (studentClass) => studentClass.student)
+  classStudents: ClassStudent[] | null = null;
 }
 
 @Entity("student_users")
@@ -66,6 +70,10 @@ export class StudentUser {
   @ManyToOne(() => User, (user) => user.studentUsers)
   @JoinColumn({ name: "user_id" })
   user!: User;
+
+  @OneToMany(() => ClassStudent, (studentClass) => studentClass.student)
+  @Exclude()
+  classStudents: ClassStudent[] | null = null;
 }
 
 export class StudentDatum {

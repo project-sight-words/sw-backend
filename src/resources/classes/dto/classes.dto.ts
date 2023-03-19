@@ -1,67 +1,60 @@
-import { CentreEntity } from "entities/centre.entity";
+import { OmitType, PickType } from "@nestjs/mapped-types";
+import { Class } from "entities/class.entity";
 import { CentreEntityDto } from "resources/centres/dto/centres.dto";
 import { Expose, Type } from "class-transformer";
-import { getOrError } from "utils/map";
-import { Identifier } from "entities/common";
-import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { Logger } from "@nestjs/common";
-import { StudentEntity } from "entities/student.entities";
 import { StudentEntityDto } from "resources/students/dto/students.dto";
 import {
   IsArray,
   IsBoolean,
   IsInstance,
+  IsInt,
   IsNotEmpty,
   IsUUID,
+  Max,
+  Min,
   ValidateNested,
 } from "class-validator";
-import {
-  ClassDatum,
-  ClassEntity,
-  ClassStudentDatum,
-  ClassTeacherDatum,
-} from "entities/class.entity";
-import { TeacherEntity } from "entities/teacher.entities";
 import { TeacherEntityDto } from "resources/teachers/dto/teachers.dto";
+import { IsTimeWithTimezone } from "utils/validator";
+import { Centre } from "entities/centre.entity";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
 
-export class ClassDatumDto extends ClassDatum {
-  static fromObject(object: object): ClassDatumDto {
-    const datumDto = plainToInstance(ClassDatumDto, object);
-    return datumDto;
-  }
+export class ClassEntityDto {
+  // Need to expose timestampz/userstampz?
+  @Expose()
+  @IsUUID()
+  id?: string;
 
-  static toObject(dto: ClassDatumDto): object {
-    const plain = instanceToPlain(dto);
-    return plain;
-  }
+  @Expose()
+  @IsInt()
+  @Min(0)
+  @Max(6)
+  @IsNotEmpty()
+  startDay?: number;
 
-  static toClassDatum(dto: ClassDatumDto): ClassDatum {
-    const plain = ClassDatumDto.toObject(dto);
-    const datum = ClassDatum.fromObject(plain);
+  @Expose()
+  @IsTimeWithTimezone()
+  startTime?: string;
+
+  @Expose()
+  @Min(0)
+  @Max(6)
+  @IsNotEmpty()
+  endDay?: number;
+
+  @Expose()
+  @IsTimeWithTimezone()
+  endTime?: string;
+
+  static fromObject(object: object): ClassEntityDto {
+    const datum = plainToInstance(ClassEntityDto, object);
     return datum;
   }
 
-  static fromClassDatum(datum: ClassDatum): ClassDatumDto {
-    const plain = ClassDatum.toObject(datum);
-    const dto = ClassDatumDto.fromObject(plain);
-    return dto;
-  }
-}
-
-export class ClassEntityDto extends ClassDatumDto {
-  @IsNotEmpty()
-  @Expose()
-  @IsUUID()
-  id!: string;
-
-  static fromClassEntity(entity: ClassEntity): ClassEntityDto {
-    const { identifier, datum } = entity;
-    const datumDto = ClassDatumDto.fromClassDatum(datum);
-    const dto = plainToInstance(ClassEntityDto, {
-      ...Identifier.toObject(identifier),
-      ...ClassDatumDto.toObject(datumDto),
-    });
-    return dto;
+  static toObject(datum: ClassEntityDto): object {
+    const plain = instanceToPlain(datum);
+    return plain;
   }
 }
 
@@ -69,122 +62,109 @@ export class DetailedClassDto extends ClassEntityDto {
   static readonly loggerService = new Logger("DetailedClassDto");
 
   @Expose()
-  @IsInstance(CentreEntityDto)
-  centre!: CentreEntityDto;
+  @IsInstance(Centre)
+  centre?: CentreEntityDto;
 
   @Expose()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => StudentEntityDto)
-  students!: StudentEntityDto[];
+  students?: StudentEntityDto[];
 
   @Expose()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TeacherEntityDto)
-  teachers!: TeacherEntityDto[];
+  teachers?: TeacherEntityDto[];
 
-  static fromClassEntityAndDetails(
-    classEntity: ClassEntity,
-    centreEntityMap: Map<string, CentreEntity>,
-    studentEntitiesMap: Map<string, StudentEntity[]>,
-    teacherEntitiesMap: Map<string, TeacherEntity[]>,
-  ): DetailedClassDto {
-    const classEntityDto = ClassEntityDto.fromClassEntity(classEntity);
-    const {
-      identifier: { id: classId },
-      datum: classDatum,
-    } = classEntity;
-    const { centreId } = classDatum;
-    const centreEntity = getOrError(
-      centreEntityMap,
-      centreId,
-      DetailedClassDto.loggerService,
+  static fromDetailedClassEntity(detailedClass: Class) {
+    const students = detailedClass.classStudents.map((classStudent) =>
+      plainToInstance(StudentEntityDto, classStudent.student),
     );
-    const centreEntityDto = CentreEntityDto.fromCentreEntity(centreEntity);
-    const studentEntities = studentEntitiesMap.get(classId) ?? [];
-    const teacherEntities = teacherEntitiesMap.get(classId) ?? [];
-    const dto = plainToInstance(DetailedClassDto, {
-      ...ClassEntityDto.toObject(classEntityDto),
-      centre: CentreEntityDto.toObject(centreEntityDto),
-      students: studentEntities.map((entity) => {
-        const studentEntityDto = StudentEntityDto.fromStudentEntity(entity);
-        const plain = StudentEntityDto.toObject(studentEntityDto);
-        return plain;
-      }),
-      teachers: teacherEntities.map((entity) => {
-        const studentEntityDto = TeacherEntityDto.fromTeacherEntity(entity);
-        const plain = TeacherEntityDto.toObject(studentEntityDto);
-        return plain;
-      }),
-    });
-    return dto;
+
+    const teachers = detailedClass.classTeachers.map((classTeacher) =>
+      plainToInstance(TeacherEntityDto, classTeacher.teacher),
+    );
+
+    const centre = plainToInstance(
+      CentreEntityDto,
+      detailedClass.classCentre.centre,
+    );
+
+    const detailedClassDto = {
+      students: students,
+      teachers: teachers,
+      centre: centre,
+      ...detailedClass,
+    };
+
+    return plainToInstance(DetailedClassDto, detailedClassDto);
   }
 
-  static fromClassEntitiesAndDetails(
-    classEntities: ClassEntity[],
-    centreEntityMap: Map<string, CentreEntity>,
-    studentEntitiesMap: Map<string, StudentEntity[]>,
-    teacherEntitiesMap: Map<string, TeacherEntity[]>,
-  ): DetailedClassDto[] {
-    const dtos = classEntities.map((entity) =>
-      this.fromClassEntityAndDetails(
-        entity,
-        centreEntityMap,
-        studentEntitiesMap,
-        teacherEntitiesMap,
-      ),
+  static fromDetailedClassEntities(detailedClassEntites: Class[]) {
+    const detailedClasses = detailedClassEntites.map((detailedClassEntity) =>
+      this.fromDetailedClassEntity(detailedClassEntity),
     );
-    return dtos;
+    return detailedClasses;
+  }
+
+  static toObject(detailedClassDto: DetailedClassDto) {
+    const plain = instanceToPlain(detailedClassDto);
+    return plain;
   }
 }
 
-export class ClassTeacherDto {
-  @Expose({ name: "teacher_id" })
+export class ClassTeacherDatum {
+  @Expose()
   @IsNotEmpty()
   @IsUUID()
   teacherId!: string;
 
-  @Expose({ name: "is_form_teacher" })
+  @Expose()
   @IsBoolean()
   isFormTeacher!: boolean;
 
-  static toObject(dto: ClassTeacherDto): object {
+  static toObject(dto: ClassTeacherDatum): object {
     const plain = instanceToPlain(dto);
     return plain;
   }
-
-  static toClassTeacherDatum(
-    dto: ClassTeacherDto,
-    classId: string,
-  ): ClassTeacherDatum {
-    const datum = ClassTeacherDatum.fromObject({
-      ...ClassTeacherDto.toObject(dto),
-      class_id: classId,
-    });
-    return datum;
-  }
 }
 
-export class ClassStudentDto {
-  @Expose({ name: "student_id" })
+export class ClassStudentDatum {
+  @Expose()
   @IsNotEmpty()
   @IsUUID()
   studentId!: string;
 
-  static toObject(dto: ClassStudentDto): object {
+  static toObject(dto: ClassStudentDatum): object {
     const plain = instanceToPlain(dto);
     return plain;
   }
-
-  static toClassStudentDatum(
-    dto: ClassStudentDto,
-    classId: string,
-  ): ClassStudentDatum {
-    const datum = ClassStudentDatum.fromObject({
-      ...ClassStudentDto.toObject(dto),
-      class_id: classId,
-    });
-    return datum;
-  }
 }
+
+export class ClassCentreDto {
+  // Check if need to add extra fields
+  @Expose()
+  @IsNotEmpty()
+  @IsUUID()
+  centreId!: string;
+}
+
+export class ClassDatum extends OmitType(ClassEntityDto, ["id"] as const) {
+  @Expose()
+  @IsNotEmpty()
+  @IsUUID()
+  centreId!: string;
+}
+
+export class CreateClassDto extends ClassDatum {}
+
+export class UpdateClassDto extends CreateClassDto {}
+
+export class CreateClassStudentDto extends ClassStudentDatum {}
+
+export class CreateClassTeacherDto extends ClassTeacherDatum {}
+
+export class CreateClassCentreDto extends PickType(ClassCentreDto, [
+  "centreId",
+]) {}

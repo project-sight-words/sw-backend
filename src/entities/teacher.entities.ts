@@ -13,6 +13,7 @@ import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { Expose } from "class-transformer";
 import { User } from "./user.entities";
+import { ClassTeacher } from "./class.entity";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 
 @Entity("teachers")
@@ -34,6 +35,9 @@ export class Teacher {
 
   @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.teacher)
   teacherUsers: TeacherUser[] | null = null;
+
+  @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.teacher)
+  classTeachers!: ClassTeacher[];
 }
 
 @Entity("teacher_users")

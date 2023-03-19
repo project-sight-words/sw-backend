@@ -1,56 +1,59 @@
 import * as Uuid from "utils/uuid";
-import { CentreDatumDto, CentreEntityDto } from "./dto/centres.dto";
 import { CentresService } from "./centres.service";
-import {
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Put,
-} from "@nestjs/common";
+import { Controller, Get, NotFoundException, Param } from "@nestjs/common";
+import { Centre } from "entities/centre.entity";
+import { plainToInstance } from "utils/transformer";
+import { ClassEntityDto } from "resources/classes/dto/classes.dto";
 
 @Controller("centres")
 export class CentresController {
   constructor(private readonly centresService: CentresService) {}
 
+  // TODO: Not hydrated, Check and implement
   @Get()
-  async get(): Promise<CentreEntityDto[]> {
+  async get(): Promise<Centre[]> {
     const entities = await this.centresService.get();
-    const dtos = entities.map((e) => CentreEntityDto.fromCentreEntity(e));
-    return dtos;
+    return entities;
   }
 
   @Get(":id")
-  async getById(@Param("id") id: string): Promise<CentreEntityDto> {
+  async getById(@Param("id") id: string): Promise<Centre> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const entities = await this.centresService.getById(id);
-    if (entities.length === 0) throw new NotFoundException();
-    const entity = entities[0];
-    const dto = CentreEntityDto.fromCentreEntity(entity);
-    return dto;
+    const entity = await this.centresService.getById(id);
+    if (!entity) throw new NotFoundException();
+    return entity;
   }
 
-  @Post()
-  async create(@Body() body: CentreDatumDto): Promise<CentreEntityDto> {
-    const datum = CentreDatumDto.toCentreDatum(body);
-    const entity = await this.centresService.create(datum);
-    const dto = CentreEntityDto.fromCentreEntity(entity);
-    return dto;
-  }
-
-  @Put(":id")
-  async updateById(
+  @Get(":id/classes")
+  async getClassesByCentreId(
     @Param("id") id: string,
-    @Body() body: CentreDatumDto,
-  ): Promise<CentreEntityDto> {
+  ): Promise<ClassEntityDto[]> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const datum = CentreDatumDto.toCentreDatum(body);
-    const entity = await this.centresService.updateById(id, datum);
-    const dto = CentreEntityDto.fromCentreEntity(entity);
-    return dto;
+    const classes = await this.centresService.getClassesByCentreId(id);
+    return plainToInstance(ClassEntityDto, classes);
   }
+
+  // CUD not supported
+  // @Post()
+  // async create(@Body() body: CentreDatumDto): Promise<Centre> {
+  //   const datum = CentreDatumDto.toCentreDatum(body);
+  //   const entity = await this.centresService.create(datum);
+  //   const dto = CentreEntityDto.fromCentreEntity(entity);
+  //   return dto;
+  // }
+
+  // @Put(":id")
+  // async updateById(
+  //   @Param("id") id: string,
+  //   @Body() body: CentreDatumDto,
+  // ): Promise<CentreEntityDto> {
+  //   const isUuid = Uuid.test(id);
+  //   if (!isUuid) throw new NotFoundException();
+  //   const datum = CentreDatumDto.toCentreDatum(body);
+  //   const entity = await this.centresService.updateById(id, datum);
+  //   const dto = CentreEntityDto.fromCentreEntity(entity);
+  //   return dto;
+  // }
 }

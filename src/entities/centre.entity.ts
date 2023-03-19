@@ -1,30 +1,26 @@
-import { Expose } from "class-transformer";
-import { Identifier, UpdateStamp } from "./common";
-import { IsNotEmpty, IsString } from "class-validator";
-import { plainToInstance } from "utils/transformer";
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
+import { ClassCentre } from "./class.entity";
 
-export class CentreDatum {
-  @IsNotEmpty()
-  @IsString()
-  @Expose()
+@Entity("centres")
+export class Centre {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
+  @Column({ name: "name", type: "varchar", nullable: false })
   name!: string;
 
-  static fromObject(object: object): CentreDatum {
-    const datum = plainToInstance(CentreDatum, object);
-    return datum;
-  }
-}
+  @OneToMany(() => ClassCentre, (classCentre) => classCentre.centre)
+  classCentres!: ClassCentre[];
 
-export class CentreEntity {
-  identifier!: Identifier;
-  datum!: CentreDatum;
-  updateStamp!: UpdateStamp;
+  @UpdateDateColumn({ name: "updated_at", default: new Date() })
+  updatedAt!: Date;
 
-  static fromObject(object: object): CentreEntity {
-    const centre = new CentreEntity();
-    centre.identifier = Identifier.fromObject(object);
-    centre.datum = CentreDatum.fromObject(object);
-    centre.updateStamp = UpdateStamp.fromObject(object);
-    return centre;
-  }
+  @Column({ name: "updated_by", type: "uuid" })
+  updatedBy!: string;
 }

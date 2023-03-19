@@ -1,8 +1,6 @@
 import * as Uuid from "utils/uuid";
-import { ClassEntity } from "entities/class.entity";
+import { Class } from "entities/class.entity";
 import { ClassesService } from "./classes.service";
-import { StudentsService } from "resources/students/students.service";
-import { TeachersService } from "resources/teachers/teachers.service";
 import {
   Controller,
   Get,
@@ -12,14 +10,19 @@ import {
   Delete,
   Put,
   NotFoundException,
-  BadRequestException,
 } from "@nestjs/common";
+import { StudentsService } from "resources/students/students.service";
+import { TeachersService } from "resources/teachers/teachers.service";
 import {
-  ClassTeacherDto,
+  CreateClassCentreDto,
+  CreateClassDto,
+  CreateClassStudentDto,
+  CreateClassTeacherDto,
   DetailedClassDto,
-  ClassDatumDto,
-  ClassStudentDto,
+  UpdateClassDto,
 } from "./dto/classes.dto";
+import { StudentEntityDto } from "resources/students/dto/students.dto";
+import { plainToInstance } from "utils/transformer";
 
 @Controller("classes")
 export class ClassesController {
@@ -31,170 +34,139 @@ export class ClassesController {
 
   @Get()
   async get(): Promise<DetailedClassDto[]> {
-    const entities: ClassEntity[] = await this.classesService.get();
-    const [centreEntityMap, studentEntitiesMap, teacherEntitiesMap] =
-      await Promise.all([
-        this.classesService.getCentreEntityMapOfClasses(entities),
-        this.classesService.getStudentEntitiesMapOfClasses(entities),
-        this.classesService.getTeacherEntitiesMapOfClasses(entities),
-      ]);
-    const dtos = DetailedClassDto.fromClassEntitiesAndDetails(
-      entities,
-      centreEntityMap,
-      studentEntitiesMap,
-      teacherEntitiesMap,
-    );
-    return dtos;
+    const classes = await this.classesService.get();
+    return DetailedClassDto.fromDetailedClassEntities(classes);
   }
 
   @Get(":id")
   async getById(@Param("id") id: string): Promise<DetailedClassDto> {
-    const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
-    const entities = await this.classesService.searchById(id);
-    if (entities.length === 0) throw new NotFoundException();
-    const entity = entities[0];
-    const [centreEntityMap, studentEntitiesMap, teacherEntitiesMap] =
-      await Promise.all([
-        this.classesService.getCentreEntityMapOfClass(entity),
-        this.classesService.getStudentEntitiesMapOfClass(entity),
-        this.classesService.getTeacherEntitiesMapOfClass(entity),
-      ]);
-    const dto = DetailedClassDto.fromClassEntityAndDetails(
-      entity,
-      centreEntityMap,
-      studentEntitiesMap,
-      teacherEntitiesMap,
-    );
-    return dto;
+    const classEntity = await this.classesService.findOneById(id);
+    if (!classEntity) throw new NotFoundException();
+    return DetailedClassDto.fromDetailedClassEntity(classEntity);
   }
 
   @Post()
-  async create(@Body() body: ClassDatumDto): Promise<DetailedClassDto> {
-    const datum = ClassDatumDto.toClassDatum(body);
-    const entity = await this.classesService.create(datum);
-    const [centreEntityMap, studentEntitiesMap, teacherEntitiesMap] =
-      await Promise.all([
-        this.classesService.getCentreEntityMapOfClass(entity),
-        this.classesService.getStudentEntitiesMapOfClass(entity),
-        this.classesService.getTeacherEntitiesMapOfClass(entity),
-      ]);
-    const dto = DetailedClassDto.fromClassEntityAndDetails(
-      entity,
-      centreEntityMap,
-      studentEntitiesMap,
-      teacherEntitiesMap,
-    );
-    return dto;
+  async create(@Body() body: CreateClassDto): Promise<Class> {
+    const classEntity = await this.classesService.create(body);
+    return classEntity;
   }
 
   @Post(":id/teachers")
   async createClassTeacher(
     @Param("id") classId: string,
-    @Body() body: ClassTeacherDto,
+    @Body() body: CreateClassTeacherDto,
   ): Promise<void> {
     const isUuid = Uuid.test(classId);
     if (!isUuid) throw new NotFoundException();
-    const classesWithId = await this.classesService.searchById(classId);
-    if (classesWithId.length === 0) throw new NotFoundException();
-    const { teacherId } = body;
-    const teachersWithId = [true /* TODO: Search for teachers with id */];
-    if (teachersWithId.length === 0) throw new BadRequestException();
-    const datum = ClassTeacherDto.toClassTeacherDatum(body, classId);
-    await this.classesService.createClassTeacher(datum);
+    const { teacherId, isFormTeacher } = body;
+    await this.classesService.findOneById(classId);
+    // TODO: await this.teachersService.getById(teacherId);  Use after Teachers refactor
+    if (!classId || !teacherId) throw new NotFoundException();
+    await this.classesService.addTeacherToClass(
+      classId,
+      teacherId,
+      isFormTeacher,
+    );
   }
 
   @Post(":id/students")
   async createClassStudent(
     @Param("id") classId: string,
-    @Body() body: ClassStudentDto,
+    @Body() body: CreateClassStudentDto,
   ): Promise<void> {
     const isUuid = Uuid.test(classId);
     if (!isUuid) throw new NotFoundException();
-    const classesWithId = await this.classesService.searchById(classId);
-    if (classesWithId.length === 0) throw new NotFoundException();
     const { studentId } = body;
-    const studentsWithId = [true /* TODO: Search for students with id */];
-    if (studentsWithId.length === 0) throw new BadRequestException();
-    const datum = ClassStudentDto.toClassStudentDatum(body, classId);
-    await this.classesService.createClassStudent(datum);
+    await this.classesService.findOneById(classId);
+    // await this.studentsService.getById(studentId); Use after Students refactor
+    if (!classId || !studentId) throw new NotFoundException();
+    await this.classesService.addStudentToClass(classId, studentId);
   }
 
   @Put(":id")
   async updateByid(
     @Param("id") id: string,
-    @Body() body: ClassDatumDto,
-  ): Promise<DetailedClassDto> {
+    @Body() body: UpdateClassDto,
+  ): Promise<Class> {
+    // TODO: Confirm return body
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const entities = await this.classesService.searchById(id);
-    if (entities.length === 0) throw new NotFoundException();
+    const classEntity = await this.classesService.findOneById(id);
+    if (!classEntity) throw new NotFoundException();
     const entity = await this.classesService.updateById(id, body);
-    const [centreEntityMap, studentEntitiesMap, teacherEntitiesMap] =
-      await Promise.all([
-        this.classesService.getCentreEntityMapOfClass(entity),
-        this.classesService.getStudentEntitiesMapOfClass(entity),
-        this.classesService.getTeacherEntitiesMapOfClass(entity),
-      ]);
-    const dto = DetailedClassDto.fromClassEntityAndDetails(
-      entity,
-      centreEntityMap,
-      studentEntitiesMap,
-      teacherEntitiesMap,
-    );
-    return dto;
+    return entity;
   }
 
   @Delete(":id")
-  async deleteById(@Param("id") id: string): Promise<DetailedClassDto> {
+  async deleteById(@Param("id") id: string): Promise<Class> {
+    // TODO: Confirm return body
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const entities = await this.classesService.searchById(id);
-    if (entities.length === 0) throw new NotFoundException();
-    const deletingEntity = entities[0];
-    const [centreEntityMap, studentEntitiesMap, teacherEntitiesMap] =
-      await Promise.all([
-        this.classesService.getCentreEntityMapOfClass(deletingEntity),
-        this.classesService.getStudentEntitiesMapOfClass(deletingEntity),
-        this.classesService.getTeacherEntitiesMapOfClass(deletingEntity),
-      ]);
+    const classEntity = await this.classesService.findOneById(id);
+    if (!classEntity) throw new NotFoundException();
     const deletedEntity = await this.classesService.deleteById(id);
-    const dto = DetailedClassDto.fromClassEntityAndDetails(
-      deletedEntity,
-      centreEntityMap,
-      studentEntitiesMap,
-      teacherEntitiesMap,
-    );
-    return dto;
+    return deletedEntity;
   }
 
   @Delete(":id/teachers/:teacherId")
   async deleteClassTeacher(
     @Param("id") classId: string,
     @Param("teacherId") teacherId: string,
-  ) {
+  ): Promise<void> {
     const classIdIsUuid = Uuid.test(classId);
     const teacherIdIsUuid = Uuid.test(teacherId);
     if (!classIdIsUuid || !teacherIdIsUuid) throw new NotFoundException();
-    const classesWithId = await this.classesService.searchById(classId);
-    if (classesWithId.length === 0) throw new NotFoundException();
-    const teachersWithId = [true /* TODO: Search for teacher */];
-    if (teachersWithId.length === 0) throw new NotFoundException();
-    // TODO:
+    const classEntity = await this.classesService.findOneById(classId);
+    const teacher = await this.teachersService.findOneById(teacherId);
+    if (!classEntity || !teacher) throw new NotFoundException();
+    await this.classesService.removeTeacherFromClass(classId, teacherId);
   }
 
   @Delete(":id/students/:studentId")
   async deleteClassStudent(
     @Param("id") classId: string,
     @Param("studentId") studentId: string,
-  ) {
+  ): Promise<void> {
     const classIdIsUuid = Uuid.test(classId);
     const studentIdIsUuid = Uuid.test(studentId);
     if (!classIdIsUuid || !studentIdIsUuid) throw new NotFoundException();
-    const classesWithId = await this.classesService.searchById(classId);
-    if (classesWithId.length === 0) throw new NotFoundException();
-    const studentsWithId = [true /* TODO: Search for student */];
-    if (studentsWithId.length === 0) throw new NotFoundException();
-    // TODO:
+    const classEntity = await this.classesService.findOneById(classId);
+    const student = await this.studentsService.findOneById(studentId);
+    if (!classEntity || !student) throw new NotFoundException();
+    await this.classesService.removeStudentFromClass(classId, studentId);
+  }
+
+  @Get(":id/students")
+  async getClassStudents(
+    @Param("id") classId: string,
+  ): Promise<StudentEntityDto[]> {
+    const students = await this.classesService.getStudentssInClass(classId);
+    return plainToInstance(StudentEntityDto, students);
+  }
+
+  @Post(":id/centre")
+  async addClassToCentre(
+    @Param("id") id: string,
+    @Body() classCentreDto: CreateClassCentreDto,
+  ): Promise<void> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const { centreId } = classCentreDto;
+    const isCentreUuid = Uuid.test(centreId);
+    if (!isCentreUuid) throw new NotFoundException();
+    await this.classesService.addClassToCentre(centreId, id);
+  }
+
+  @Delete(":id/centre/:centreId")
+  async removeClassFromCentre(
+    @Param("id") id: string,
+    @Param("centreId") centreId: string,
+  ): Promise<void> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    const isCentreUuid = Uuid.test(centreId);
+    if (!isCentreUuid) throw new NotFoundException();
+
+    await this.classesService.removeClassFromCentre(centreId, id);
   }
 }

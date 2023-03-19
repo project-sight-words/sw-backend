@@ -1,158 +1,155 @@
-import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
-import { Expose, Type } from "class-transformer";
-import { instanceToPlain, plainToInstance } from "utils/transformer";
-import { IsBoolean, IsDate, IsNotEmpty, IsUUID } from "class-validator";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  Relation,
+  UpdateDateColumn,
+} from "typeorm";
+import { Centre } from "./centre.entity";
+import { Student } from "./student.entities";
+import { Teacher } from "./teacher.entities";
 
-export class ClassDatum {
-  @Expose({ name: "day_time" })
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date)
-  dayTime!: Date;
+@Entity("classes")
+export class Class {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-  @Expose({ name: "centre_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  centreId!: string;
+  @Column({ name: "start_day", type: "int", nullable: false })
+  startDay!: number;
 
-  static fromObject(object: object): ClassDatum {
-    const datum = plainToInstance(ClassDatum, object);
-    return datum;
-  }
+  @Column({ name: "start_time", type: "time with time zone", nullable: false })
+  startTime!: string;
 
-  static toObject(datum: ClassDatum): object {
-    const plain = instanceToPlain(datum);
-    return plain;
-  }
+  @Column({ name: "end_day", type: "int", nullable: false })
+  endDay!: number;
+
+  @Column({ name: "end_time", type: "time with time zone", nullable: false })
+  endTime!: string;
+
+  @UpdateDateColumn({ name: "updated_at" })
+  updatedAt!: Date;
+
+  @Column({ name: "updated_by", type: "uuid" })
+  updatedBy!: string;
+
+  @OneToMany(() => ClassStudent, (classStudent) => classStudent.class)
+  classStudents!: ClassStudent[];
+
+  @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class)
+  classTeachers!: ClassTeacher[];
+
+  @OneToOne(() => ClassCentre, (classCentre) => classCentre.class)
+  classCentre!: Relation<ClassCentre>;
 }
 
-export class ClassEntity {
-  identifier!: Identifier;
-  datum!: ClassDatum;
-  createStamp!: CreateStamp;
-  updateStamp!: UpdateStamp;
-  deleteStamp!: DeleteStamp;
+@Entity("class_teachers")
+export class ClassTeacher {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-  static fromObject(object: object): ClassEntity {
-    const entity = new ClassEntity();
-    entity.identifier = Identifier.fromObject(object);
-    entity.datum = ClassDatum.fromObject(object);
-    entity.createStamp = CreateStamp.fromObject(object);
-    entity.updateStamp = UpdateStamp.fromObject(object);
-    entity.deleteStamp = DeleteStamp.fromObject(object);
-    return entity;
-  }
-}
-
-export class ClassCentreDatum {
-  @Expose({ name: "centre_id" })
-  @IsNotEmpty()
-  @IsUUID()
+  @Column({ name: "class_id", type: "uuid", nullable: false })
   classId!: string;
 
-  @Expose({ name: "centre_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  centreId!: string;
+  @ManyToOne(() => Class, (classEntity) => classEntity.classTeachers)
+  @JoinColumn({ name: "class_id" })
+  class!: Class;
 
-  static fromObject(object: object): ClassCentreDatum {
-    const datum = plainToInstance(ClassCentreDatum, object);
-    return datum;
-  }
-}
-
-export class ClassCentreEntity {
-  identifier!: Identifier;
-  datum!: ClassCentreDatum;
-  createStamp!: CreateStamp;
-  deleteStamp!: DeleteStamp;
-
-  static fromObject(object: object): ClassCentreEntity {
-    const entity = new ClassCentreEntity();
-    entity.identifier = Identifier.fromObject(object);
-    entity.datum = ClassCentreDatum.fromObject(object);
-    entity.createStamp = CreateStamp.fromObject(object);
-    entity.deleteStamp = DeleteStamp.fromObject(object);
-    return entity;
-  }
-}
-
-export class ClassTeacherDatum {
-  @Expose({ name: "class_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  classId!: string;
-
-  @Expose({ name: "teacher_id" })
-  @IsNotEmpty()
-  @IsUUID()
+  @Column({ name: "teacher_id", type: "uuid", nullable: false })
   teacherId!: string;
 
-  @Expose({ name: "is_form_teacher" })
-  @IsBoolean()
+  @ManyToOne(() => Teacher, (teacher) => teacher.classTeachers)
+  @JoinColumn({ name: "teacher_id" })
+  teacher!: Teacher;
+
+  @Column({
+    name: "is_form_teacher",
+    type: "boolean",
+    nullable: false,
+    default: false,
+  })
   isFormTeacher!: boolean;
 
-  static fromObject(object: object): ClassTeacherDatum {
-    const datum = plainToInstance(ClassTeacherDatum, object);
-    return datum;
-  }
+  @CreateDateColumn({ name: "created_at", default: new Date() })
+  createdAt!: Date;
 
-  static toObject(dto: ClassTeacherDatum): object {
-    const plain = instanceToPlain(dto);
-    return plain;
-  }
+  @Column({ name: "created_by", type: "uuid" })
+  createdBy!: string;
+
+  @DeleteDateColumn({ name: "deleted_at" })
+  deletedAt!: Date | null;
+
+  @Column({ name: "deleted_by", type: "uuid" })
+  deletedBy!: string | null;
 }
 
-export class ClassTeacherEntity {
-  identifier!: Identifier;
-  datum!: ClassTeacherDatum;
-  createStamp!: CreateStamp;
-  deleteStamp!: DeleteStamp;
+@Entity("class_students")
+export class ClassStudent {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-  static fromObject(object: object): ClassTeacherEntity {
-    const entity = new ClassTeacherEntity();
-    entity.identifier = Identifier.fromObject(object);
-    entity.datum = ClassTeacherDatum.fromObject(object);
-    entity.createStamp = CreateStamp.fromObject(object);
-    entity.deleteStamp = DeleteStamp.fromObject(object);
-    return entity;
-  }
-}
-
-export class ClassStudentDatum {
-  @Expose({ name: "class_id" })
-  @IsNotEmpty()
-  @IsUUID()
+  @Column({ name: "class_id", type: "uuid", nullable: false })
+  @JoinColumn()
   classId!: string;
 
-  @Expose({ name: "student_id" })
-  @IsNotEmpty()
-  @IsUUID()
+  @ManyToOne(() => Class, (classEntity) => classEntity.classStudents)
+  @JoinColumn({ name: "class_id" })
+  class!: Class;
+
+  @Column({ name: "student_id", type: "uuid", nullable: false })
+  @JoinColumn()
   studentId!: string;
 
-  static fromObject(object: object): ClassStudentDatum {
-    const datum = plainToInstance(ClassStudentDatum, object);
-    return datum;
-  }
+  @ManyToOne(() => Student, (student) => student.classStudents)
+  @JoinColumn({ name: "student_id" })
+  student!: Student;
 
-  static toObject(dto: ClassStudentDatum): object {
-    const plain = instanceToPlain(dto);
-    return plain;
-  }
+  @CreateDateColumn({ name: "created_at", default: new Date() })
+  createdAt!: Date;
+
+  @Column({ name: "created_by", type: "uuid" })
+  createdBy!: string;
+
+  @DeleteDateColumn({ name: "deleted_at" })
+  deletedAt!: Date | null;
+
+  @Column({ name: "deleted_by", type: "uuid" })
+  deletedBy!: string | null;
 }
 
-export class ClassStudentEntity {
-  identifier!: Identifier;
-  datum!: ClassStudentDatum;
-  createStamp!: CreateStamp;
-  deleteStamp!: DeleteStamp;
+@Entity("class_centres")
+export class ClassCentre {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-  static fromObject(object: object): ClassStudentEntity {
-    const entity = new ClassStudentEntity();
-    entity.identifier = Identifier.fromObject(object);
-    entity.datum = ClassStudentDatum.fromObject(object);
-    entity.createStamp = CreateStamp.fromObject(object);
-    entity.deleteStamp = DeleteStamp.fromObject(object);
-    return entity;
-  }
+  @Column({ name: "class_id", type: "uuid", nullable: false })
+  classId!: string;
+
+  @OneToOne(() => Class, (classEntity) => classEntity.classCentre)
+  @JoinColumn({ name: "class_id" })
+  class!: Class;
+
+  @Column({ name: "centre_id", type: "uuid", nullable: false })
+  centreId!: string;
+
+  @ManyToOne(() => Centre, (centreEntity) => centreEntity.classCentres)
+  @JoinColumn({ name: "centre_id" })
+  centre!: Centre;
+
+  @CreateDateColumn({ name: "created_at", default: new Date() })
+  createdAt!: Date;
+
+  @Column({ name: "created_by", type: "uuid" })
+  createdBy!: string;
+
+  @DeleteDateColumn({ name: "deleted_at" })
+  deletedAt!: Date | null;
+
+  @Column({ name: "deleted_by", type: "uuid" })
+  deletedBy!: string | null;
 }
