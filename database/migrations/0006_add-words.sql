@@ -44,7 +44,8 @@ CREATE TABLE audios
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID REFERENCES users (id),
     deleted_at TIMESTAMPTZ,
-    deleted_by UUID REFERENCES users (id)
+    deleted_by UUID REFERENCES users (id),
+    link       TEXT        NOT NULL
 );
 
 CREATE TABLE images
@@ -53,7 +54,8 @@ CREATE TABLE images
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID REFERENCES users (id),
     deleted_at TIMESTAMPTZ,
-    deleted_by UUID REFERENCES users (id)
+    deleted_by UUID REFERENCES users (id),
+    link       TEXT        NOT NULL
 );
 
 CREATE TABLE word_meaning_audios
