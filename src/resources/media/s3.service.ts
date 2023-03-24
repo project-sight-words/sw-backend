@@ -53,7 +53,8 @@ export class S3Service {
       await this.s3.send(new CreateMultipartUploadCommand(params));
       return true;
     } catch (e) {
-      this.logger.warn(`Failed to upload file due to ${e}`);
+      if (e instanceof Error)
+        this.logger.warn(`Failed to upload file due to ${e.message}`);
       return false;
     }
   }
