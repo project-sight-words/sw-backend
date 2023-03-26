@@ -5,6 +5,7 @@ import {
   FindManyOptions,
   In,
   Repository,
+  SelectQueryBuilder,
 } from "typeorm";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -116,10 +117,9 @@ export class TeachersService {
 
   async createManyTeachersIfNotExists(
     teachers: TeacherDatum[],
-    querier: EntityManager | Repository<Teacher> = this.teacherRepository,
+    queryBuilder: SelectQueryBuilder<Teacher> = this.teacherRepository.createQueryBuilder(),
   ): Promise<void> {
-    await querier
-      .createQueryBuilder()
+    await queryBuilder
       .insert()
       .values(TeacherDatum.toCreateObjects(teachers))
       .orIgnore()
@@ -130,23 +130,26 @@ export class TeachersService {
     teachers: TeacherDatum[],
     querier: EntityManager | DataSource = this.dataSource,
   ): Promise<string[]> {
-    // TODO: Refactor to guard against potential SQL injection
-    const association = teachers
-      .map((s) => `('${s.email}', '${s.staffId}')`)
-      .join(", ");
+    const parameters: string[] = [];
+    for (let i = 1; i <= teachers.length * 2; i += 2) {
+      parameters.push(`($${i}, $${i + 1})`);
+    }
 
-    const insertedTeacherUsers: { id: string }[] = (await querier.query(`
+    const insertedTeacherUsers: { id: string }[] = (await querier.query(
+      `
         INSERT INTO teacher_users (user_id, teacher_id)
         SELECT p.uid, p.tid
         FROM (SELECT users.id AS uid, teachers.id AS tid, users.email AS email, teachers.staff_id AS staff_id
               FROM teachers,
                    users) AS p
-                 JOIN (VALUES ${association}) AS t (e, s)
+                 JOIN (VALUES ${parameters.join(", ")}) AS t (e, s)
                       ON t.e = p.email AND t.s = p.staff_id
-        ON CONFLICT (staff_id)
-            DO UPDATE SET id = excluded.id
-        RETURNING *;
-    `)) as { id: string }[];
+        ON CONFLICT (user_id) WHERE deleted_at IS NULL
+            DO UPDATE SET user_id = excluded.user_id
+        RETURNING id;
+      `,
+      teachers.map((t) => [t.email, t.staffId]).flat(),
+    )) as { id: string }[];
 
     return insertedTeacherUsers.map(({ id }) => id);
   }
@@ -160,13 +163,16 @@ export class TeachersService {
       if (errors.length !== 0) return errors;
 
       const emails = teachers.map((t) => t.email);
-      const [ids] = await Promise.all([
-        this.bulkInsertTeacherUsers(teachers, entityManager),
-        // TODO: Uncomment following after usersService updated
-        // this.usersService.createManyIfNotExists(emails, entityManager),
-        this.createManyTeachersIfNotExists(teachers, entityManager),
+      await Promise.all([
+        this.usersService.createManyIfNotExists(emails, entityManager),
+        this.createManyTeachersIfNotExists(
+          teachers,
+          entityManager.createQueryBuilder(Teacher, "teachers"),
+        ),
       ]);
-      return this.findByIds(ids);
+
+      const ids = await this.bulkInsertTeacherUsers(teachers, entityManager);
+      return await this.findByIds(ids, entityManager);
     });
   }
 

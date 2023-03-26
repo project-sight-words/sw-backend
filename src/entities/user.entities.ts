@@ -15,21 +15,27 @@ import { AdminUser } from "./admin.entities";
 
 @Entity("users")
 export class User {
+  @Expose()
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
+  @Expose()
   @Column({ type: "text" })
   email!: string;
 
+  @Expose()
   @Column({ name: "last_logged_in", type: "date", nullable: true })
   lastLoggedIn: Date | null = null;
 
+  @Expose()
   @OneToMany(() => StudentUser, (studentUser) => studentUser.userId)
   studentUsers: StudentUser[] | null = null;
 
+  @Expose()
   @OneToMany(() => TeacherUser, (teacherUser) => teacherUser.userId)
   teacherUsers: TeacherUser[] | null = null;
 
+  @Expose()
   @OneToMany(() => AdminUser, (adminUser) => adminUser.userId)
   adminUsers: AdminUser[] | null = null;
 

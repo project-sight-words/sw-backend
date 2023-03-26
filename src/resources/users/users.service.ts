@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "entities/user.entities";
-import { EntityManager, In, Repository } from "typeorm";
+import { EntityManager, FindManyOptions, In, Repository } from "typeorm";
 
 @Injectable()
 export class UsersService {
@@ -13,12 +13,18 @@ export class UsersService {
     return this.userRepository.findOneBy({ email });
   }
 
-  findByEmails(emails: string[]): Promise<User[]> {
-    return this.userRepository.find({
+  async findByEmails(
+    emails: string[],
+    querier: EntityManager | Repository<User> = this.userRepository,
+  ): Promise<User[]> {
+    const options: FindManyOptions<User> = {
       where: {
         email: In(emails),
       },
-    });
+    };
+    return querier instanceof EntityManager
+      ? await querier.find(User, options)
+      : await querier.find(options);
   }
 
   async upsertByEmail(email: string, lastLoggedIn: Date): Promise<User> {
