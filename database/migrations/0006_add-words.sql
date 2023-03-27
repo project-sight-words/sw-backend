@@ -1,86 +1,91 @@
--- TODO: Confirm if created_by needs to be referencing users or teachers
+CREATE TYPE difficulty_type AS ENUM ('Basic', 'Intermediate', 'Advanced');
+CREATE TYPE image_approval_status AS ENUM ('Pending', 'Approved', 'Rejected');
+CREATE TYPE attempt_progress AS ENUM ('Learn', 'Personalisation', 'Recall', 'Quiz', 'Completed');
+
 CREATE TABLE words
 (
-    word       TEXT PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    id         UUID PRIMARY KEY         DEFAULT gen_random_uuid(),
+    word       TEXT            NOT NULL CHECK (LENGTH(STRIP(word)) <> 0),
+    definition TEXT            NOT NULL CHECK (LENGTH(STRIP(definition)) <> 0),
+    sentence   TEXT            NOT NULL CHECK (LENGTH(STRIP(sentence)) <> 0),
+    difficulty DIFFICULTY_TYPE NOT NULL DEFAULT 'Basic',
+    comment    TEXT,
+    created_at TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     created_by UUID REFERENCES users (id),
     deleted_at TIMESTAMPTZ,
-    deleted_by UUID REFERENCES users (id)
-);
-
-CREATE TABLE word_meanings
-(
-    id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
-    word       TEXT        NOT NULL REFERENCES words (word),
-    definition TEXT        NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by UUID REFERENCES users (id),
-    deleted_at TIMESTAMPTZ,
-    deleted_by UUID REFERENCES users (id)
-);
-
-CREATE TABLE labels
-(
-    name       TEXT PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by UUID REFERENCES users (id),
-    deleted_at TIMESTAMPTZ,
-    deleted_by UUID REFERENCES users (id)
-);
-
-CREATE TABLE word_labels
-(
-    word       TEXT        NOT NULL REFERENCES words,
-    label      TEXT        NOT NULL REFERENCES labels,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by UUID REFERENCES users (id),
-    deleted_at TIMESTAMPTZ,
-    deleted_by UUID REFERENCES users (id)
+    deleted_by UUID REFERENCES users (id),
+    UNIQUE (word, definition)
 );
 
 CREATE TABLE audios
 (
     id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    link       TEXT        NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID REFERENCES users (id),
     deleted_at TIMESTAMPTZ,
     deleted_by UUID REFERENCES users (id),
-    link       TEXT        NOT NULL
+    word_id    UUID        NOT NULL REFERENCES words
 );
 
 CREATE TABLE images
 (
     id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    link       TEXT        NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID REFERENCES users (id),
     deleted_at TIMESTAMPTZ,
     deleted_by UUID REFERENCES users (id),
-    link       TEXT        NOT NULL
+    word_id    UUID        NOT NULL REFERENCES words
 );
 
-CREATE TABLE word_meaning_audios
+CREATE TABLE lessons
 (
-    word_meaning_id UUID        NOT NULL REFERENCES word_meanings,
-    audio_id        UUID        NOT NULL REFERENCES audios,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by      UUID REFERENCES users (id),
-    deleted_at      TIMESTAMPTZ,
-    deleted_by      UUID REFERENCES users (id)
+    id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    start_date TIMESTAMPTZ NOT NULL,
+    end_date   TIMESTAMPTZ NOT NULL,
+    class_id   UUID        NOT NULL REFERENCES classes,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID REFERENCES users (id),
+    deleted_at TIMESTAMPTZ,
+    deleted_by UUID REFERENCES users (id)
 );
 
-CREATE TABLE word_meaning_images
+CREATE TABLE lesson_words
 (
-    word_meaning_id UUID        NOT NULL REFERENCES word_meanings,
-    image_id        UUID        NOT NULL REFERENCES images,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by      UUID REFERENCES users (id),
-    deleted_at      TIMESTAMPTZ,
-    deleted_by      UUID REFERENCES users (id)
+    id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    word_id    UUID        NOT NULL REFERENCES words,
+    lesson_id  UUID        NOT NULL REFERENCES lessons,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID REFERENCES users (id),
+    deleted_at TIMESTAMPTZ,
+    deleted_by UUID REFERENCES users (id),
+    UNIQUE (word_id, lesson_id)
 );
 
-CREATE TABLE student_words
+CREATE TABLE word_attempts
 (
-    student_id   UUID NOT NULL REFERENCES students,
-    word         TEXT NOT NUlL REFERENCES words,
-    attempted_at TIMESTAMPTZ
+    id                      UUID PRIMARY KEY               DEFAULT gen_random_uuid(),
+    student_id              UUID                  NOT NULL REFERENCES students,
+    lesson_word_id          UUID                  NOT NULL REFERENCES lesson_words,
+    attempted_at            TIMESTAMPTZ,
+    progress                attempt_progress      NOT NULL DEFAULT 'Learn',
+    personalised_image_link TEXT,
+    image_approval_status   IMAGE_APPROVAL_STATUS NOT NULL DEFAULT 'Pending',
+    UNIQUE (student_id, lesson_word_id),
+    CHECK ((progress = 'Learn' AND image_approval_status = 'Pending') OR
+           ((progress IN ('Recall', 'Quiz', 'Completed')) AND image_approval_status = 'Approved'))
+);
+
+CREATE TABLE quiz_attempts
+(
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    attempted_at    TIMESTAMPTZ,
+    score_one_total INT  NOT NULL CHECK (score_one_total >= 0),
+    score_two_total INT  NOT NULL CHECK (score_two_total >= 0),
+    score_one       INT CHECK (score_one >= 0),
+    score_two       INT CHECK (score_two >= 0),
+    unsubmitted_at  TIMESTAMPTZ,
+    word_attempt_id UUID NOT NULL REFERENCES word_attempts,
+    CHECK (score_one < score_one_total AND score_two < score_two_total)
 );
