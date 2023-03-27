@@ -5,9 +5,9 @@ CREATE TYPE attempt_progress AS ENUM ('Learn', 'Personalisation', 'Recall', 'Qui
 CREATE TABLE words
 (
     id         UUID PRIMARY KEY         DEFAULT gen_random_uuid(),
-    word       TEXT            NOT NULL CHECK (LENGTH(STRIP(word)) <> 0),
-    definition TEXT            NOT NULL CHECK (LENGTH(STRIP(definition)) <> 0),
-    sentence   TEXT            NOT NULL CHECK (LENGTH(STRIP(sentence)) <> 0),
+    word       TEXT            NOT NULL CHECK (LENGTH(TRIM(word)) <> 0),
+    definition TEXT            NOT NULL CHECK (LENGTH(TRIM(definition)) <> 0),
+    sentence   TEXT            NOT NULL CHECK (LENGTH(TRIM(sentence)) <> 0),
     difficulty DIFFICULTY_TYPE NOT NULL DEFAULT 'Basic',
     comment    TEXT,
     created_at TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
