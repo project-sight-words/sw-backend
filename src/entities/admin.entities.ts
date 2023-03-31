@@ -1,5 +1,6 @@
 import { Expose } from "class-transformer";
 import { IsEmail, IsNotEmpty } from "class-validator";
+import { assert } from "console";
 import {
   Column,
   CreateDateColumn,
@@ -7,18 +8,26 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  ObjectLiteral,
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { plainToInstance } from "utils/transformer";
 import { User } from "./user.entities";
 
 @Entity("admins")
 export class Admin {
+  @Expose()
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
+  @Expose()
   @OneToMany(() => AdminUser, (adminuser) => adminuser.admin)
   adminUsers: AdminUser[] | null = null;
+
+  static from(src: ObjectLiteral[]): Admin[] {
+    return plainToInstance(Admin, src);
+  }
 }
 
 @Entity("admin_users")
@@ -51,6 +60,14 @@ export class AdminUser {
   @ManyToOne(() => User, (user) => user.adminUsers)
   @JoinColumn({ name: "user_id" })
   user!: User;
+
+  static toCreateObjects(users: User[], admins: Admin[]): object[] {
+    assert(users.length == admins.length);
+    return users.map((u, i) => ({
+      userId: u.id,
+      adminId: admins[i].id,
+    }));
+  }
 }
 
 export class AdminDatum {

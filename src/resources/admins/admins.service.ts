@@ -6,10 +6,12 @@ import {
   FindManyOptions,
   In,
   Repository,
+  SelectQueryBuilder,
 } from "typeorm";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UsersService } from "resources/users/users.service";
+import { plainToInstance } from "class-transformer";
 
 @Injectable()
 export class AdminsService {
@@ -67,34 +69,15 @@ export class AdminsService {
 
   async createManyAdmins(
     admins: AdminDatum[],
-    querier: EntityManager | Repository<Admin> = this.adminRepository,
-  ): Promise<void> {
-    await querier
-      .createQueryBuilder()
+    queryBuilder: SelectQueryBuilder<Admin> = this.adminRepository.createQueryBuilder(),
+  ): Promise<Admin[]> {
+    const { generatedMaps } = await queryBuilder
       .insert()
       .values(AdminDatum.toCreateObjects(admins))
+      .returning("*")
       .execute();
-  }
 
-  async bulkInsertAdminUsers(
-    admins: AdminDatum[],
-    querier: EntityManager | DataSource = this.dataSource,
-  ): Promise<string[]> {
-    // TODO: Refactor to guard against potential SQL injection
-    const association = admins.map((s) => `('${s.email}')`).join(", ");
-
-    const insertedAdminUsers: { id: string }[] = (await querier.query(`
-        INSERT INTO admin_users (user_id, admin_id)
-        SELECT p.uid, p.aid
-        FROM (SELECT users.id AS uid, admins.id AS aid, users.email AS email
-              FROM admins,
-                   users) AS p
-                 JOIN (VALUES ${association}) AS a (e)
-                      ON a.e = p.email
-        RETURNING *;
-    `)) as { id: string }[];
-
-    return insertedAdminUsers.map(({ id }) => id);
+    return Admin.from(generatedMaps);
   }
 
   async createMany(
@@ -106,13 +89,48 @@ export class AdminsService {
       if (errors.length !== 0) return errors;
 
       const emails = admins.map((a) => a.email);
-      const [ids] = await Promise.all([
-        this.bulkInsertAdminUsers(admins, entityManager),
-        // TODO: Uncomment following after usersService updated
-        // this.usersService.createManyIfNotExists(emails, entityManager),
-        this.createManyAdmins(admins, entityManager),
-      ]);
-      return this.findByIds(ids);
+      await this.usersService.createManyIfNotExists(emails, entityManager);
+
+      const users = await this.usersService.findByEmails(emails, entityManager);
+      const userIds = users.map((u) => u.id);
+
+      const options: FindManyOptions<AdminUser> = {
+        relations: {
+          user: true,
+          admin: true,
+        },
+        withDeleted: false,
+        where: { userId: In(userIds) },
+      };
+      const existingAdminUsers: AdminUser[] = await entityManager.find(
+        AdminUser,
+        options,
+      );
+      const existingAdminUserUsers = existingAdminUsers.map((au) => au.user);
+
+      // Create new admins
+      const existingAdminUserEmails = existingAdminUserUsers.map(
+        (u) => u.email,
+      );
+      const adminsToCreate = admins.filter(
+        (a) => !existingAdminUserEmails.includes(a.email),
+      );
+      const createdAdmins = await this.createManyAdmins(
+        adminsToCreate,
+        entityManager.createQueryBuilder(Admin, "admins"),
+      );
+
+      // Create new adminUsers
+      const usersToCreateLink = users.filter((u) =>
+        adminsToCreate.map((a) => a.email).includes(u.email),
+      );
+      await entityManager
+        .createQueryBuilder(AdminUser, "admin_users")
+        .insert()
+        .values(AdminUser.toCreateObjects(usersToCreateLink, createdAdmins))
+        .execute();
+
+      return await entityManager.find(AdminUser, options);
     });
   }
 
