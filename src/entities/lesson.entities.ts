@@ -20,11 +20,11 @@ export class Lesson {
   id!: string;
 
   @Expose()
-  @Column({ name: "start_date", type: "datetime" })
+  @Column({ name: "start_date", type: "timestamptz" })
   startDate!: Date;
 
   @Expose()
-  @Column({ name: "end_date", type: "datetime" })
+  @Column({ name: "end_date", type: "timestamptz" })
   endDate!: Date;
 
   @Expose()
