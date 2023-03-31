@@ -2,12 +2,16 @@ import * as Uuid from "utils/uuid";
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
+  Post,
+  Put,
 } from "@nestjs/common";
+import { CreateLessonDto, GetLessonDto, LessonDto } from "./dto/lessons.dto";
 import { LessonsService } from "./lessons.service";
-import { GetLessonDto, LessonDto } from "./dto/lessons.dto";
 
 @Controller("/lessons")
 export class LessonsController {
@@ -27,6 +31,39 @@ export class LessonsController {
     const lesson = await this.lessonsService.findOneById(id);
     if (!lesson) throw new NotFoundException();
 
+    return LessonDto.fromLesson(lesson);
+  }
+
+  @Post()
+  @HttpCode(201)
+  async create(@Body() body: CreateLessonDto): Promise<LessonDto> {
+    const lesson = await this.lessonsService.create(body);
+    return LessonDto.fromLesson(lesson);
+  }
+
+  @Put(":id")
+  async updateById(
+    @Param("id") id: string,
+    @Body() body: CreateLessonDto,
+  ): Promise<LessonDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+
+    const lesson = await this.lessonsService.updateById(id, body); // TODO: add updatedBy
+    if (!lesson) throw new NotFoundException();
+
+    return LessonDto.fromLesson(lesson);
+  }
+
+  @Delete(":id")
+  async deleteById(@Param("id") id: string): Promise<LessonDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+
+    const lesson = await this.lessonsService.findOneById(id);
+    if (!lesson) throw new NotFoundException();
+
+    await this.lessonsService.deleteById(id);
     return LessonDto.fromLesson(lesson);
   }
 }
