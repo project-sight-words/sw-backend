@@ -1,3 +1,4 @@
+import { IsDate, IsNotEmpty, IsUUID } from "class-validator";
 import { Class } from "./class.entities";
 import {
   Column,
@@ -8,6 +9,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { Expose } from "class-transformer";
 
 @Entity("lessons")
 export class Lesson {
@@ -38,4 +40,21 @@ export class Lesson {
 
   @Column({ name: "deleted_by", type: "uuid", nullable: true })
   deletedBy: string | null = null;
+}
+
+export class LessonDatum {
+  @Expose()
+  @IsNotEmpty()
+  @IsDate()
+  startDate!: Date;
+
+  @Expose()
+  @IsNotEmpty()
+  @IsDate()
+  endDate!: Date;
+
+  @Expose()
+  @IsNotEmpty()
+  @IsUUID()
+  classId!: string;
 }
