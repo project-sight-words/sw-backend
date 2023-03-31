@@ -40,6 +40,7 @@ export class LessonsService {
       .insert()
       .into(Lesson)
       .values([{ startDate, endDate, classId, createdBy }])
+      .returning("*")
       .execute();
 
     return Lesson.from(generatedMaps)[0];
