@@ -1,5 +1,5 @@
 import * as Uuid from "utils/uuid";
-import { Class } from "entities/class.entity";
+import { Class } from "entities/class.entities";
 import { ClassesService } from "./classes.service";
 import {
   Controller,

@@ -11,9 +11,10 @@ import {
   Relation,
   UpdateDateColumn,
 } from "typeorm";
-import { Centre } from "./centre.entity";
+import { Centre } from "./centre.entities";
 import { Student } from "./student.entities";
 import { Teacher } from "./teacher.entities";
+import { Lesson } from "./lesson.entities";
 
 @Entity("classes")
 export class Class {
@@ -46,6 +47,9 @@ export class Class {
 
   @OneToOne(() => ClassCentre, (classCentre) => classCentre.class)
   classCentre!: Relation<ClassCentre>;
+
+  @OneToMany(() => Lesson, (lesson) => lesson.class)
+  lessons!: Lesson[];
 }
 
 @Entity("class_teachers")

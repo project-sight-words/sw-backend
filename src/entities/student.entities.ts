@@ -12,7 +12,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
-import { ClassStudent } from "./class.entity";
+import { ClassStudent } from "./class.entities";
 import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { User } from "./user.entities";
 

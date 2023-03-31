@@ -6,7 +6,7 @@ import {
   ClassCentre,
   ClassStudent,
   ClassTeacher,
-} from "entities/class.entity";
+} from "entities/class.entities";
 import { Module } from "@nestjs/common";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";

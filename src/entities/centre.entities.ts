@@ -5,7 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { ClassCentre } from "./class.entity";
+import { ClassCentre } from "./class.entities";
 
 @Entity("centres")
 export class Centre {

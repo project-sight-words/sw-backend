@@ -4,7 +4,7 @@ import {
   ClassCentre,
   ClassStudent,
   ClassTeacher,
-} from "entities/class.entity";
+} from "entities/class.entities";
 import { Repository, DataSource } from "typeorm";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { Student } from "entities/student.entities";

@@ -1,7 +1,7 @@
 import * as Uuid from "utils/uuid";
 import { CentresService } from "./centres.service";
 import { Controller, Get, NotFoundException, Param } from "@nestjs/common";
-import { Centre } from "entities/centre.entity";
+import { Centre } from "entities/centre.entities";
 import { plainToInstance } from "utils/transformer";
 import { ClassEntityDto } from "resources/classes/dto/classes.dto";
 
