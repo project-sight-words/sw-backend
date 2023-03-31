@@ -24,7 +24,7 @@ export class LessonDto extends LessonDatum {
 }
 
 export class GetLessonDto {
-  @Expose()
+  @Expose({ name: "class_id" })
   @IsNotEmpty()
   @IsUUID()
   classId!: string;
