@@ -1,4 +1,4 @@
-import { IsDate, IsNotEmpty, IsUUID } from "class-validator";
+import { IsDateString, IsNotEmpty, IsUUID } from "class-validator";
 import { Class } from "./class.entities";
 import {
   Column,
@@ -58,17 +58,17 @@ export class Lesson {
 }
 
 export class LessonDatum {
-  @Expose()
+  @Expose({ name: "start_date" })
   @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   startDate!: Date;
 
-  @Expose()
+  @Expose({ name: "end_date" })
   @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   endDate!: Date;
 
-  @Expose()
+  @Expose({ name: "class_id" })
   @IsNotEmpty()
   @IsUUID()
   classId!: string;
