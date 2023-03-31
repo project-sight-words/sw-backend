@@ -8,10 +8,12 @@ import {
   JoinColumn,
   ManyToOne,
   ObjectLiteral,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Expose } from "class-transformer";
 import { plainToInstance } from "utils/transformer";
+import { LessonWord } from "./lessonWord.entities";
 
 @Entity("lessons")
 export class Lesson {
@@ -35,6 +37,10 @@ export class Lesson {
   @ManyToOne(() => Class, (c) => c.lessons)
   @JoinColumn({ name: "class_id" })
   class!: Class;
+
+  @Expose()
+  @OneToMany(() => LessonWord, (lessonWord) => lessonWord.lesson)
+  lessonWords!: LessonWord[];
 
   @Expose()
   @CreateDateColumn({ name: "created_at" })
