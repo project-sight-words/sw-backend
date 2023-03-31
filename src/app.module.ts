@@ -15,6 +15,7 @@ import { AdminsModule } from "resources/admins/admins.module";
 import { MediaModule } from "resources/media/media.module";
 import { WordsModule } from "resources/words/words.module";
 import { LessonsModule } from "resources/lessons/lessons.module";
+import { LessonWordsModule } from "resources/lessonWords/lessonWords.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -52,6 +53,7 @@ const ConfigurationModule = ConfigModule.forRoot({
     WordsModule,
     MediaModule,
     LessonsModule,
+    LessonWordsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
