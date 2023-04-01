@@ -23,6 +23,7 @@ export class WordsService {
     sentence: string,
     image: Express.Multer.File,
     audio: Express.Multer.File,
+    comment: string | null = null,
     difficulty: WordDifficulty = "Basic",
   ): Promise<Word> {
     const hasHomonym = await this.wordRepository.findOneBy({
@@ -59,7 +60,13 @@ export class WordsService {
     });
   }
 
-  async addAudio() {}
-
-  async addImage() {}
+  async getWordBank() {
+    return this.wordRepository.find({
+      withDeleted: false,
+      relations: {
+        audios: true,
+        images: true,
+      },
+    });
+  }
 }
