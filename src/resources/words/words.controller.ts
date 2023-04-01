@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -37,7 +38,7 @@ export class WordsController {
   ): Promise<WordDto> {
     const [uploadedImage, uploadedAudio] = this.validateWordFiles(files);
 
-    const createdWord = await this.wordsService.createWord(
+    const createdWord = await this.wordsService.create(
       body.word,
       body.definition,
       body.sentence,
@@ -52,13 +53,13 @@ export class WordsController {
 
   @Get()
   async getWordBank(): Promise<WordDto[]> {
-    const words = await this.wordsService.getWordBank();
+    const words = await this.wordsService.findAll();
     return words.map((w) => WordDto.from(w));
   }
 
   @Get(":id")
   async getWord(@Param("id") id: string): Promise<WordDto> {
-    const word = await this.wordsService.getWord(id);
+    const word = await this.wordsService.findOneById(id);
     if (!word) throw new NotFoundException("Word not found");
     return WordDto.from(word);
   }
@@ -70,7 +71,7 @@ export class WordsController {
       { name: "audio", maxCount: 1 },
     ]),
   )
-  async editWord(
+  async updateWord(
     @Param("id") id: string,
     @UploadedFiles()
     files: {
@@ -81,7 +82,7 @@ export class WordsController {
   ): Promise<WordDto> {
     const [uploadedImage, uploadedAudio] = this.validateWordFiles(files);
 
-    const editedWord = await this.wordsService.editWord(
+    const editedWord = await this.wordsService.update(
       id,
       body.sentence,
       body.comment,
@@ -90,6 +91,14 @@ export class WordsController {
       uploadedAudio,
     );
     return WordDto.from(editedWord);
+  }
+
+  @Delete(":id")
+  async deleteWord(@Param("id") id: string) {
+    const word = await this.wordsService.findOneById(id);
+    if (!word) throw new NotFoundException("Word not found");
+    await this.wordsService.deleteById(id);
+    return WordDto.from(word);
   }
 
   private validateWordFiles(files: {

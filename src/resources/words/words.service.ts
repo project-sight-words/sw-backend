@@ -22,7 +22,7 @@ export class WordsService {
   ) {}
 
   // TODO include creator ID
-  async createWord(
+  async create(
     word: string,
     definition: string,
     sentence: string,
@@ -65,7 +65,7 @@ export class WordsService {
     });
   }
 
-  getWordBank() {
+  findAll() {
     return this.wordRepository.find({
       withDeleted: false,
       relations: {
@@ -75,7 +75,7 @@ export class WordsService {
     });
   }
 
-  getWord(id: string) {
+  findOneById(id: string) {
     return this.wordRepository.findOne({
       withDeleted: false,
       relations: {
@@ -88,7 +88,7 @@ export class WordsService {
     });
   }
 
-  async editWord(
+  async update(
     id: string,
     sentence: string,
     comment: string | null,
@@ -96,7 +96,7 @@ export class WordsService {
     image: Express.Multer.File,
     audio: Express.Multer.File,
   ) {
-    const word = await this.getWord(id);
+    const word = await this.findOneById(id);
     if (!word) throw new NotFoundException("Word not found");
 
     word.sentence = sentence;
@@ -116,5 +116,11 @@ export class WordsService {
     word.audios[0].link = audioLink;
 
     return await this.wordRepository.save(word);
+  }
+
+  deleteById(id: string) {
+    return this.wordRepository.softDelete({
+      id: id,
+    });
   }
 }
