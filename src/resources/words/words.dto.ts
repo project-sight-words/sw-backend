@@ -8,15 +8,7 @@ import {
   IsUUID,
 } from "class-validator";
 
-export class CreateWordDto {
-  @IsNotEmpty()
-  @IsString()
-  word!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  definition!: string;
-
+export class EditWordDto {
   @IsNotEmpty()
   @IsString()
   sentence!: string;
@@ -29,6 +21,16 @@ export class CreateWordDto {
   @IsString()
   @IsIn(["Basic", "Intermediate", "Advanced"])
   difficulty!: WordDifficulty;
+}
+
+export class CreateWordDto extends EditWordDto {
+  @IsNotEmpty()
+  @IsString()
+  word!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  definition!: string;
 }
 
 export class WordDto extends CreateWordDto {

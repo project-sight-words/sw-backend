@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Audio, Image, Word, WordDifficulty } from "entities/word.entities";
 import { Repository } from "typeorm";
@@ -81,5 +86,35 @@ export class WordsService {
         id: id,
       },
     });
+  }
+
+  async editWord(
+    id: string,
+    sentence: string,
+    comment: string | null,
+    difficulty: WordDifficulty,
+    image: Express.Multer.File,
+    audio: Express.Multer.File,
+  ) {
+    const word = await this.getWord(id);
+    if (!word) throw new NotFoundException("Word not found");
+
+    word.sentence = sentence;
+    word.comment = comment;
+    word.difficulty = difficulty;
+
+    const imageLink = await this.s3Service.uploadFile(image);
+    if (!imageLink)
+      throw new BadRequestException("Invalid/Missing image given");
+    const audioLink = await this.s3Service.uploadFile(audio);
+    if (!audioLink)
+      throw new BadRequestException("Invalid/Missing audio given");
+
+    if (!word.images || !word.audios) throw new InternalServerErrorException();
+
+    word.images[0].link = imageLink;
+    word.audios[0].link = audioLink;
+
+    return await this.wordRepository.save(word);
   }
 }

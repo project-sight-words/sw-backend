@@ -6,10 +6,11 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { CreateWordDto, WordDto } from "resources/words/words.dto";
+import { CreateWordDto, EditWordDto, WordDto } from "resources/words/words.dto";
 import { WordsService } from "resources/words/words.service";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { isValidAudio, isValidImage } from "utils/file";
@@ -29,24 +30,12 @@ export class WordsController {
   async createWord(
     @UploadedFiles()
     files: {
-      image?: Express.Multer.File[];
-      audio?: Express.Multer.File[];
+      image: Express.Multer.File[];
+      audio: Express.Multer.File[];
     },
     @Body() body: CreateWordDto,
   ): Promise<WordDto> {
-    if (!files.image) throw new BadRequestException("Missing image upload");
-    if (!files.audio) throw new BadRequestException("Missing audio upload");
-
-    const uploadedImage: Express.Multer.File = files.image[0];
-    const uploadedAudio: Express.Multer.File = files.audio[0];
-
-    if (!isValidImage(uploadedImage.mimetype))
-      throw new BadRequestException(
-        "Only .jpg, .jpeg, .png, or .gif files supported",
-      );
-
-    if (!isValidAudio(uploadedAudio.mimetype))
-      throw new BadRequestException(`Only .wav or .mp3 files supported`);
+    const [uploadedImage, uploadedAudio] = this.validateWordFiles(files);
 
     const createdWord = await this.wordsService.createWord(
       body.word,
@@ -72,5 +61,55 @@ export class WordsController {
     const word = await this.wordsService.getWord(id);
     if (!word) throw new NotFoundException("Word not found");
     return WordDto.from(word);
+  }
+
+  @Put(":id")
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: "image", maxCount: 1 },
+      { name: "audio", maxCount: 1 },
+    ]),
+  )
+  async editWord(
+    @Param("id") id: string,
+    @UploadedFiles()
+    files: {
+      image: Express.Multer.File[];
+      audio: Express.Multer.File[];
+    },
+    @Body() body: EditWordDto,
+  ): Promise<WordDto> {
+    const [uploadedImage, uploadedAudio] = this.validateWordFiles(files);
+
+    const editedWord = await this.wordsService.editWord(
+      id,
+      body.sentence,
+      body.comment,
+      body.difficulty,
+      uploadedImage,
+      uploadedAudio,
+    );
+    return WordDto.from(editedWord);
+  }
+
+  private validateWordFiles(files: {
+    image: Express.Multer.File[];
+    audio: Express.Multer.File[];
+  }): [Express.Multer.File, Express.Multer.File] {
+    if (!files.image) throw new BadRequestException("Missing image upload");
+    if (!files.audio) throw new BadRequestException("Missing audio upload");
+
+    const uploadedImage: Express.Multer.File = files.image[0];
+    const uploadedAudio: Express.Multer.File = files.audio[0];
+
+    if (!isValidImage(uploadedImage.mimetype))
+      throw new BadRequestException(
+        "Only .jpg, .jpeg, .png, or .gif files supported",
+      );
+
+    if (!isValidAudio(uploadedAudio.mimetype))
+      throw new BadRequestException(`Only .wav or .mp3 files supported`);
+
+    return [uploadedImage, uploadedAudio];
   }
 }
