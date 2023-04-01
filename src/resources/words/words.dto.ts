@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
 } from "class-validator";
 
 export class CreateWordDto {
@@ -31,6 +32,9 @@ export class CreateWordDto {
 }
 
 export class WordDto extends CreateWordDto {
+  @IsUUID()
+  id!: string;
+
   @IsArray()
   audios!: string[];
 
@@ -39,6 +43,7 @@ export class WordDto extends CreateWordDto {
 
   static from(word: Word): WordDto {
     return {
+      id: word.id,
       word: word.word,
       definition: word.definition,
       sentence: word.sentence,

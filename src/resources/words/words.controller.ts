@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
+  Param,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -63,5 +65,12 @@ export class WordsController {
   async getWordBank(): Promise<WordDto[]> {
     const words = await this.wordsService.getWordBank();
     return words.map((w) => WordDto.from(w));
+  }
+
+  @Get(":id")
+  async getWord(@Param("id") id: string): Promise<WordDto> {
+    const word = await this.wordsService.getWord(id);
+    if (!word) throw new NotFoundException("Word not found");
+    return WordDto.from(word);
   }
 }

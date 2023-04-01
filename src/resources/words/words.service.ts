@@ -60,12 +60,25 @@ export class WordsService {
     });
   }
 
-  async getWordBank() {
+  getWordBank() {
     return this.wordRepository.find({
       withDeleted: false,
       relations: {
         audios: true,
         images: true,
+      },
+    });
+  }
+
+  getWord(id: string) {
+    return this.wordRepository.findOne({
+      withDeleted: false,
+      relations: {
+        audios: true,
+        images: true,
+      },
+      where: {
+        id: id,
       },
     });
   }
