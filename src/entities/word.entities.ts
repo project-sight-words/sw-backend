@@ -3,11 +3,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from "typeorm";
+
+export type WordDifficulty = "Basic" | "Intermediate" | "Advanced";
 
 @Entity("words")
 @Unique(["word", "definition"])
@@ -29,7 +32,7 @@ export class Word {
     enum: ["Basic", "Intermediate", "Advanced"],
     default: "Basic",
   })
-  difficulty: "Basic" | "Intermediate" | "Advanced" = "Basic";
+  difficulty: WordDifficulty = "Basic";
 
   @Column({ type: "text", nullable: true })
   comment: string | null = null;
@@ -46,10 +49,14 @@ export class Word {
   @Column({ name: "deleted_by", type: "uuid", nullable: true })
   deletedBy: string | null = null;
 
-  @OneToMany(() => Audio, (audio) => audio.word)
+  @OneToMany(() => Audio, (audio) => audio.word, {
+    cascade: true,
+  })
   audios: Audio[] | null = null;
 
-  @OneToMany(() => Image, (image) => image.word)
+  @OneToMany(() => Image, (image) => image.word, {
+    cascade: true,
+  })
   images: Image[] | null = null;
 }
 
@@ -77,6 +84,7 @@ export class Audio {
   wordId!: string;
 
   @ManyToOne(() => Word, (word) => word.audios)
+  @JoinColumn({ name: "word_id" })
   word!: Word;
 }
 
@@ -104,5 +112,6 @@ export class Image {
   wordId!: string;
 
   @ManyToOne(() => Word, (word) => word.images)
+  @JoinColumn({ name: "word_id" })
   word!: Word;
 }
