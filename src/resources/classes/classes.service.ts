@@ -117,7 +117,8 @@ export class ClassesService {
   async updateById(id: string, classDatum: ClassDatum): Promise<Class> {
     // classEntity.updatedAt = new Date(); // Consider using afterUpdate() listener
     // classEntity.updatedBy = null; // TODO: Change after authentication
-    const classEntity = await this.classesRepository.findOneByOrFail({ id });
+    const classEntity = await this.classesRepository.findOneBy({ id });
+    if (!classEntity) throw new NotFoundException();
     const updatedClass = this.classesRepository.merge(classEntity, classDatum);
     await this.classesRepository.save(updatedClass);
     return updatedClass;
