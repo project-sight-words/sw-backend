@@ -11,7 +11,11 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { CreateWordDto, EditWordDto, WordDto } from "resources/words/words.dto";
+import {
+  CreateWordDto,
+  EditWordDto,
+  WordDto,
+} from "resources/words/dto/words.dto";
 import { WordsService } from "resources/words/words.service";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { isValidAudio, isValidImage } from "utils/file";

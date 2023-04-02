@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Audio, Image, Word, WordDifficulty } from "entities/word.entities";
+import { Word, WordDifficulty } from "entities/word.entities";
 import { Repository } from "typeorm";
 import { S3Service } from "resources/media/s3.service";
 
@@ -15,10 +15,6 @@ export class WordsService {
     private readonly s3Service: S3Service,
     @InjectRepository(Word)
     private readonly wordRepository: Repository<Word>,
-    @InjectRepository(Audio)
-    private readonly audioRepository: Repository<Audio>,
-    @InjectRepository(Image)
-    private readonly imageRepository: Repository<Image>,
   ) {}
 
   // TODO include creator ID
@@ -52,6 +48,7 @@ export class WordsService {
       definition: definition,
       sentence: sentence,
       difficulty: difficulty,
+      comment: comment,
       images: [
         {
           link: imageLink,
