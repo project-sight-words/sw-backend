@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import {
   Class,
   ClassCentre,
@@ -117,7 +117,8 @@ export class ClassesService {
   async updateById(id: string, classDatum: ClassDatum): Promise<Class> {
     // classEntity.updatedAt = new Date(); // Consider using afterUpdate() listener
     // classEntity.updatedBy = null; // TODO: Change after authentication
-    const classEntity = await this.classesRepository.findOneByOrFail({ id });
+    const classEntity = await this.classesRepository.findOneBy({ id });
+    if (!classEntity) throw new NotFoundException();
     const updatedClass = this.classesRepository.merge(classEntity, classDatum);
     await this.classesRepository.save(updatedClass);
     return updatedClass;
@@ -160,10 +161,17 @@ export class ClassesService {
     });
   }
 
-  // Why classes got no soft delete??
   async deleteById(id: string): Promise<Class> {
-    const entity = await this.classesRepository.findOneByOrFail({ id });
-    await this.classesRepository.delete({ id });
+    const entity = await this.classesRepository.findOne({
+      relations: {
+        classCentre: true,
+      },
+      where: {
+        id,
+      },
+    });
+    if (!entity) throw new NotFoundException();
+    await this.classesRepository.softRemove(entity);
     return entity;
   }
 }

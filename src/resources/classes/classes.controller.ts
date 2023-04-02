@@ -88,22 +88,12 @@ export class ClassesController {
     @Param("id") id: string,
     @Body() body: UpdateClassDto,
   ): Promise<Class> {
-    // TODO: Confirm return body
-    const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
-    const classEntity = await this.classesService.findOneById(id);
-    if (!classEntity) throw new NotFoundException();
     const entity = await this.classesService.updateById(id, body);
     return entity;
   }
 
   @Delete(":id")
   async deleteById(@Param("id") id: string): Promise<Class> {
-    // TODO: Confirm return body
-    const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
-    const classEntity = await this.classesService.findOneById(id);
-    if (!classEntity) throw new NotFoundException();
     const deletedEntity = await this.classesService.deleteById(id);
     return deletedEntity;
   }
