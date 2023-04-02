@@ -44,7 +44,9 @@ export class Class {
   @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class)
   classTeachers!: ClassTeacher[];
 
-  @OneToOne(() => ClassCentre, (classCentre) => classCentre.class)
+  @OneToOne(() => ClassCentre, (classCentre) => classCentre.class, {
+    cascade: ["soft-remove"],
+  })
   classCentre!: Relation<ClassCentre>;
 
   @DeleteDateColumn({ name: "deleted_at" })
