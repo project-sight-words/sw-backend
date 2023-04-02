@@ -46,6 +46,12 @@ export class Class {
 
   @OneToOne(() => ClassCentre, (classCentre) => classCentre.class)
   classCentre!: Relation<ClassCentre>;
+
+  @DeleteDateColumn({ name: "deleted_at" })
+  deletedAt!: Date | null;
+
+  @Column({ name: "deleted_by", type: "uuid", nullable: true })
+  deletedBy!: string | null;
 }
 
 @Entity("class_teachers")

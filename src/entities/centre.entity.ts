@@ -1,5 +1,6 @@
 import {
   Column,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -23,4 +24,10 @@ export class Centre {
 
   @Column({ name: "updated_by", type: "uuid" })
   updatedBy!: string;
+
+  @DeleteDateColumn({ name: "deleted_at" })
+  deletedAt!: Date | null;
+
+  @Column({ name: "deleted_by", type: "uuid", nullable: true })
+  deletedBy!: string | null;
 }
