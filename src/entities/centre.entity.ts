@@ -16,7 +16,9 @@ export class Centre {
   @Column({ name: "name", type: "varchar", nullable: false })
   name!: string;
 
-  @OneToMany(() => ClassCentre, (classCentre) => classCentre.centre)
+  @OneToMany(() => ClassCentre, (classCentre) => classCentre.centre, {
+    cascade: ["soft-remove"],
+  })
   classCentres!: ClassCentre[];
 
   @UpdateDateColumn({ name: "updated_at", default: new Date() })

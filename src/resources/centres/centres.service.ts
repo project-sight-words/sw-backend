@@ -50,7 +50,15 @@ export class CentresService {
   }
 
   async deleteById(id: string): Promise<Centre> {
-    const centre = await this.centresRepository.findOneBy({ id: id });
+    // Preload classCentres to ensure softRemove cascading
+    const centre = await this.centresRepository.findOne({
+      relations: {
+        classCentres: true,
+      },
+      where: {
+        id,
+      },
+    });
     if (!centre) throw new NotFoundException();
     const entity = await this.centresRepository.softRemove(centre);
     return entity;
