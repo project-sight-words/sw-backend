@@ -1,26 +1,20 @@
-import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import * as Joi from "joi";
+import { AdminsModule } from "resources/admins/admins.module";
 import { AppController } from "app.controller";
 import { AppService } from "app.service";
-import * as Joi from "joi";
 import { AuthenticationModule } from "resources/authentication/authentication.module";
 import { CentresModule } from "resources/centres/centres.module";
 import { ClassesModule } from "resources/classes/classes.module";
-import { StudentsModule } from "resources/students/students.module";
-import { TeachersModule } from "resources/teachers/teachers.module";
-import { UsersModule } from "resources/users/users.module";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { DatabaseModule } from "database/database.module";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { AdminsModule } from "resources/admins/admins.module";
-import { CentresModule } from "resources/centres/centres.module";
-import { ClassesModule } from "resources/classes/classes.module";
-import { WordsModule } from "resources/words/words.module";
-import { MediaModule } from "resources/media/media.module";
 import { LessonsModule } from "resources/lessons/lessons.module";
 import { LessonWordsModule } from "resources/lessonWords/lessonWords.module";
-import { DatabaseModule } from "database/database.module";
-import { AdminsModule } from "resources/admins/admins.module";
+import { MediaModule } from "resources/media/media.module";
+import { Module } from "@nestjs/common";
+import { StudentsModule } from "resources/students/students.module";
+import { TeachersModule } from "resources/teachers/teachers.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { UsersModule } from "resources/users/users.module";
 import { WordsModule } from "resources/words/words.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
