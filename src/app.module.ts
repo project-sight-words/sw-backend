@@ -10,12 +10,12 @@ import { ClassesModule } from "resources/classes/classes.module";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
 import { UsersModule } from "resources/users/users.module";
-import { DatabaseModule } from "database/database.module";
-import { AdminsModule } from "resources/admins/admins.module";
 import { MediaModule } from "resources/media/media.module";
-import { WordsModule } from "resources/words/words.module";
 import { LessonsModule } from "resources/lessons/lessons.module";
 import { LessonWordsModule } from "resources/lessonWords/lessonWords.module";
+import { DatabaseModule } from "database/database.module";
+import { AdminsModule } from "resources/admins/admins.module";
+import { WordsModule } from "resources/words/words.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,

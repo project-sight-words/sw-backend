@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { Centre } from "entities/centre.entities";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -33,16 +33,34 @@ export class CentresService {
     });
     return classes;
   }
-  // CUD not supported
-  // async create(centre: Centre): Promise<Centre> {
-  //   const entity = await this.centresRepository.save(centre);
-  //   return entity;
-  // }
 
-  // async updateById(id: string, centre: Centre): Promise<Centre> {
-  //   centre.updatedAt = new Date();
-  //   // centre.updatedBy = null; // TODO: Change after authentication
-  //   await this.centresRepository.update(id, centre);
-  //   return centre;
-  // }
+  async create(centreName: string): Promise<Centre> {
+    const centre = new Centre();
+    centre.name = centreName;
+    const entity = await this.centresRepository.save(centre);
+    return entity;
+  }
+
+  async updateById(id: string, centreName: string): Promise<Centre> {
+    const centre = await this.centresRepository.findOneBy({ id: id });
+    if (!centre) throw new NotFoundException();
+    centre.name = centreName;
+    const entity = await this.centresRepository.save(centre);
+    return entity;
+  }
+
+  async deleteById(id: string): Promise<Centre> {
+    // Preload classCentres to ensure softRemove cascading
+    const centre = await this.centresRepository.findOne({
+      relations: {
+        classCentres: true,
+      },
+      where: {
+        id,
+      },
+    });
+    if (!centre) throw new NotFoundException();
+    const entity = await this.centresRepository.softRemove(centre);
+    return entity;
+  }
 }

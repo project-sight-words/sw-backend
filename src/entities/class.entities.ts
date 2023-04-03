@@ -45,11 +45,19 @@ export class Class {
   @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class)
   classTeachers!: ClassTeacher[];
 
-  @OneToOne(() => ClassCentre, (classCentre) => classCentre.class)
+  @OneToOne(() => ClassCentre, (classCentre) => classCentre.class, {
+    cascade: ["soft-remove"],
+  })
   classCentre!: Relation<ClassCentre>;
 
   @OneToMany(() => Lesson, (lesson) => lesson.class)
   lessons!: Lesson[];
+
+  @DeleteDateColumn({ name: "deleted_at" })
+  deletedAt!: Date | null;
+
+  @Column({ name: "deleted_by", type: "uuid", nullable: true })
+  deletedBy!: string | null;
 }
 
 @Entity("class_teachers")
