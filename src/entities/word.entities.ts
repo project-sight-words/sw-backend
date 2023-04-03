@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from "typeorm";
+import { LessonWord } from "./lessonWord.entities";
 
 export type WordDifficulty = "Basic" | "Intermediate" | "Advanced";
 
@@ -58,6 +59,9 @@ export class Word {
     cascade: true,
   })
   images: Image[] | null = null;
+
+  @OneToMany(() => LessonWord, (lessonWord) => lessonWord.word)
+  lessonWords: LessonWord[] | null = null;
 }
 
 @Entity("audios")

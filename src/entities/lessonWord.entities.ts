@@ -12,6 +12,7 @@ import {
 import { Expose } from "class-transformer";
 import { Lesson } from "./lesson.entities";
 import { plainToInstance } from "utils/transformer";
+import { Word } from "./word.entities";
 
 @Entity("lesson_words")
 export class LessonWord {
@@ -27,11 +28,10 @@ export class LessonWord {
   @Column({ name: "lesson_id", type: "uuid" })
   lessonId!: string;
 
-  // TODO: Uncomment when words merged in
-  //   @Expose()
-  //   @ManyToOne(() => Word, (word) => word.lessonWords)
-  //   @JoinColumn({ name: "word_id" })
-  //   word!: Word;
+  @Expose()
+  @ManyToOne(() => Word, (word) => word.lessonWords)
+  @JoinColumn({ name: "word_id" })
+  word!: Word;
 
   @Expose()
   @ManyToOne(() => Lesson, (lesson) => lesson.lessonWords)
