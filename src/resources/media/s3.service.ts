@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { CreateMultipartUploadCommand, S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 @Injectable()
 export class S3Service {
@@ -22,7 +22,7 @@ export class S3Service {
     });
   }
 
-  async uploadFile(file: Express.Multer.File): Promise<boolean> {
+  async uploadFile(file: Express.Multer.File): Promise<string | null> {
     const { originalname } = file;
     return await this.uploadToS3(
       file,
@@ -37,7 +37,7 @@ export class S3Service {
     bucket: string,
     name: string,
     mime: string,
-  ): Promise<boolean> {
+  ): Promise<string | null> {
     const params = {
       Bucket: bucket,
       Key: String(name),
@@ -50,12 +50,12 @@ export class S3Service {
     };
 
     try {
-      await this.s3.send(new CreateMultipartUploadCommand(params));
-      return true;
+      await this.s3.send(new PutObjectCommand(params));
+      return `https://${this.bucketName}.s3.amazonaws.com/${String(name)}`;
     } catch (e) {
       if (e instanceof Error)
         this.logger.warn(`Failed to upload file due to ${e.message}`);
-      return false;
+      return null;
     }
   }
 }
