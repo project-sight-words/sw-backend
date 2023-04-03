@@ -5,8 +5,8 @@ import {
   ClassStudent,
   ClassTeacher,
 } from "entities/class.entities";
-import { Repository, DataSource } from "typeorm";
-import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
 import { Student } from "entities/student.entities";
 import { ClassDatum } from "./dto/classes.dto";
 
@@ -23,8 +23,7 @@ export class ClassesService {
     private readonly studentsRepository: Repository<Student>,
     @InjectRepository(ClassCentre)
     private readonly classCentreRepository: Repository<ClassCentre>,
-    @InjectDataSource()
-    private dataSource: DataSource,
+    private readonly dataSource: DataSource,
   ) {}
 
   private readonly loggerService = new Logger("ClassesService");
@@ -100,6 +99,7 @@ export class ClassesService {
       isFormTeacher: isFormTeacher,
     });
   }
+
   async removeTeacherFromClass(classId: string, teacherId: string) {
     await this.ClassTeacherRepository.softDelete({
       classId: classId,
