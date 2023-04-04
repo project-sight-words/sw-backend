@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { LessonWord, LessonWordDatum } from "entities/lessonWord.entities";
+import { LessonWord } from "entities/lessonWord.entities";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -31,11 +31,10 @@ export class LessonWordsService {
   }
 
   async create(
-    lessonWord: LessonWordDatum,
+    wordId: string,
+    lessonId: string,
     createdBy: string | null = null,
   ): Promise<LessonWord> {
-    const { wordId, lessonId } = lessonWord;
-
     return await this.lessonWordRepository.save({
       wordId: wordId,
       lessonId: lessonId,

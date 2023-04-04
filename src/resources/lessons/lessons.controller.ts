@@ -38,7 +38,11 @@ export class LessonsController {
   @Post()
   @HttpCode(201)
   async create(@Body() body: CreateLessonDto): Promise<LessonDto> {
-    const lesson = await this.lessonsService.create(body);
+    const lesson = await this.lessonsService.create(
+      body.startDate,
+      body.endDate,
+      body.classId,
+    );
     return LessonDto.fromLesson(lesson);
   }
 

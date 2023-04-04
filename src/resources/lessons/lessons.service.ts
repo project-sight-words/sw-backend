@@ -31,11 +31,11 @@ export class LessonsService {
   }
 
   async create(
-    lesson: LessonDatum,
+    startDate: Date,
+    endDate: Date,
+    classId: string,
     createdBy: string | null = null,
   ): Promise<Lesson> {
-    const { startDate, endDate, classId } = lesson;
-
     return await this.lessonRepository.save({
       startDate: startDate,
       endDate: endDate,

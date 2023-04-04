@@ -1,5 +1,6 @@
 import * as Uuid from "utils/uuid";
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -33,7 +34,7 @@ export class LessonWordsController {
   @Get(":id")
   async getById(@Param("id") id: string): Promise<LessonWordDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const lessonWord = await this.lessonWordsService.findOneById(id);
     if (!lessonWord) throw new NotFoundException();
@@ -44,14 +45,17 @@ export class LessonWordsController {
   @Post()
   @HttpCode(201)
   async create(@Body() body: CreateLessonWordDto): Promise<LessonWordDto> {
-    const lessonWord = await this.lessonWordsService.create(body);
+    const lessonWord = await this.lessonWordsService.create(
+      body.wordId,
+      body.lessonId,
+    );
     return LessonWordDto.fromLessonWord(lessonWord);
   }
 
   @Delete(":id")
   async deleteById(@Param("id") id: string): Promise<LessonWordDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const lessonWord = await this.lessonWordsService.findOneById(id);
     if (!lessonWord) throw new NotFoundException();
