@@ -35,15 +35,13 @@ export class LessonsService {
     createdBy: string | null = null,
   ): Promise<Lesson> {
     const { startDate, endDate, classId } = lesson;
-    const { generatedMaps } = await this.lessonRepository
-      .createQueryBuilder()
-      .insert()
-      .into(Lesson)
-      .values([{ startDate, endDate, classId, createdBy }])
-      .returning("*")
-      .execute();
 
-    return Lesson.from(generatedMaps)[0];
+    return await this.lessonRepository.save({
+      startDate: startDate,
+      endDate: endDate,
+      classId: classId,
+      createdBy: createdBy,
+    });
   }
 
   async updateById(id: string, updateLesson: LessonDatum) {

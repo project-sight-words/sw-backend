@@ -35,15 +35,12 @@ export class LessonWordsService {
     createdBy: string | null = null,
   ): Promise<LessonWord> {
     const { wordId, lessonId } = lessonWord;
-    const { generatedMaps } = await this.lessonWordRepository
-      .createQueryBuilder()
-      .insert()
-      .into(LessonWord)
-      .values([{ wordId, lessonId, createdBy }])
-      .returning("*")
-      .execute();
 
-    return LessonWord.from(generatedMaps)[0];
+    return await this.lessonWordRepository.save({
+      wordId: wordId,
+      lessonId: lessonId,
+      createdBy: createdBy,
+    });
   }
 
   async deleteById(id: string): Promise<void> {
