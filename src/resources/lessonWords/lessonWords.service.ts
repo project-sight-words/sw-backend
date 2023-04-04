@@ -10,7 +10,7 @@ export class LessonWordsService {
     private readonly lessonWordRepository: Repository<LessonWord>,
   ) {}
 
-  async getByLessonId(lessonId: string): Promise<LessonWord[]> {
+  async findByLessonId(lessonId: string): Promise<LessonWord[]> {
     const lessonWords = await this.lessonWordRepository.find({
       withDeleted: false,
       where: {

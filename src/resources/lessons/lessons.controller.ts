@@ -1,5 +1,6 @@
 import * as Uuid from "utils/uuid";
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -19,14 +20,14 @@ export class LessonsController {
 
   @Get()
   async getByClassId(@Body() body: GetLessonDto): Promise<LessonDto[]> {
-    const lessons = await this.lessonsService.getByClassId(body.classId);
+    const lessons = await this.lessonsService.findByClassId(body.classId);
     return LessonDto.fromLessons(lessons);
   }
 
   @Get(":id")
   async getById(@Param("id") id: string): Promise<LessonDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const lesson = await this.lessonsService.findOneById(id);
     if (!lesson) throw new NotFoundException();
@@ -47,7 +48,7 @@ export class LessonsController {
     @Body() body: CreateLessonDto,
   ): Promise<LessonDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const lesson = await this.lessonsService.updateById(id, body); // TODO: add updatedBy
     if (!lesson) throw new NotFoundException();
@@ -58,7 +59,7 @@ export class LessonsController {
   @Delete(":id")
   async deleteById(@Param("id") id: string): Promise<LessonDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const lesson = await this.lessonsService.findOneById(id);
     if (!lesson) throw new NotFoundException();

@@ -24,7 +24,7 @@ export class LessonWordsController {
   async getByLessonId(
     @Body() body: GetLessonWordDto,
   ): Promise<LessonWordDto[]> {
-    const lessonWords = await this.lessonWordsService.getByLessonId(
+    const lessonWords = await this.lessonWordsService.findByLessonId(
       body.lessonId,
     );
     return LessonWordDto.fromLessonWords(lessonWords);
