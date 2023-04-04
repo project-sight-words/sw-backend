@@ -10,7 +10,7 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { Centre } from "entities/centre.entity";
+import { Centre } from "entities/centre.entities";
 import { plainToInstance } from "utils/transformer";
 import { ClassEntityDto } from "resources/classes/dto/classes.dto";
 import { CreateCentreDto, UpdateCentreDto } from "./dto/centres.dto";

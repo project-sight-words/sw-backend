@@ -1,19 +1,21 @@
 import * as Joi from "joi";
+import { AdminsModule } from "resources/admins/admins.module";
 import { AppController } from "app.controller";
 import { AppService } from "app.service";
 import { AuthenticationModule } from "resources/authentication/authentication.module";
+import { CentresModule } from "resources/centres/centres.module";
+import { ClassesModule } from "resources/classes/classes.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { DatabaseModule } from "database/database.module";
+import { LessonsModule } from "resources/lessons/lessons.module";
+import { LessonWordsModule } from "resources/lessonWords/lessonWords.module";
+import { MediaModule } from "resources/media/media.module";
 import { Module } from "@nestjs/common";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
-import { UsersModule } from "resources/users/users.module";
-import { DatabaseModule } from "database/database.module";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
-import { AdminsModule } from "resources/admins/admins.module";
-import { CentresModule } from "resources/centres/centres.module";
-import { ClassesModule } from "resources/classes/classes.module";
+import { UsersModule } from "resources/users/users.module";
 import { WordsModule } from "resources/words/words.module";
-import { MediaModule } from "resources/media/media.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -52,6 +54,8 @@ const ConfigurationModule = ConfigModule.forRoot({
     DatabaseModule,
     WordsModule,
     MediaModule,
+    LessonsModule,
+    LessonWordsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

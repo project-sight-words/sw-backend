@@ -11,7 +11,6 @@ import {
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UsersService } from "resources/users/users.service";
-import { plainToInstance } from "class-transformer";
 
 @Injectable()
 export class AdminsService {

@@ -13,7 +13,7 @@ import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { Expose } from "class-transformer";
 import { User } from "./user.entities";
-import { ClassTeacher } from "./class.entity";
+import { ClassTeacher } from "./class.entities";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 
 @Entity("teachers")

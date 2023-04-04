@@ -1,5 +1,5 @@
 import { OmitType, PickType } from "@nestjs/mapped-types";
-import { Class } from "entities/class.entity";
+import { Class } from "entities/class.entities";
 import { CentreEntityDto } from "resources/centres/dto/centres.dto";
 import { Expose, Type } from "class-transformer";
 import { Logger } from "@nestjs/common";
@@ -17,7 +17,7 @@ import {
 } from "class-validator";
 import { TeacherEntityDto } from "resources/teachers/dto/teachers.dto";
 import { IsTimeWithTimezone } from "utils/validator";
-import { Centre } from "entities/centre.entity";
+import { Centre } from "entities/centre.entities";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 
 export class ClassEntityDto {
