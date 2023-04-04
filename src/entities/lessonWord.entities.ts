@@ -53,10 +53,6 @@ export class LessonWord {
   @Expose()
   @Column({ name: "deleted_by", type: "uuid", nullable: true })
   deletedBy: string | null = null;
-
-  static from(src: ObjectLiteral[]): LessonWord[] {
-    return plainToInstance(LessonWord, src);
-  }
 }
 
 export class LessonWordDatum {
