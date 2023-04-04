@@ -31,7 +31,7 @@ export class TeachersController {
   @Get(":id")
   async getById(@Param("id") id: string): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const teacherUser = await this.teachersService.findOneById(id);
     if (!teacherUser) throw new NotFoundException();
@@ -59,7 +59,7 @@ export class TeachersController {
     @Body() body: Omit<CreateTeacherDto, "email">,
   ): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const teacherUser = await this.teachersService.updateById(id, body); // TODO: add updatedBy
     if (!teacherUser) throw new NotFoundException();
@@ -70,7 +70,7 @@ export class TeachersController {
   @Delete(":id")
   async deleteById(@Param("id") id: string): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const teacherUser = await this.teachersService.findOneById(id);
     if (!teacherUser) throw new NotFoundException();

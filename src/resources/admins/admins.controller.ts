@@ -28,7 +28,7 @@ export class AdminsController {
   @Get(":id")
   async getById(@Param("id") id: string): Promise<AdminDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const adminUser = await this.adminsService.findOneById(id);
     if (!adminUser) throw new NotFoundException();
@@ -53,7 +53,7 @@ export class AdminsController {
   @Delete(":id")
   async deleteById(@Param("id") id: string): Promise<AdminDto> {
     const isUuid = Uuid.test(id);
-    if (!isUuid) throw new NotFoundException();
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
 
     const adminUser = await this.adminsService.findOneById(id);
     if (!adminUser) throw new NotFoundException();
