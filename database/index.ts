@@ -17,8 +17,10 @@ async function main() {
     });
   } else {
     console.log("Using database url");
-    client = new Client(process.env.DATABASE_URL);
-    client.ssl = true;
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: true,
+    });
   }
 
   console.log(`Connecting to database at ${client.host}:${client.port}`);
