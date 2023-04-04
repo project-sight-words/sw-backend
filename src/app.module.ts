@@ -13,7 +13,7 @@ import { MediaModule } from "resources/media/media.module";
 import { Module } from "@nestjs/common";
 import { StudentsModule } from "resources/students/students.module";
 import { TeachersModule } from "resources/teachers/teachers.module";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { UsersModule } from "resources/users/users.module";
 import { WordsModule } from "resources/words/words.module";
 
@@ -36,6 +36,8 @@ const ConfigurationModule = ConfigModule.forRoot({
     S3_ACCESS_KEY: Joi.string().required(),
     S3_KEY_SECRET: Joi.string().required(),
     S3_BUCKET: Joi.string().required(),
+    IS_HEROKU: Joi.boolean().default(false),
+    DATABASE_URL: Joi.string().default(null),
   }),
 });
 
@@ -56,17 +58,34 @@ const ConfigurationModule = ConfigModule.forRoot({
     LessonWordsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: "postgres" as const,
-        host: configService.getOrThrow<string>("DB_HOST"),
-        port: configService.getOrThrow<number>("DB_PORT"),
-        username: configService.getOrThrow<string>("DB_USER"),
-        password: configService.getOrThrow<string>("DB_PASSWORD"),
-        database: configService.getOrThrow<string>("DB_NAME"),
-        entities: [__dirname + "/entities/**/*.{js,ts}"],
-        logging: true,
-      }),
       inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        if (!configService.getOrThrow<boolean>("IS_HEROKU"))
+          return {
+            type: "postgres" as const,
+            host: configService.getOrThrow<string>("DB_HOST"),
+            port: configService.getOrThrow<number>("DB_PORT"),
+            username: configService.getOrThrow<string>("DB_USER"),
+            password: configService.getOrThrow<string>("DB_PASSWORD"),
+            database: configService.getOrThrow<string>("DB_NAME"),
+            entities: [__dirname + "/entities/**/*.{js,ts}"],
+            logging: true,
+          } as TypeOrmModuleOptions;
+
+        // When Heroku is in use, use the information from DATABASE_URL
+        return {
+          type: "postgres" as const,
+          url: configService.getOrThrow<string>("DATABASE_URL"),
+          ssl: true,
+          extra: {
+            ssl: {
+              rejectUnauthorized: false,
+            },
+          },
+          entities: [__dirname + "/entities/**/*.{js,ts}"],
+          logging: true,
+        } as TypeOrmModuleOptions;
+      },
     }),
   ],
   controllers: [AppController],
