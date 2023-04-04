@@ -19,7 +19,9 @@ async function main() {
     console.log("Using database url");
     client = new Client({
       connectionString: process.env.DATABASE_URL,
-      ssl: true,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     });
   }
 
