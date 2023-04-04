@@ -1,1 +1,1 @@
-web: npm run migrate && npm run start:prod
+web: sh -c 'npm run migrate && npm run start:prod'
