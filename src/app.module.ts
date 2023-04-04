@@ -14,12 +14,6 @@ import { CentresModule } from "resources/centres/centres.module";
 import { ClassesModule } from "resources/classes/classes.module";
 import { WordsModule } from "resources/words/words.module";
 import { MediaModule } from "resources/media/media.module";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { DatabaseModule } from "database/database.module";
-import { AdminsModule } from "resources/admins/admins.module";
-import { CentresModule } from "resources/centres/centres.module";
-import { ClassesModule } from "resources/classes/classes.module";
-import { WordsModule } from "resources/words/words.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
