@@ -58,7 +58,7 @@ const ConfigurationModule = ConfigModule.forRoot({
       useFactory: (configService: ConfigService) => {
         if (!configService.getOrThrow<boolean>("IS_HEROKU"))
           return {
-            type: "postgres" as "postgres",
+            type: "postgres" as const,
             host: configService.getOrThrow<string>("DB_HOST"),
             port: configService.getOrThrow<number>("DB_PORT"),
             username: configService.getOrThrow<string>("DB_USER"),
@@ -70,7 +70,7 @@ const ConfigurationModule = ConfigModule.forRoot({
 
         // When Heroku is in use, use the information from DATABASE_URL
         return {
-          type: "postgres" as "postgres",
+          type: "postgres" as const,
           url: configService.getOrThrow<string>("DATABASE_URL"),
           ssl: true,
           extra: {
