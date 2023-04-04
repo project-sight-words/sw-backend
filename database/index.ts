@@ -6,17 +6,19 @@ import { migrate } from "postgres-migrations";
 dotenv.config();
 
 async function main() {
-  const isHeroku = !!process.env.IS_HEROKU;
-
-  const herokuClient = new Client(process.env.DATABASE_URL);
-
-  const client = isHeroku ? herokuClient : new Client({
-    host: process.env.DB_HOST ?? "sw-db",
-    port: parseInt(process.env.DB_PORT ?? "5432"),
-    user: process.env.DB_USER ?? "postgres",
-    password: process.env.DB_PASSWORD ?? "postgres",
-    database: process.env.DB_NAME ?? "sw-db",
-  });
+  let client: Client;
+  if (process.env.IS_HEROKU === "false") {
+    client = new Client({
+      host: process.env.DB_HOST ?? "sw-db",
+      port: parseInt(process.env.DB_PORT ?? "5432"),
+      user: process.env.DB_USER ?? "postgres",
+      password: process.env.DB_PASSWORD ?? "postgres",
+      database: process.env.DB_NAME ?? "sw-db",
+    });
+  } else {
+    console.log("Using database url");
+    client = new Client(process.env.DATABASE_URL);
+  }
 
   console.log(`Connecting to database at ${client.host}:${client.port}`);
   await client.connect();
