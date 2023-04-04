@@ -6,7 +6,11 @@ import { migrate } from "postgres-migrations";
 dotenv.config();
 
 async function main() {
-  const client = new Client({
+  const isHeroku = !!process.env.IS_HEROKU;
+
+  const herokuClient = new Client(process.env.DATABASE_URL);
+
+  const client = isHeroku ? herokuClient : new Client({
     host: process.env.DB_HOST ?? "sw-db",
     port: parseInt(process.env.DB_PORT ?? "5432"),
     user: process.env.DB_USER ?? "postgres",
