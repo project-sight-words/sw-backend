@@ -29,12 +29,23 @@ export class WordAttemptsService {
   }
 
   async get() {
-    const entities = await this.wordAttemptsRepository.find();
+    const entities = await this.wordAttemptsRepository.find({
+      relations: {
+        quizAttempt: true,
+      },
+    });
     return entities;
   }
 
   async getById(id: string) {
-    const entity = await this.wordAttemptsRepository.findOneBy({ id });
+    const entity = await this.wordAttemptsRepository.findOne({
+      relations: {
+        quizAttempt: true,
+      },
+      where: {
+        id,
+      },
+    });
     if (!entity) throw new NotFoundException();
     return entity;
   }

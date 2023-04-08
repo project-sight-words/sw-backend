@@ -13,6 +13,7 @@ import {
 import { WordAttemptsService } from "./wordAttempts.service";
 import {
   CreateWordAttemptDto,
+  DetailedWordAttemptDto,
   UpdateWordAttemptDto,
   WordAttemptDto,
 } from "./dto/wordAttempt.dto";
@@ -36,15 +37,15 @@ export class WordAttemptsController {
   }
 
   @Get()
-  async findAll(): Promise<WordAttemptDto[]> {
+  async findAll(): Promise<DetailedWordAttemptDto[]> {
     const entities = await this.wordAttemptsService.get();
-    return plainToInstance(WordAttemptDto, entities);
+    return DetailedWordAttemptDto.fromEntities(entities);
   }
 
   @Get(":id")
-  async findOne(@Param("id") id: string): Promise<WordAttemptDto> {
+  async findOne(@Param("id") id: string): Promise<DetailedWordAttemptDto> {
     const entity = await this.wordAttemptsService.getById(id);
-    return plainToInstance(WordAttemptDto, entity);
+    return DetailedWordAttemptDto.fromEntity(entity);
   }
 
   @Put(":id")
