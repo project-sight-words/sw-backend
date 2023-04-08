@@ -16,6 +16,7 @@ import { TeachersModule } from "resources/teachers/teachers.module";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { UsersModule } from "resources/users/users.module";
 import { WordsModule } from "resources/words/words.module";
+import { WordAttemptsModule } from "resources/wordAttempts/wordAttempts.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -56,6 +57,7 @@ const ConfigurationModule = ConfigModule.forRoot({
     MediaModule,
     LessonsModule,
     LessonWordsModule,
+    WordAttemptsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
