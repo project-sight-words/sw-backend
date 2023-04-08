@@ -17,9 +17,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { LessonWord } from "./lessonWord.entities";
+import { QuizAttempt } from "./quizAttempt.entity";
 import { Student } from "./student.entities";
 
 @Entity("word_attempts")
@@ -64,4 +66,7 @@ export class WordAttempt {
     nullable: false,
   })
   imageApprovalStatus!: ImageApprovalStatus;
+
+  @OneToOne(() => QuizAttempt, (quizAttempt) => quizAttempt.wordAttempt)
+  quizAttempt!: QuizAttempt;
 }

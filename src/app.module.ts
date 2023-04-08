@@ -17,6 +17,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { UsersModule } from "resources/users/users.module";
 import { WordsModule } from "resources/words/words.module";
 import { WordAttemptsModule } from "resources/wordAttempts/wordAttempts.module";
+import { QuizAttemptsModule } from "resources/quizAttempts/quizAttempts.module";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -58,6 +59,7 @@ const ConfigurationModule = ConfigModule.forRoot({
     LessonsModule,
     LessonWordsModule,
     WordAttemptsModule,
+    QuizAttemptsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
