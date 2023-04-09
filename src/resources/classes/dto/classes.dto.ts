@@ -88,7 +88,8 @@ export class DetailedClassDto extends ClassEntityDto {
 
     const centre = plainToInstance(
       CentreEntityDto,
-      detailedClass.classCentre.centre,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      detailedClass.classCentre?.centre,
     );
 
     const detailedClassDto = {
