@@ -11,16 +11,16 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { CreateLessonDto, GetLessonDto, LessonDto } from "./dto/lessons.dto";
+import { CreateLessonDto, LessonDto } from "./dto/lessons.dto";
 import { LessonsService } from "./lessons.service";
 
 @Controller("/lessons")
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
-  @Get()
-  async getByClassId(@Body() body: GetLessonDto): Promise<LessonDto[]> {
-    const lessons = await this.lessonsService.findByClassId(body.classId);
+  @Get(":id/class")
+  async getByClassId(@Param("id") classId: string): Promise<LessonDto[]> {
+    const lessons = await this.lessonsService.findByClassId(classId);
     return LessonDto.fromLessons(lessons);
   }
 
