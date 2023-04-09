@@ -23,10 +23,3 @@ export class LessonWordDto extends LessonWordDatum {
     );
   }
 }
-
-export class GetLessonWordDto {
-  @Expose({ name: "lesson_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  lessonId!: string;
-}

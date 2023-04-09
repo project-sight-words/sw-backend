@@ -11,23 +11,15 @@ import {
   Post,
 } from "@nestjs/common";
 import { LessonWordsService } from "./lessonWords.service";
-import {
-  CreateLessonWordDto,
-  GetLessonWordDto,
-  LessonWordDto,
-} from "./dto/lessonWords.dto";
+import { CreateLessonWordDto, LessonWordDto } from "./dto/lessonWords.dto";
 
 @Controller("/lessonwords")
 export class LessonWordsController {
   constructor(private readonly lessonWordsService: LessonWordsService) {}
 
-  @Get()
-  async getByLessonId(
-    @Body() body: GetLessonWordDto,
-  ): Promise<LessonWordDto[]> {
-    const lessonWords = await this.lessonWordsService.findByLessonId(
-      body.lessonId,
-    );
+  @Get("/:id/lesson")
+  async getByLessonId(@Param("id") lessonId: string): Promise<LessonWordDto[]> {
+    const lessonWords = await this.lessonWordsService.findByLessonId(lessonId);
     return LessonWordDto.fromLessonWords(lessonWords);
   }
 
