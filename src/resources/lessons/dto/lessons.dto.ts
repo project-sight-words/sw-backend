@@ -22,10 +22,3 @@ export class LessonDto extends LessonDatum {
     return lessons.map((lesson) => LessonDto.fromLesson(lesson));
   }
 }
-
-export class GetLessonDto {
-  @Expose({ name: "class_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  classId!: string;
-}
