@@ -10,6 +10,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from "@nestjs/common";
 import { CreateLessonDto, LessonDto } from "./dto/lessons.dto";
 import { LessonsService } from "./lessons.service";
@@ -18,8 +19,8 @@ import { LessonsService } from "./lessons.service";
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
-  @Get(":id/class")
-  async getByClassId(@Param("id") classId: string): Promise<LessonDto[]> {
+  @Get()
+  async getByClassId(@Query("classId") classId: string): Promise<LessonDto[]> {
     const lessons = await this.lessonsService.findByClassId(classId);
     return LessonDto.fromLessons(lessons);
   }

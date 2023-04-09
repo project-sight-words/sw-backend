@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
 } from "@nestjs/common";
 import { LessonWordsService } from "./lessonWords.service";
 import { CreateLessonWordDto, LessonWordDto } from "./dto/lessonWords.dto";
@@ -17,8 +18,10 @@ import { CreateLessonWordDto, LessonWordDto } from "./dto/lessonWords.dto";
 export class LessonWordsController {
   constructor(private readonly lessonWordsService: LessonWordsService) {}
 
-  @Get("/:id/lesson")
-  async getByLessonId(@Param("id") lessonId: string): Promise<LessonWordDto[]> {
+  @Get()
+  async getByLessonId(
+    @Query("lessonId") lessonId: string,
+  ): Promise<LessonWordDto[]> {
     const lessonWords = await this.lessonWordsService.findByLessonId(lessonId);
     return LessonWordDto.fromLessonWords(lessonWords);
   }
