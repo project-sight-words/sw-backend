@@ -39,12 +39,17 @@ export class QuizAttemptsService {
 
   async unsubmit(id: string) {
     const quizAttempt = await this.getOneById(id);
-    quizAttempt.scoreOne = null;
-    quizAttempt.scoreTwo = null;
-    quizAttempt.attemptedAt = null;
-    quizAttempt.unsubmittedAt = new Date();
-    quizAttempt.unsubmittedBy = null;
-    const entity = await this.quizAttemptsRepository.save(quizAttempt);
+    // Delete Quiz Attempt for now to simplify flow
+    // No current use case for keeping track of unsubmission history
+
+    // quizAttempt.scoreOne = null;
+    // quizAttempt.scoreTwo = null;
+    // quizAttempt.attemptedAt = null;
+    // quizAttempt.unsubmittedAt = new Date();
+    // quizAttempt.unsubmittedBy = null;
+    // const entity = await this.quizAttemptsRepository.save(quizAttempt);
+
+    const entity = await this.quizAttemptsRepository.remove(quizAttempt);
     return entity;
   }
 }
