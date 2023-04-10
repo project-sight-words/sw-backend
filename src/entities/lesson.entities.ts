@@ -7,12 +7,10 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  ObjectLiteral,
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Expose } from "class-transformer";
-import { plainToInstance } from "utils/transformer";
 import { LessonWord } from "./lessonWord.entities";
 
 @Entity("lessons")
