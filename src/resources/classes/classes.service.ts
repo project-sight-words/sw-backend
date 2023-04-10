@@ -7,8 +7,9 @@ import {
 } from "entities/class.entities";
 import { DataSource, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Student } from "entities/student.entities";
+import { Student, StudentUser } from "entities/student.entities";
 import { ClassDatum } from "./dto/classes.dto";
+import { Teacher, TeacherUser } from "entities/teacher.entities";
 
 @Injectable()
 export class ClassesService {
@@ -21,6 +22,8 @@ export class ClassesService {
     private readonly ClassTeacherRepository: Repository<ClassTeacher>,
     @InjectRepository(Student)
     private readonly studentsRepository: Repository<Student>,
+    @InjectRepository(Teacher)
+    private readonly teachersRepository: Repository<Teacher>,
     @InjectRepository(ClassCentre)
     private readonly classCentreRepository: Repository<ClassCentre>,
     private readonly dataSource: DataSource,
@@ -124,14 +127,36 @@ export class ClassesService {
     return updatedClass;
   }
 
-  async getStudentssInClass(classId: string): Promise<Student[]> {
-    const students = await this.studentsRepository.find({
-      where: {
-        classStudents: {
-          classId: classId,
-        },
-      },
-    });
+  async getTeachersInClass(classId: string): Promise<TeacherUser[]> {
+    const teachers = await this.dataSource
+      .getRepository(TeacherUser)
+      .createQueryBuilder("teacherUser")
+      .innerJoin(
+        ClassTeacher,
+        "classTeacher",
+        "classTeacher.teacherId = teacherUser.teacherId",
+      )
+      .innerJoinAndSelect("teacherUser.teacher", "teacher")
+      .innerJoinAndSelect("teacherUser.user", "user")
+      .where("classTeacher.classId = :classId", { classId })
+      .getMany();
+
+    return teachers;
+  }
+
+  async getStudentsInClass(classId: string): Promise<StudentUser[]> {
+    const students = await this.dataSource
+      .getRepository(StudentUser)
+      .createQueryBuilder("studentUser")
+      .innerJoin(
+        ClassStudent,
+        "classStudent",
+        "classStudent.studentId = studentUser.studentId",
+      )
+      .innerJoinAndSelect("studentUser.student", "student")
+      .innerJoinAndSelect("studentUser.user", "user")
+      .where("classStudent.classId = :classId", { classId })
+      .getMany();
 
     return students;
   }

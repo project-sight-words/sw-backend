@@ -89,6 +89,10 @@ export class StudentDto extends CreateStudentDto {
       studentId: studentUser.student.studentId,
     };
   }
+
+  static fromMany(studentUsers: StudentUser[]): StudentDto[] {
+    return studentUsers.map((studentUser) => StudentDto.from(studentUser));
+  }
 }
 
 export class CreateStudentErrorDto {

@@ -21,8 +21,8 @@ import {
   DetailedClassDto,
   UpdateClassDto,
 } from "./dto/classes.dto";
-import { StudentEntityDto } from "resources/students/dto/students.dto";
-import { plainToInstance } from "utils/transformer";
+import { StudentDto } from "resources/students/dto/students.dto";
+import { TeacherDto } from "resources/teachers/dto/teachers.dto";
 
 @Controller("classes")
 export class ClassesController {
@@ -122,16 +122,21 @@ export class ClassesController {
     if (!classIdIsUuid || !studentIdIsUuid) throw new NotFoundException();
     const classEntity = await this.classesService.findOneById(classId);
     const student = await this.studentsService.findOneById(studentId);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!classEntity || !student) throw new NotFoundException();
     await this.classesService.removeStudentFromClass(classId, studentId);
   }
 
   @Get(":id/students")
-  async getClassStudents(
-    @Param("id") classId: string,
-  ): Promise<StudentEntityDto[]> {
-    const students = await this.classesService.getStudentssInClass(classId);
-    return plainToInstance(StudentEntityDto, students);
+  async getClassStudents(@Param("id") classId: string): Promise<StudentDto[]> {
+    const students = await this.classesService.getStudentsInClass(classId);
+    return StudentDto.fromMany(students);
+  }
+
+  @Get(":id/teachers")
+  async getClassTeachers(@Param("id") classId: string): Promise<TeacherDto[]> {
+    const teachers = await this.classesService.getTeachersInClass(classId);
+    return TeacherDto.fromTeacherUsers(teachers);
   }
 
   @Post(":id/centre")
