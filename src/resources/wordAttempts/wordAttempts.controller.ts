@@ -18,7 +18,7 @@ import {
   WordAttemptDto,
 } from "./dto/wordAttempt.dto";
 import { plainToInstance } from "utils/transformer";
-import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { isValidImage } from "utils/file";
 
 @Controller("word_attempts")
@@ -62,9 +62,7 @@ export class WordAttemptsController {
   }
 
   @Post(":id/personalised_image")
-  @UseInterceptors(
-    FileFieldsInterceptor([{ name: "personalisedImage", maxCount: 1 }]),
-  )
+  @UseInterceptors(FileInterceptor("personalisedImage"))
   async uploadPersonalisedImage(
     @Param("id") id: string,
     @UploadedFile() personalisedImage: Express.Multer.File,
