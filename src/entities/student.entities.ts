@@ -15,6 +15,7 @@ import { instanceToPlain, plainToInstance } from "utils/transformer";
 import { ClassStudent } from "./class.entities";
 import { CreateStamp, DeleteStamp, Identifier, UpdateStamp } from "./common";
 import { User } from "./user.entities";
+import { WordAttempt } from "./wordAttempt.entity";
 
 @Entity("students")
 export class Student {
@@ -38,6 +39,9 @@ export class Student {
 
   @OneToMany(() => ClassStudent, (studentClass) => studentClass.student)
   classStudents: ClassStudent[] | null = null;
+
+  @OneToMany(() => WordAttempt, (wordAttempt) => wordAttempt.student)
+  wordAttempts: WordAttempt[] | null = null;
 }
 
 @Entity("student_users")

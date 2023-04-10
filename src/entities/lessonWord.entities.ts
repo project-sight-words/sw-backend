@@ -6,13 +6,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  ObjectLiteral,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Expose } from "class-transformer";
 import { Lesson } from "./lesson.entities";
-import { plainToInstance } from "utils/transformer";
 import { Word } from "./word.entities";
+import { WordAttempt } from "./wordAttempt.entity";
 
 @Entity("lesson_words")
 export class LessonWord {
@@ -41,6 +41,9 @@ export class LessonWord {
   @Expose()
   @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
+
+  @OneToMany(() => WordAttempt, (wordAttempt) => wordAttempt.lessonWord)
+  attempts!: WordAttempt[];
 
   @Expose()
   @Column({ name: "created_by", type: "uuid", nullable: true })
