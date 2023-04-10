@@ -14,6 +14,7 @@ import {
   WordAttempt,
 } from "entities/wordAttempt.entity";
 import { QuizAttemptDto } from "resources/quizAttempts/dto/quizAttempt.dto";
+import { StudentDto } from "resources/students/dto/students.dto";
 import { plainToInstance } from "utils/transformer";
 
 export class UpdateWordAttemptDto {
@@ -59,10 +60,15 @@ export class DetailedWordAttemptDto extends WordAttemptDto {
   @IsInstance(QuizAttemptDto)
   quizAttempt!: QuizAttemptDto;
 
+  @Expose()
+  @IsInstance(StudentDto)
+  student!: StudentDto;
+
   static fromEntity(entity: WordAttempt) {
     const detailedWordAttemptDto = {
       ...entity,
       quizAttempt: plainToInstance(QuizAttemptDto, entity.quizAttempt),
+      student: plainToInstance(StudentDto, entity.student),
     };
     return plainToInstance(DetailedWordAttemptDto, detailedWordAttemptDto);
   }
