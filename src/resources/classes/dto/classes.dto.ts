@@ -63,10 +63,13 @@ export class ClassWithCentreDto extends ClassEntityDto {
   centre?: CentreEntityDto;
 
   static fromClass(classEntity: Class): ClassWithCentreDto {
+    let centre = undefined;
+    if (!!classEntity.classCentre)
+      centre = plainToInstance(CentreEntityDto, classEntity.classCentre.centre);
     return {
       ...classEntity,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      centre: plainToInstance(CentreEntityDto, classEntity.classCentre?.centre),
+      centre: centre,
     };
   }
 
