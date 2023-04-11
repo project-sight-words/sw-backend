@@ -13,7 +13,7 @@ import {
 import { Centre } from "entities/centre.entities";
 import { plainToInstance } from "utils/transformer";
 import { ClassEntityDto } from "resources/classes/dto/classes.dto";
-import { CreateCentreDto, UpdateCentreDto } from "./dto/centres.dto";
+import { CentreEntityDto, UpdateCentreDto } from "./dto/centres.dto";
 
 @Controller("centres")
 export class CentresController {
@@ -46,9 +46,9 @@ export class CentresController {
   }
 
   @Post()
-  async create(@Body() body: CreateCentreDto): Promise<Centre> {
-    const entity = await this.centresService.create(body.name);
-    return entity;
+  async create(@Body() body: string[]): Promise<CentreEntityDto[]> {
+    const entities = await this.centresService.createMany(body);
+    return CentreEntityDto.fromMany(entities);
   }
 
   @Put(":id")
