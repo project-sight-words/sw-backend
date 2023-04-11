@@ -41,7 +41,6 @@ export class DetailedTeacherDto extends TeacherDto {
   classes!: ClassWithCentreDto[];
 
   static fromTeacherUser(teacherUser: TeacherUser): DetailedTeacherDto {
-    console.log(teacherUser.teacher.classTeachers.map((t) => t.class));
     return {
       ...TeacherDto.fromTeacherUser(teacherUser),
       classes: ClassWithCentreDto.fromClasses(

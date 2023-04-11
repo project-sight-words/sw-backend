@@ -34,7 +34,6 @@ export class TeachersController {
 
   @Get("/mass")
   async getWithClassesAndCentres(): Promise<DetailedTeacherDto[]> {
-    console.log("test");
     const teacherUsers = await this.teachersService.getWithClassesAndCentres();
     return DetailedTeacherDto.fromTeacherUsers(teacherUsers);
   }
