@@ -62,8 +62,9 @@ export class ClassWithCentreDto extends ClassEntityDto {
   @IsInstance(CentreEntityDto)
   centre?: CentreEntityDto;
 
-  static fromClass(classEntity: Class): ClassWithCentreDto {
-    console.log(classEntity);
+  // TODO Properly handle null cases
+  static fromClass(classEntity: Class): ClassWithCentreDto | null {
+    if (!classEntity) return null;
     let centre = undefined;
     if (!!classEntity && !!classEntity.classCentre)
       centre = plainToInstance(CentreEntityDto, classEntity.classCentre.centre);
@@ -75,7 +76,14 @@ export class ClassWithCentreDto extends ClassEntityDto {
   }
 
   static fromClasses(classEntities: Class[]): ClassWithCentreDto[] {
-    return classEntities.map((classEntity) => this.fromClass(classEntity));
+    const entities: ClassWithCentreDto[] = [];
+    for (const entity of classEntities.map((classEntity) =>
+      this.fromClass(classEntity),
+    )) {
+      if (!!entity) entities.push(entity);
+    }
+
+    return entities;
   }
 }
 
