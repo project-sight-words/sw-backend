@@ -1,6 +1,6 @@
 import { PickType } from "@nestjs/mapped-types";
-import { Expose } from "class-transformer";
-import { IsNotEmpty, IsUUID } from "class-validator";
+import { Expose, Type } from "class-transformer";
+import { IsArray, IsNotEmpty, IsUUID, ValidateNested } from "class-validator";
 import { LessonWord } from "entities/lessonWord.entities";
 import { DetailedWordAttemptDto } from "resources/wordAttempts/dto/wordAttempt.dto";
 import { WordDto } from "resources/words/dto/words.dto";
@@ -47,11 +47,15 @@ export class DetailedLessonWordDto {
   id!: string;
 
   @Expose()
-  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WordDto)
   word!: WordDto;
 
   @Expose()
-  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DetailedLessonWordDto)
   attempts!: DetailedWordAttemptDto[];
 
   static fromLessonWord(lessonWord: LessonWord): DetailedLessonWordDto {
