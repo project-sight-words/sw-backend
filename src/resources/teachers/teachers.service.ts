@@ -39,6 +39,23 @@ export class TeachersService {
     return teacherUsers;
   }
 
+  async getWithClassesAndCentres(): Promise<TeacherUser[]> {
+    const teacherUsers = await this.teacherUserRepository.find({
+      relations: {
+        user: true,
+        teacher: {
+          classTeachers: {
+            class: {
+              classCentre: { centre: true },
+            },
+          },
+        },
+      },
+      withDeleted: false,
+    });
+    return teacherUsers;
+  }
+
   async get(): Promise<TeacherUser[]> {
     const teacherUsers = await this.teacherUserRepository.find({
       relations: {
