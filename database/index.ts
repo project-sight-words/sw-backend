@@ -28,9 +28,14 @@ async function main() {
   console.log(`Connecting to database at ${client.host}:${client.port}`);
   await client.connect();
 
+  const migrations_path =
+    process.env.NODE_ENV === "production"
+      ? "../../database/migrations"
+      : "./migrations";
+
   try {
     console.log("Starting database migrations");
-    await migrate({ client }, join(__dirname, "./migrations"));
+    await migrate({ client }, join(__dirname, migrations_path));
   } finally {
     console.log("Closing database client");
     await client.end();
