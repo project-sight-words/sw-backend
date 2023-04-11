@@ -211,7 +211,6 @@ export class StudentsService {
       },
       withDeleted: false,
     });
-    console.log(studentUsers);
     return studentUsers;
   }
 
