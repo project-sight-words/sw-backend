@@ -10,6 +10,7 @@ import {
   DataSource,
   EntityManager,
   In,
+  IsNull,
   Repository,
   SelectQueryBuilder,
 } from "typeorm";
@@ -206,6 +207,13 @@ export class StudentsService {
             class: {
               classCentre: { centre: true },
             },
+          },
+        },
+      },
+      where: {
+        classStudents: {
+          class: {
+            deletedAt: IsNull(),
           },
         },
       },

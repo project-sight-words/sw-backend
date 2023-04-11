@@ -4,6 +4,7 @@ import {
   EntityManager,
   FindManyOptions,
   In,
+  IsNull,
   Repository,
   SelectQueryBuilder,
 } from "typeorm";
@@ -47,6 +48,15 @@ export class TeachersService {
           classTeachers: {
             class: {
               classCentre: { centre: true },
+            },
+          },
+        },
+      },
+      where: {
+        teacher: {
+          classTeachers: {
+            class: {
+              deletedAt: IsNull(),
             },
           },
         },
@@ -154,16 +164,19 @@ export class TeachersService {
 
     const insertedTeacherUsers: { id: string }[] = (await querier.query(
       `
-        INSERT INTO teacher_users (user_id, teacher_id)
-        SELECT p.uid, p.tid
-        FROM (SELECT users.id AS uid, teachers.id AS tid, users.email AS email, teachers.staff_id AS staff_id
-              FROM teachers,
-                   users) AS p
-                 JOIN (VALUES ${parameters.join(", ")}) AS t (e, s)
-                      ON t.e = p.email AND t.s = p.staff_id
-        ON CONFLICT (user_id) WHERE deleted_at IS NULL
-            DO UPDATE SET user_id = excluded.user_id
-        RETURNING id;
+          INSERT INTO teacher_users (user_id, teacher_id)
+          SELECT p.uid, p.tid
+          FROM (SELECT users.id AS uid, teachers.id AS tid, users.email AS email, teachers.staff_id AS staff_id
+                FROM teachers,
+                     users) AS p
+                   JOIN (VALUES ${parameters.join(", ")}) AS t (e, s)
+                        ON t.e = p.email AND t.s = p.staff_id
+          ON CONFLICT (user_id)
+          WHERE deleted_at IS NULL
+              DO
+          UPDATE
+          SET user_id = excluded.user_id
+          RETURNING id;
       `,
       teachers.map((t) => [t.email, t.staffId]).flat(),
     )) as { id: string }[];
