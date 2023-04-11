@@ -40,6 +40,7 @@ export class TeachersService {
     return teacherUsers;
   }
 
+  // TODO perform filtering with query instead
   async getWithClassesAndCentres(): Promise<TeacherUser[]> {
     const teacherUsers = await this.teacherUserRepository.find({
       relations: {
@@ -63,7 +64,12 @@ export class TeachersService {
       },
       withDeleted: false,
     });
-    return teacherUsers;
+    return teacherUsers.map((tu) => {
+      tu.teacher.classTeachers = tu.teacher.classTeachers.filter(
+        (ct) => !ct.deletedAt,
+      );
+      return tu;
+    });
   }
 
   async get(): Promise<TeacherUser[]> {

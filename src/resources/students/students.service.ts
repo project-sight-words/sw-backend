@@ -198,8 +198,9 @@ export class StudentsService {
     return studentUsers.map((su) => StudentDto.from(su));
   }
 
+  // TODO perform filtering with query instead
   async getWithClassesAndCentres(): Promise<StudentUser[]> {
-    const studentUsers = this.studentUserRepository.find({
+    const studentUsers = await this.studentUserRepository.find({
       relations: {
         user: true,
         student: {
@@ -219,7 +220,11 @@ export class StudentsService {
       },
       withDeleted: false,
     });
-    return studentUsers;
+    return studentUsers.map((su) => {
+      if (!!su.classStudents)
+        su.classStudents = su.classStudents.filter((cs) => !cs.deletedAt);
+      return su;
+    });
   }
 
   async createManyStudentsIfNotExists(
