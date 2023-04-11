@@ -1,12 +1,21 @@
-import { Exclude, Expose } from "class-transformer";
+import { Exclude, Expose, Type } from "class-transformer";
 import { Identifier } from "entities/common";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
-import { IsEmail, IsInt, IsNotEmpty, IsString, IsUUID } from "class-validator";
+import {
+  IsArray,
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from "class-validator";
 import {
   StudentDatum,
   StudentEntity,
   StudentUser,
 } from "entities/student.entities";
+import { ClassWithCentreDto } from "resources/classes/dto/classes.dto";
 
 export class StudentDatumDto extends StudentDatum {
   static fromObject(object: object): StudentDatumDto {
@@ -104,4 +113,30 @@ export class CreateStudentErrorDto {
   @IsString()
   @IsNotEmpty()
   message!: string;
+}
+
+export class DetailedStudentDto extends StudentDto {
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClassWithCentreDto)
+  classes!: ClassWithCentreDto[];
+
+  static from(studentUser: StudentUser): DetailedStudentDto {
+    const classStudents = studentUser.student.classStudents;
+    let classes: ClassWithCentreDto[] = [];
+    if (!!classStudents) {
+      classes = ClassWithCentreDto.fromClasses(
+        classStudents.map((cs) => cs.class),
+      );
+    }
+    return {
+      ...StudentDto.from(studentUser),
+      classes: classes,
+    };
+  }
+
+  static fromMany(studentUsers: StudentUser[]): DetailedStudentDto[] {
+    return studentUsers.map((su) => DetailedStudentDto.from(su));
+  }
 }

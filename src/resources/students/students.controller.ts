@@ -14,6 +14,7 @@ import {
 } from "@nestjs/common";
 import {
   CreateStudentDto,
+  DetailedStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
@@ -26,6 +27,12 @@ export class StudentsController {
   async get(): Promise<StudentDto[]> {
     const students = await this.studentsService.get();
     return students;
+  }
+
+  @Get("/mass")
+  async getWithClassesAndCentres() {
+    const students = await this.studentsService.getWithClassesAndCentres();
+    return DetailedStudentDto.fromMany(students);
   }
 
   @Get(":id")

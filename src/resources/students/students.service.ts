@@ -197,6 +197,24 @@ export class StudentsService {
     return studentUsers.map((su) => StudentDto.from(su));
   }
 
+  async getWithClassesAndCentres(): Promise<StudentUser[]> {
+    console.log("hi");
+    const studentUsers = this.studentUserRepository.find({
+      relations: {
+        user: true,
+        student: {
+          classStudents: {
+            class: {
+              classCentre: { centre: true },
+            },
+          },
+        },
+      },
+      withDeleted: false,
+    });
+    return studentUsers;
+  }
+
   async createManyStudentsIfNotExists(
     students: CreateStudentDto[],
     queryBuilder: SelectQueryBuilder<Student> = this.studentRepository.createQueryBuilder(),
