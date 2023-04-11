@@ -127,7 +127,9 @@ export class DetailedStudentDto extends StudentDto {
     let classes: ClassWithCentreDto[] = [];
     if (!!classStudents) {
       classes = ClassWithCentreDto.fromClasses(
-        classStudents.filter((cs) => !!cs).map((cs) => cs.class),
+        classStudents
+          .filter((cs) => !!cs && !cs.deletedAt)
+          .map((cs) => cs.class),
       );
     }
     return {

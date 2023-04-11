@@ -44,7 +44,9 @@ export class DetailedTeacherDto extends TeacherDto {
     return {
       ...TeacherDto.fromTeacherUser(teacherUser),
       classes: ClassWithCentreDto.fromClasses(
-        teacherUser.teacher.classTeachers.map((ct) => ct.class),
+        teacherUser.teacher.classTeachers
+          .filter((ct) => !!ct && !ct.deletedAt)
+          .map((ct) => ct.class),
       ),
     };
   }
