@@ -64,7 +64,7 @@ export class ClassWithCentreDto extends ClassEntityDto {
 
   static fromClass(classEntity: Class): ClassWithCentreDto {
     let centre = undefined;
-    if (!!classEntity.classCentre)
+    if (!!classEntity && !!classEntity.classCentre)
       centre = plainToInstance(CentreEntityDto, classEntity.classCentre.centre);
     return {
       ...classEntity,

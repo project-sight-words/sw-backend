@@ -198,7 +198,6 @@ export class StudentsService {
   }
 
   async getWithClassesAndCentres(): Promise<StudentUser[]> {
-    console.log("hi");
     const studentUsers = this.studentUserRepository.find({
       relations: {
         user: true,
@@ -212,6 +211,7 @@ export class StudentsService {
       },
       withDeleted: false,
     });
+    console.log(studentUsers);
     return studentUsers;
   }
 
