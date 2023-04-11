@@ -1,4 +1,3 @@
-import { IsNotEmpty, IsUUID } from "class-validator";
 import {
   Column,
   CreateDateColumn,
@@ -42,6 +41,7 @@ export class LessonWord {
   @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
 
+  @Expose()
   @OneToMany(() => WordAttempt, (wordAttempt) => wordAttempt.lessonWord)
   attempts!: WordAttempt[];
 
@@ -56,16 +56,4 @@ export class LessonWord {
   @Expose()
   @Column({ name: "deleted_by", type: "uuid", nullable: true })
   deletedBy: string | null = null;
-}
-
-export class LessonWordDatum {
-  @Expose({ name: "word_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  wordId!: string;
-
-  @Expose({ name: "lesson_id" })
-  @IsNotEmpty()
-  @IsUUID()
-  lessonId!: string;
 }

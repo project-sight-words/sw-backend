@@ -14,7 +14,11 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { CreateTeacherDto, TeacherDto } from "./dto/teachers.dto";
+import {
+  CreateTeacherDto,
+  DetailedTeacherDto,
+  TeacherDto,
+} from "./dto/teachers.dto";
 import { TeachersService } from "./teachers.service";
 import { TeacherUser } from "entities/teacher.entities";
 
@@ -26,6 +30,12 @@ export class TeachersController {
   async get(): Promise<TeacherDto[]> {
     const teacherUsers = await this.teachersService.get();
     return TeacherDto.fromTeacherUsers(teacherUsers);
+  }
+
+  @Get("/mass")
+  async getWithClassesAndCentres(): Promise<DetailedTeacherDto[]> {
+    const teacherUsers = await this.teachersService.getWithClassesAndCentres();
+    return DetailedTeacherDto.fromTeacherUsers(teacherUsers);
   }
 
   @Get(":id")

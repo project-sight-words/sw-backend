@@ -12,7 +12,11 @@ import {
   Query,
 } from "@nestjs/common";
 import { LessonWordsService } from "./lessonWords.service";
-import { CreateLessonWordDto, LessonWordDto } from "./dto/lessonWords.dto";
+import {
+  CreateLessonWordDto,
+  DetailedLessonWordDto,
+  LessonWordDto,
+} from "./dto/lessonWords.dto";
 
 @Controller("/lessonwords")
 export class LessonWordsController {
@@ -21,9 +25,9 @@ export class LessonWordsController {
   @Get()
   async getByLessonId(
     @Query("lessonId") lessonId: string,
-  ): Promise<LessonWordDto[]> {
+  ): Promise<DetailedLessonWordDto[]> {
     const lessonWords = await this.lessonWordsService.findByLessonId(lessonId);
-    return LessonWordDto.fromLessonWords(lessonWords);
+    return DetailedLessonWordDto.fromLessonWords(lessonWords);
   }
 
   @Get(":id")

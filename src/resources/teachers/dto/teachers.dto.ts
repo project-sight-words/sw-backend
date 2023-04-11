@@ -1,11 +1,12 @@
-import { Expose } from "class-transformer";
-import { IsNotEmpty, IsUUID } from "class-validator";
+import { Expose, Type } from "class-transformer";
+import { IsArray, IsNotEmpty, IsUUID, ValidateNested } from "class-validator";
 import { Identifier } from "entities/common";
 import {
   TeacherDatum,
   TeacherEntity,
   TeacherUser,
 } from "entities/teacher.entities";
+import { ClassWithCentreDto } from "resources/classes/dto/classes.dto";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 
 export class CreateTeacherDto extends TeacherDatum {}
@@ -28,6 +29,29 @@ export class TeacherDto extends TeacherDatum {
   static fromTeacherUsers(teacherUsers: TeacherUser[]): TeacherDto[] {
     return teacherUsers.map((teacherUser) =>
       TeacherDto.fromTeacherUser(teacherUser),
+    );
+  }
+}
+
+export class DetailedTeacherDto extends TeacherDto {
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClassWithCentreDto)
+  classes!: ClassWithCentreDto[];
+
+  static fromTeacherUser(teacherUser: TeacherUser): DetailedTeacherDto {
+    return {
+      ...TeacherDto.fromTeacherUser(teacherUser),
+      classes: ClassWithCentreDto.fromClasses(
+        teacherUser.teacher.classTeachers.map((ct) => ct.class),
+      ),
+    };
+  }
+
+  static fromTeacherUsers(teacherUsers: TeacherUser[]): DetailedTeacherDto[] {
+    return teacherUsers.map((teacherUser) =>
+      DetailedTeacherDto.fromTeacherUser(teacherUser),
     );
   }
 }

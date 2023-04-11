@@ -12,6 +12,13 @@ export class LessonWordsService {
 
   async findByLessonId(lessonId: string): Promise<LessonWord[]> {
     const lessonWords = await this.lessonWordRepository.find({
+      relations: {
+        word: true,
+        attempts: {
+          quizAttempt: true,
+          student: true,
+        },
+      },
       withDeleted: false,
       where: {
         lessonId: lessonId,

@@ -17,7 +17,6 @@ import {
 } from "class-validator";
 import { TeacherEntityDto } from "resources/teachers/dto/teachers.dto";
 import { IsTimeWithTimezone } from "utils/validator";
-import { Centre } from "entities/centre.entities";
 import { instanceToPlain, plainToInstance } from "utils/transformer";
 
 export class ClassEntityDto {
@@ -58,12 +57,26 @@ export class ClassEntityDto {
   }
 }
 
-export class DetailedClassDto extends ClassEntityDto {
-  static readonly loggerService = new Logger("DetailedClassDto");
-
+export class ClassWithCentreDto extends ClassEntityDto {
   @Expose()
-  @IsInstance(Centre)
+  @IsInstance(CentreEntityDto)
   centre?: CentreEntityDto;
+
+  static fromClass(classEntity: Class): ClassWithCentreDto {
+    return {
+      ...classEntity,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      centre: plainToInstance(CentreEntityDto, classEntity.classCentre?.centre),
+    };
+  }
+
+  static fromClasses(classEntities: Class[]): ClassWithCentreDto[] {
+    return classEntities.map((classEntity) => this.fromClass(classEntity));
+  }
+}
+
+export class DetailedClassDto extends ClassWithCentreDto {
+  static readonly loggerService = new Logger("DetailedClassDto");
 
   @Expose()
   @IsArray()
