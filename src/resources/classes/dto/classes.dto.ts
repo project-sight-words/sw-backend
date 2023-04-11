@@ -63,6 +63,7 @@ export class ClassWithCentreDto extends ClassEntityDto {
   centre?: CentreEntityDto;
 
   static fromClass(classEntity: Class): ClassWithCentreDto {
+    console.log(classEntity);
     let centre = undefined;
     if (!!classEntity && !!classEntity.classCentre)
       centre = plainToInstance(CentreEntityDto, classEntity.classCentre.centre);
