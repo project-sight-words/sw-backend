@@ -1,43 +1,23 @@
-import * as dotenv from "dotenv";
-import { Client } from "pg";
+import { error, log } from "./logger";
+import { getClient } from "./clients";
 import { join } from "path";
 import { migrate } from "postgres-migrations";
 
-dotenv.config();
-
 async function main() {
-  let client: Client;
-  if (process.env.IS_HEROKU === "false") {
-    client = new Client({
-      host: process.env.DB_HOST ?? "sw-db",
-      port: parseInt(process.env.DB_PORT ?? "5432"),
-      user: process.env.DB_USER ?? "postgres",
-      password: process.env.DB_PASSWORD ?? "postgres",
-      database: process.env.DB_NAME ?? "sw-db",
-    });
-  } else {
-    console.log("Using database url");
-    client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-  }
-
-  console.log(`Connecting to database at ${client.host}:${client.port}`);
+  const client = getClient();
+  log(`Connecting to server`);
   await client.connect();
 
   try {
-    console.log("Starting database migrations");
+    log("Starting migrations");
     await migrate({ client }, join(__dirname, "./migrations"));
   } finally {
-    console.log("Closing database client");
+    log("Closing client");
     await client.end();
   }
 }
 
-console.log("Migrations starting");
+log("Starting");
 void main()
-  .then(() => console.log("Migrations finished"))
-  .catch((err: unknown) => console.error(err));
+  .then(() => log("Finished"))
+  .catch((err: unknown) => error(err));
