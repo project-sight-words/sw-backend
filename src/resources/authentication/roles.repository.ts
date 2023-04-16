@@ -25,11 +25,8 @@ export class RolesRepository {
     const row = rows[0];
     const roles: Roles[] = [];
     // TODO: Add LEFT OUTER JOIN query for admin_users table
-    // @ts-expect-error: TS2339
     if ("admin_id" in row && row.admin_id) roles.push(Roles.admin);
-    // @ts-expect-error: TS2339
     if ("teacher_id" in row && row.teacher_id) roles.push(Roles.teacher);
-    // @ts-expect-error: TS2339
     if ("student_id" in row && row.student_id) roles.push(Roles.student);
     return roles;
   }
