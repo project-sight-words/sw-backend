@@ -26,16 +26,8 @@ const createClient = (name: keyof typeof clientSettings) => {
 };
 
 export const getClient = () => {
-  switch (true) {
-    default:
-      return createClient("heroku");
-    case process.env.IS_HEROKU === "false":
-      return createClient("default");
-  }
-
-  // TODO: Switch over to use DB_CLIENT environment variable.
-  // const clientName = process.env.DB_CLIENT;
-  // if (!clientName || !(clientName in clientSettings))
-  //   return createClient("default");
-  // return createClient(clientName);
+  const clientName = process.env.DB_CLIENT;
+  if (!clientName || !(clientName in clientSettings))
+    return createClient("default");
+  return createClient(clientName);
 };
