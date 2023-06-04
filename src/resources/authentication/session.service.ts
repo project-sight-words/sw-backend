@@ -1,8 +1,9 @@
-import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import { instanceToPlain } from "class-transformer";
 import { JwtPayload } from "entities/jwt.entities";
-import { JwtService } from "@nestjs/jwt";
+import { Role } from "entities/roles.entities";
 
 @Injectable()
 export class SessionService {
@@ -11,14 +12,25 @@ export class SessionService {
     private readonly jwtService: JwtService,
   ) {}
 
-  sign(data: JwtPayload): string {
-    return this.jwtService.sign(instanceToPlain(data));
+  generateCookie(data: JwtPayload, expiration: number): string {
+    const token = this.jwtService.sign(instanceToPlain(data), {
+      expiresIn: `${expiration}s`,
+    });
+    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${expiration}`;
   }
 
-  createCookieWithToken(token: string): string {
-    const maxAge = this.configService.getOrThrow<number>(
-      "JWT_EXPIRATION_SECONDS",
-    );
-    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${maxAge}`;
+  getPayload(token: string): JwtPayload | null {
+    const payload = this.jwtService.decode(token);
+    if (!payload || typeof payload === "string") return null;
+    const castPayload = payload as {
+      id: string;
+      email: string;
+      roles: Role[];
+    };
+    return {
+      id: castPayload.id,
+      email: castPayload.email,
+      roles: castPayload.roles,
+    };
   }
 }

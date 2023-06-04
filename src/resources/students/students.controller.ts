@@ -1,5 +1,3 @@
-import * as Uuid from "utils/uuid";
-import { StudentsService } from "./students.service";
 import {
   BadRequestException,
   Body,
@@ -11,19 +9,27 @@ import {
   ParseArrayPipe,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common";
+import * as Uuid from "utils/uuid";
+import { Roles } from "decorators/roles.decorator";
+import { Role } from "entities/roles.entities";
+import { JwtAuthGuard } from "resources/authentication/guards/jwt-auth.guard";
 import {
   CreateStudentDto,
   DetailedStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
+import { StudentsService } from "./students.service";
 
 @Controller("students")
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.teacher, Role.admin)
   async get(): Promise<StudentDto[]> {
     const students = await this.studentsService.get();
     return students;

@@ -27,3 +27,5 @@ export class UserEntityDto extends UserDatumDto {
     return dto;
   }
 }
+
+export class UserDto {}

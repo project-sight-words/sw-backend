@@ -1,28 +1,29 @@
-import * as Uuid from "utils/uuid";
 import {
   BadRequestException,
-  NotFoundException,
-} from "@nestjs/common/exceptions";
-import {
   Body,
   Controller,
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   ParseArrayPipe,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common";
+import { JwtAuthGuard } from "resources/authentication/guards/jwt-auth.guard";
 import {
   CreateTeacherDto,
-  DetailedTeacherDto,
   TeacherDto,
+  DetailedTeacherDto,
 } from "./dto/teachers.dto";
 import { TeachersService } from "./teachers.service";
-import { TeacherUser } from "entities/teacher.entities";
+import * as Uuid from "utils/uuid";
+import { TeacherUser } from "../../entities/teacher.entities";
 
 @Controller("teachers")
+@UseGuards(JwtAuthGuard)
 export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 

@@ -1,7 +1,7 @@
-import * as Joi from "joi";
 import { AdminsModule } from "resources/admins/admins.module";
 import { AppController } from "app.controller";
 import { AppService } from "app.service";
+import * as Joi from "joi";
 import { AuthenticationModule } from "resources/authentication/authentication.module";
 import { CentresModule } from "resources/centres/centres.module";
 import { ClassesModule } from "resources/classes/classes.module";
@@ -32,6 +32,7 @@ const ConfigurationModule = ConfigModule.forRoot({
     GOOGLE_OAUTH_CLIENT_SECRET: Joi.string().default(""),
     GOOGLE_OAUTH_FRONTEND_CLIENT_ID: Joi.string().default(""),
     JWT_EXPIRATION_SECONDS: Joi.number().default(300),
+    JWT_REFRESH_EXPIRATION_SECONDS: Joi.number().default(3600),
     JWT_SECRET: Joi.string().required(),
     PORT: Joi.number().default(3000),
     NODE_ENV: Joi.string().valid("development", "production").required(),
