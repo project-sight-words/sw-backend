@@ -1,3 +1,4 @@
+import { UserEntityDto } from "resources/users/dto/users.dto";
 import {
   Body,
   Controller,
@@ -22,7 +23,7 @@ export class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   @Post("development")
   async loginInDevelopment(

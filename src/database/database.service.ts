@@ -2,6 +2,8 @@ import { ConfigService } from "@nestjs/config";
 import { Pool, PoolClient } from "pg";
 import { Querier } from "./database.types";
 import {
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -68,6 +70,12 @@ export class DatabaseService implements OnModuleDestroy {
     } catch (error: unknown) {
       this.loggerService.error(error);
       throw new InternalServerErrorException();
+    }
+  }
+
+  checkIfResultNotEmpty(rows: unknown[]) {
+    if (rows.length === 0) {
+      throw new HttpException("Resource not found", HttpStatus.NOT_FOUND);
     }
   }
 }

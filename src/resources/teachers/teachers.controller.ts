@@ -7,7 +7,7 @@ import {
   Param,
   Post,
   Put,
-  UseGuards,
+  UseGuards
 } from "@nestjs/common";
 import { Access } from "decorators/abac.decorator";
 import { Roles } from "decorators/roles.decorator";
@@ -25,52 +25,68 @@ import { TeachersService } from "./teachers.service";
 @Controller("teachers")
 @UseGuards(JwtAuthGuard)
 export class TeachersController {
-  constructor(private readonly teachersService: TeachersService) {}
-
-  @Post()
-  @HttpCode(201)
-  @Roles(Role.admin)
-  async create(@Body() data: CreateTeacherDto): Promise<CreateTeacherDto> {
-    const teacher = await this.teachersService.create(null, data);
-    return teacher;
-  }
+  constructor(private readonly teachersService: TeachersService) { }
 
   @Get()
-  @Roles(Role.teacher, Role.admin)
-  async get(): Promise<GetTeacherDto[]> {
-    const teachers = await this.teachersService.get();
-    return teachers;
+  async get(): Promise<TeacherDto[]> {
+    const teacherUsers = await this.teachersService.get();
+    return TeacherDto.fromTeacherUsers(teacherUsers);
+  }
+
+  @Get("/mass")
+  async getWithClassesAndCentres(): Promise<DetailedTeacherDto[]> {
+    const teacherUsers = await this.teachersService.getWithClassesAndCentres();
+    return DetailedTeacherDto.fromTeacherUsers(teacherUsers);
   }
 
   @Get(":id")
-  @Roles(Role.teacher, Role.admin)
-  @Access(ABAC.TeacherSelf)
-  async getByStaffId(@Param("id") staffId: string): Promise<GetTeacherDto> {
-    const teacher = await this.teachersService.getByStaffId(staffId);
-    return teacher;
+  async getById(@Param("id") id: string): Promise<TeacherDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
+
+    const teacherUser = await this.teachersService.findOneById(id);
+    if (!teacherUser) throw new NotFoundException();
+
+    return TeacherDto.fromTeacherUser(teacherUser);
+  }
+
+  @Post()
+  @HttpCode(201)
+  async create(
+    @Body(new ParseArrayPipe({ items: CreateTeacherDto }))
+    body: CreateTeacherDto[],
+  ): Promise<TeacherDto[]> {
+    const results = await this.teachersService.createMany(body); // TODO: add createdBy
+    if (results.length > 0 && results[0] instanceof TeacherUser) {
+      const teacherUsers = results as TeacherUser[];
+      return TeacherDto.fromTeacherUsers(teacherUsers);
+    }
+    throw new BadRequestException(results);
   }
 
   @Put(":id")
-  @Roles(Role.teacher, Role.admin)
-  @Access(ABAC.TeacherSelf)
-  async updateByStaffId(
-    @Param("id") staffId: string,
-    @Body() data: UpdateTeacherDto,
-  ): Promise<UpdateTeacherDto> {
-    const teacher = await this.teachersService.updateByStaffId(
-      staffId,
-      null,
-      data,
-    );
-    return teacher;
+  async updateById(
+    @Param("id") id: string,
+    @Body() body: Omit<CreateTeacherDto, "email">,
+  ): Promise<TeacherDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
+
+    const teacherUser = await this.teachersService.updateById(id, body); // TODO: add updatedBy
+    if (!teacherUser) throw new NotFoundException();
+
+    return TeacherDto.fromTeacherUser(teacherUser);
   }
 
   @Delete(":id")
-  @Roles(Role.admin)
-  async deleteByStaffId(
-    @Param("id") staffId: string,
-  ): Promise<DeleteTeacherDto> {
-    const teacher = await this.teachersService.deleteByStaffId(staffId, null);
-    return teacher;
+  async deleteById(@Param("id") id: string): Promise<TeacherDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new BadRequestException("Invalid UUID");
+
+    const teacherUser = await this.teachersService.findOneById(id);
+    if (!teacherUser) throw new NotFoundException();
+
+    await this.teachersService.deleteById(id);
+    return TeacherDto.fromTeacherUser(teacherUser);
   }
 }
