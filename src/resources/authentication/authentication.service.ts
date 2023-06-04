@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { Roles } from "entities/roles.entities";
 import { UsersRepository } from "resources/users/users.repository";
-import { LoginWithGoogleDto } from "./dto/authenticate.dto";
 import { GoogleService } from "./google.service";
+import { JwtPayload } from "entities/jwt.entities";
+import { LoginWithGoogleDto } from "./dto/authenticate.dto";
+import { Roles } from "entities/roles.entities";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
 

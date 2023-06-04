@@ -6,16 +6,17 @@ CREATE TABLE teachers (
   updated_by      UUID          REFERENCES users(id)
 );
 
+CREATE UNIQUE INDEX staff_id_upper_unique ON teachers (UPPER(staff_id));
+
 CREATE TABLE teacher_users (
+  id              UUID          PRIMARY KEY             DEFAULT gen_random_uuid(),
   user_id         UUID          NOT NULL                REFERENCES users(id),
-  teacher_id      UUID          NOT NULL                REFERENCES teachers(id),
+  teacher_id      UUID          NOT NULL                REFERENCES teachers (id),
   created_at      TIMESTAMPTZ   NOT NULL                DEFAULT NOW(),
   created_by      UUID          REFERENCES users(id),
   deleted_at      TIMESTAMPTZ,
-  deleted_by      UUID          REFERENCES users(id),
-  PRIMARY KEY (user_id, teacher_id)
+  deleted_by      UUID          REFERENCES users(id)
 );
 
-CREATE UNIQUE INDEX staff_id_upper_unique ON teachers (UPPER(staff_id));
--- TODO: Add unique constraint for user_id on teacher_users where deleted_at = null;
--- TODO: Add unique constraint for teacher_id on teacher_users where deleted_at = null;
+CREATE UNIQUE INDEX ON teacher_users(user_id) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX ON teacher_users(teacher_id) WHERE deleted_at IS NULL;

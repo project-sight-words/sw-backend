@@ -7,9 +7,10 @@ import {
   Post,
   Res,
 } from "@nestjs/common";
+import { AuthenticationService } from "./authentication.service";
 import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
-import { AuthenticationService } from "./authentication.service";
+import { UserEntityDto } from "resources/users/dto/users.dto";
 import {
   LoggedInDto,
   LoginInDevelopmentDto,

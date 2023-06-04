@@ -28,6 +28,6 @@ services:
       DB_NAME: ${DB_NAME:-sw-db}
     volumes:
       - ./:/app
-    command: sh -c "yarn install && yarn run start:dev"
+    command: yarn run start:dev
 volumes:
   postgres:

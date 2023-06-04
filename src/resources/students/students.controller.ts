@@ -1,8 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
-  HttpCode,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -12,6 +13,7 @@ import {
 import * as Uuid from "utils/uuid";
 import {
   CreateStudentDto,
+  DetailedStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
@@ -27,22 +29,30 @@ export class StudentsController {
     return students;
   }
 
+  @Get("/mass")
+  async getWithClassesAndCentres() {
+    const students = await this.studentsService.getWithClassesAndCentres();
+    return DetailedStudentDto.fromMany(students);
+  }
+
   @Get(":id")
   async getById(@Param("id") id: string): Promise<StudentDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
-    const student = await this.studentsService.getById(id);
+    const student = await this.studentsService.findOneById(id);
     return student;
   }
 
   @Post()
-  @HttpCode(201)
   async create(
     @Body(new ParseArrayPipe({ items: CreateStudentDto }))
     body: CreateStudentDto[],
   ): Promise<StudentDto[]> {
-    const students = await this.studentsService.createMany(body);
-    return students;
+    const result = await this.studentsService.createMany(body);
+    if (result[0].hasOwnProperty("index"))
+      throw new BadRequestException(result);
+
+    return result as StudentDto[];
   }
 
   @Put(":id")
@@ -53,6 +63,16 @@ export class StudentsController {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new NotFoundException();
     const student = await this.studentsService.updateById(id, body);
+    return student;
+  }
+
+  @Delete(":id")
+  async deleteById(@Param("id") id: string): Promise<StudentDto> {
+    const isUuid = Uuid.test(id);
+    if (!isUuid) throw new NotFoundException();
+    // TODO: Change this to search by id
+    const student = await this.studentsService.findOneById(id);
+    await this.studentsService.deleteById(id);
     return student;
   }
 }
