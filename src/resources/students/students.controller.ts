@@ -1,5 +1,3 @@
-import * as Uuid from "utils/uuid";
-import { StudentsService } from "./students.service";
 import {
   BadRequestException,
   Body,
@@ -12,12 +10,14 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
+import * as Uuid from "utils/uuid";
 import {
   CreateStudentDto,
   DetailedStudentDto,
   StudentDto,
   UpdateStudentDto,
 } from "./dto/students.dto";
+import { StudentsService } from "./students.service";
 
 @Controller("students")
 export class StudentsController {

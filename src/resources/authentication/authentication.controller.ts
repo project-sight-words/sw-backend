@@ -1,12 +1,21 @@
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  NotFoundException,
+  Post,
+  Res,
+} from "@nestjs/common";
 import { AuthenticationService } from "./authentication.service";
-import { Body, Controller, NotFoundException, Post, Res } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
 import { UserEntityDto } from "resources/users/dto/users.dto";
 import {
-  LoginWithGoogleDto,
   LoggedInDto,
   LoginInDevelopmentDto,
+  LoginWithGoogleDto,
+  RefreshDto,
 } from "./dto/authenticate.dto";
 
 @Controller("authentication")
@@ -24,12 +33,13 @@ export class AuthenticationController {
     const environment = this.configService.getOrThrow<string>("NODE_ENV");
     if (environment !== "development") throw new NotFoundException();
     const session = await this.authenticationService.login(data.email);
-    const { accessTokenCookie, user: userEntity } = session;
-    response.setHeader("Set-Cookie", accessTokenCookie);
-    const roles = await this.authenticationService.getRolesByUserId(
-      userEntity.identifier.id,
+    const { accessTokenCookie, refreshTokenCookie, user } = session;
+    response.setHeader(
+      "Set-Cookie",
+      this.createCookieHeaders(accessTokenCookie, refreshTokenCookie),
     );
-    return { user: UserEntityDto.fromUserEntity(userEntity), roles };
+    const roles = await this.authenticationService.getRolesByUserId(user.id);
+    return { user, roles };
   }
 
   @Post("google")
@@ -37,12 +47,38 @@ export class AuthenticationController {
     @Body() data: LoginWithGoogleDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<LoggedInDto> {
-    const { accessTokenCookie, user: userEntity } =
+    const { accessTokenCookie, refreshTokenCookie, user } =
       await this.authenticationService.loginWithGoogle(data);
-    response.setHeader("Set-Cookie", accessTokenCookie);
-    const roles = await this.authenticationService.getRolesByUserId(
-      userEntity.identifier.id,
+    response.setHeader(
+      "Set-Cookie",
+      this.createCookieHeaders(accessTokenCookie, refreshTokenCookie),
     );
-    return { user: UserEntityDto.fromUserEntity(userEntity), roles };
+    const roles = await this.authenticationService.getRolesByUserId(user.id);
+    return { user, roles };
+  }
+
+  @Post("refresh")
+  @HttpCode(204)
+  refresh(
+    @Headers("Authorization") auth: string,
+    @Body() data: RefreshDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    // This endpoint won't return any results as we are storing the refresh token as a
+    // cookie already.
+    const accessToken = auth.slice(7);
+    const session = this.authenticationService.refreshToken(
+      accessToken,
+      data.refreshToken,
+    );
+    const { accessTokenCookie, refreshTokenCookie } = session;
+    response.setHeader(
+      "Set-Cookie",
+      this.createCookieHeaders(accessTokenCookie, refreshTokenCookie),
+    );
+  }
+
+  private createCookieHeaders(access: string, refresh: string): string[] {
+    return [`access=${access}`, `refresh=${refresh}`];
   }
 }
