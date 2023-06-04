@@ -10,22 +10,22 @@ import {
   ParseArrayPipe,
   Post,
   Put,
-  UseGuards
+  UseGuards,
 } from "@nestjs/common";
 import { JwtAuthGuard } from "resources/authentication/guards/jwt-auth.guard";
 import {
   CreateTeacherDto,
   TeacherDto,
-  DetailedTeacherDto
+  DetailedTeacherDto,
 } from "./dto/teachers.dto";
 import { TeachersService } from "./teachers.service";
-import * as Uuid from "utils/uuid"
+import * as Uuid from "utils/uuid";
 import { TeacherUser } from "../../entities/teacher.entities";
 
 @Controller("teachers")
 @UseGuards(JwtAuthGuard)
 export class TeachersController {
-  constructor(private readonly teachersService: TeachersService) { }
+  constructor(private readonly teachersService: TeachersService) {}
 
   @Get()
   async get(): Promise<TeacherDto[]> {

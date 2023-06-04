@@ -96,4 +96,4 @@ const ConfigurationModule = ConfigModule.forRoot({
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

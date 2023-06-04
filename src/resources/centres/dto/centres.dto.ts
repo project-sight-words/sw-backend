@@ -23,7 +23,7 @@ export class CentreEntityDto {
     return {
       id: centre.id,
       name: centre.name,
-      classes: centre.classCentres?.map((classCentre) =>
+      classes: centre.classCentres.map((classCentre) =>
         ClassEntityDto.fromObject(classCentre),
       ),
     };

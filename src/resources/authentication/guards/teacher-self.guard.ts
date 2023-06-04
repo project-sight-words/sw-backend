@@ -19,7 +19,7 @@ export class TeacherSelfGuard implements CanActivate {
     private reflector: Reflector,
     private sessionService: SessionService,
     private teachersService: TeachersService,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isTeacherSelf = getMetadata<boolean>(

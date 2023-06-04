@@ -4,13 +4,12 @@ import { DataSource } from "typeorm";
 
 @Injectable()
 export class RolesRepository {
-  constructor(
-    private readonly dataSource: DataSource
-  ) { }
+  constructor(private readonly dataSource: DataSource) {}
 
   async getByUserId(userId: string): Promise<Role[]> {
-    const rows: { id: string, student_id: string, teacher_id: string }[] = await (this.dataSource.createEntityManager().query(
-      `
+    const rows: { id: string; student_id: string; teacher_id: string }[] =
+      (await this.dataSource.createEntityManager().query(
+        `
         SELECT users.id, student_users.student_id, teacher_users.teacher_id
         FROM users
         LEFT OUTER JOIN student_users
@@ -19,8 +18,8 @@ export class RolesRepository {
           ON teacher_users.user_id = users.id AND teacher_users.deleted_at IS NULL
         WHERE users.id = $1;
       `,
-      [userId],
-    )) as { id: string, student_id: string, teacher_id: string }[];
+        [userId],
+      )) as { id: string; student_id: string; teacher_id: string }[];
     const row = rows[0];
     const roles: Role[] = [];
     // TODO: Add LEFT OUTER JOIN query for admin_users table

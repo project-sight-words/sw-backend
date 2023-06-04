@@ -16,4 +16,4 @@ import { UsersService } from "resources/users/users.service";
   providers: [UsersService, TeachersService],
   exports: [TeachersService],
 })
-export class TeachersModule { }
+export class TeachersModule {}
