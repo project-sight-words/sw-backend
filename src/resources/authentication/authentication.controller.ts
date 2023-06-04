@@ -1,12 +1,12 @@
-import { UserEntityDto } from "resources/users/dto/users.dto";
 import {
   Body,
   Controller,
-  Headers,
   HttpCode,
   NotFoundException,
   Post,
+  Req,
   Res,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
@@ -17,6 +17,7 @@ import {
   LoginWithGoogleDto,
   RefreshDto,
 } from "./dto/authenticate.dto";
+import { Request } from "express";
 
 @Controller("authentication")
 export class AuthenticationController {
@@ -60,16 +61,19 @@ export class AuthenticationController {
   @Post("refresh")
   @HttpCode(204)
   refresh(
-    @Headers("Authorization") auth: string,
-    @Body() data: RefreshDto,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     // This endpoint won't return any results as we are storing the refresh token as a
     // cookie already.
-    const accessToken = auth.slice(7);
+    const cookies = request.cookies as Record<string, string>;
+    if (!("refresh" in cookies && "access" in cookies))
+      throw new UnauthorizedException();
+    const refreshToken = cookies.refresh.substring(15);
+    const accessToken = cookies.access.substring(15);
     const session = this.authenticationService.refreshToken(
       accessToken,
-      data.refreshToken,
+      refreshToken,
     );
     const { accessTokenCookie, refreshTokenCookie } = session;
     response.setHeader(
