@@ -1,16 +1,15 @@
-import { DatabaseService } from "database/database.service";
 import { Injectable } from "@nestjs/common";
-import { Logger } from "@nestjs/common";
 import { Role } from "entities/roles.entities";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class RolesRepository {
-  private readonly loggerService = new Logger("RolesRepository");
-
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly dataSource: DataSource
+  ) { }
 
   async getByUserId(userId: string): Promise<Role[]> {
-    const rows = await this.databaseService.query(
+    const rows: { id: string, student_id: string, teacher_id: string }[] = await (this.dataSource.createEntityManager().query(
       `
         SELECT users.id, student_users.student_id, teacher_users.teacher_id
         FROM users
@@ -21,13 +20,13 @@ export class RolesRepository {
         WHERE users.id = $1;
       `,
       [userId],
-    );
+    )) as { id: string, student_id: string, teacher_id: string }[];
     const row = rows[0];
     const roles: Role[] = [];
     // TODO: Add LEFT OUTER JOIN query for admin_users table
-    if ("admin_id" in row && row.admin_id) roles.push(Roles.admin);
-    if ("teacher_id" in row && row.teacher_id) roles.push(Roles.teacher);
-    if ("student_id" in row && row.student_id) roles.push(Roles.student);
+    if ("admin_id" in row && row.admin_id) roles.push(Role.admin);
+    if ("teacher_id" in row && row.teacher_id) roles.push(Role.teacher);
+    if ("student_id" in row && row.student_id) roles.push(Role.student);
     return roles;
   }
 }

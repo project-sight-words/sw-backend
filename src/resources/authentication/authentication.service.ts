@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { Role } from "entities/roles.entities";
-import { UsersRepository } from "resources/users/users.repository";
+import { UsersService } from "../users/users.service";
 import { GoogleService } from "./google.service";
 import { JwtPayload } from "entities/jwt.entities";
 import { LoginWithGoogleDto } from "./dto/authenticate.dto";
@@ -14,11 +14,11 @@ export class AuthenticationService {
   private readonly refreshDuration: number;
 
   constructor(
-    private readonly configService: ConfigService,
+    configService: ConfigService,
     private readonly googleService: GoogleService,
     private readonly rolesRepository: RolesRepository,
     private readonly sessionService: SessionService,
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
   ) {
     this.accessDuration = configService.getOrThrow<number>(
       "JWT_EXPIRATION_SECONDS",
@@ -29,10 +29,8 @@ export class AuthenticationService {
   }
 
   async login(email: string) {
-    const user = await this.usersRepository.upsertByEmail({
-      email: email,
-      lastLoggedIn: new Date(),
-    });
+    const user = await this.usersService.findOneByEmail(email);
+    if (!user) throw new BadRequestException();
     const roles = await this.getRolesByUserId(user.id);
     const payload: JwtPayload = {
       id: user.id,

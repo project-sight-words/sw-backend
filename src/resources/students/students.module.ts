@@ -13,6 +13,7 @@ import { StudentsService } from "./students.service";
     UsersModule,
   ],
   controllers: [StudentsController],
-  providers: [UsersRepository, StudentsService]
+  providers: [UsersRepository, StudentsService],
+  exports: [StudentsService]
 })
 export class StudentsModule { }

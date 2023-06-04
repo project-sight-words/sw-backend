@@ -8,7 +8,7 @@ import { Reflector } from "@nestjs/core";
 import { ABAC } from "entities/abac.entities";
 import { Role } from "entities/roles.entities";
 import { extractJwt, extractParams, getMetadata } from "utils/access";
-import { TeachersRepository } from "resources/teachers/teachers.repository";
+import { TeachersService } from "../../teachers/teachers.service";
 import { SessionService } from "resources/authentication/session.service";
 
 @Injectable()
@@ -18,8 +18,8 @@ export class TeacherSelfGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private sessionService: SessionService,
-    private teachersRepository: TeachersRepository,
-  ) {}
+    private teachersService: TeachersService,
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isTeacherSelf = getMetadata<boolean>(
@@ -51,7 +51,7 @@ export class TeacherSelfGuard implements CanActivate {
       return false;
     }
 
-    const target = await this.teachersRepository.getByStaffId(params.id);
-    return target.id === user.id;
+    const target = await this.teachersService.findOneById(params.id);
+    return !target || target.teacherId === user.id;
   }
 }

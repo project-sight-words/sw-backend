@@ -1,26 +1,26 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
+  ParseArrayPipe,
   Post,
   Put,
   UseGuards
 } from "@nestjs/common";
-import { Access } from "decorators/abac.decorator";
-import { Roles } from "decorators/roles.decorator";
-import { ABAC } from "entities/abac.entities";
-import { Role } from "entities/roles.entities";
 import { JwtAuthGuard } from "resources/authentication/guards/jwt-auth.guard";
 import {
   CreateTeacherDto,
-  DeleteTeacherDto,
-  GetTeacherDto,
-  UpdateTeacherDto,
+  TeacherDto,
+  DetailedTeacherDto
 } from "./dto/teachers.dto";
 import { TeachersService } from "./teachers.service";
+import * as Uuid from "utils/uuid"
+import { TeacherUser } from "../../entities/teacher.entities";
 
 @Controller("teachers")
 @UseGuards(JwtAuthGuard)
