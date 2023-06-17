@@ -9,15 +9,13 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Response } from "express";
+import { Request, Response } from "express";
 import { AuthenticationService } from "./authentication.service";
 import {
   LoggedInDto,
   LoginInDevelopmentDto,
   LoginWithGoogleDto,
-  RefreshDto,
 } from "./dto/authenticate.dto";
-import { Request } from "express";
 
 @Controller("authentication")
 export class AuthenticationController {
