@@ -17,7 +17,7 @@ export class SessionService {
       expiresIn: `${expiration}s`,
     });
     if (process.env.NODE_ENV === "development") {
-      return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${expiration}`
+      return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${expiration}`;
     } else {
       return `Authentication=${token}; HttpOnly; Secure=true; SameSite=None; Path=/; Max-Age=${expiration}`;
     }
