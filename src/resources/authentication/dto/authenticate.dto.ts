@@ -25,7 +25,19 @@ export class LoginWithGoogleDto {
   token!: string;
 }
 
-export class LoggedInDto {
+export class RefreshDto {
+  @IsString()
+  @IsNotEmpty()
+  refreshToken!: string;
+}
+
+export class AccessDto extends RefreshDto {
+  @IsNotEmpty()
+  @IsString()
+  accessToken!: string;
+}
+
+export class LoggedInDto extends AccessDto {
   @IsDefined()
   @IsNotEmptyObject()
   @IsObject()
@@ -36,10 +48,4 @@ export class LoggedInDto {
   @IsEnum(Role, { each: true })
   @IsNotEmpty()
   roles!: Role[];
-}
-
-export class RefreshDto {
-  @IsString()
-  @IsNotEmpty()
-  refreshToken!: string;
 }

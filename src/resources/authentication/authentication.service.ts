@@ -37,16 +37,15 @@ export class AuthenticationService {
       email: user.email,
       roles: roles,
     };
-
-    const accessTokenCookie = this.sessionService.generateCookie(
+    const accessToken = this.sessionService.generateToken(
       payload,
       this.accessDuration,
     );
-    const refreshTokenCookie = this.sessionService.generateCookie(
+    const refreshToken = this.sessionService.generateToken(
       payload,
       this.refreshDuration,
     );
-    return { accessTokenCookie, refreshTokenCookie, user };
+    return { accessToken, refreshToken, user };
   }
 
   async loginWithGoogle(data: LoginWithGoogleDto) {
@@ -72,16 +71,16 @@ export class AuthenticationService {
     )
       throw new BadRequestException();
 
-    const accessTokenCookie = this.sessionService.generateCookie(
+    const accessToken = this.sessionService.generateToken(
       accessPayload,
       this.accessDuration,
     );
-    const refreshTokenCookie = this.sessionService.generateCookie(
+    const refreshToken = this.sessionService.generateToken(
       refreshPayload,
       this.refreshDuration,
     );
 
-    return { accessTokenCookie, refreshTokenCookie };
+    return { accessToken, refreshToken };
   }
 
   async getRolesByUserId(userId: string): Promise<Role[]> {
