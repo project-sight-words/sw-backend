@@ -1,9 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { instanceToPlain } from "class-transformer";
 import { JwtPayload } from "entities/jwt.entities";
-import { Role } from "entities/roles.entities";
+import { RoleDto } from "./dto/authenticate.dto";
 
 @Injectable()
 export class SessionService {
@@ -22,7 +21,7 @@ export class SessionService {
     const castPayload = payload as {
       id: string;
       email: string;
-      roles: Role[];
+      roles: RoleDto[];
     };
     return {
       id: castPayload.id,

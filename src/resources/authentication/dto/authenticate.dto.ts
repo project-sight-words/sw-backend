@@ -10,7 +10,6 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Role } from "entities/roles.entities";
-import { UserEntityDto } from "resources/users/dto/users.dto";
 import { User } from "../../../entities/user.entities";
 
 export class LoginInDevelopmentDto {
@@ -47,5 +46,15 @@ export class LoggedInDto extends AccessDto {
 
   @IsEnum(Role, { each: true })
   @IsNotEmpty()
-  roles!: Role[];
+  roles!: RoleDto[];
+}
+
+export class RoleDto {
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @IsEnum(Role, { each: true })
+  @IsNotEmpty()
+  role!: string;
 }

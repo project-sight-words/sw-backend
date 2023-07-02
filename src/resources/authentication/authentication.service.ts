@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtPayload } from "entities/jwt.entities";
 import { Role } from "entities/roles.entities";
 import { UsersService } from "../users/users.service";
-import { LoginWithGoogleDto } from "./dto/authenticate.dto";
+import { LoginWithGoogleDto, RoleDto } from "./dto/authenticate.dto";
 import { GoogleService } from "./google.service";
 import { RolesRepository } from "./roles.repository";
 import { SessionService } from "./session.service";
@@ -83,7 +83,7 @@ export class AuthenticationService {
     return { accessToken, refreshToken };
   }
 
-  async getRolesByUserId(userId: string): Promise<Role[]> {
+  async getRolesByUserId(userId: string): Promise<RoleDto[]> {
     const roles = await this.rolesRepository.getByUserId(userId);
     return roles;
   }

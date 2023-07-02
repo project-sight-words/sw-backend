@@ -1,6 +1,6 @@
 import { Expose } from "class-transformer";
 import { IsArray, IsEmail, IsNotEmpty, IsUUID } from "class-validator";
-import { Role } from "./roles.entities";
+import { RoleDto } from "resources/authentication/dto/authenticate.dto";
 import { plainToInstance } from "utils/transformer";
 import { UserEntity } from "./user.entities";
 
@@ -17,7 +17,8 @@ export class JwtPayload {
 
   @Expose()
   @IsArray()
-  roles!: Role[];
+  roles!: RoleDto[];
+
   static fromUserEntity(userEntity: UserEntity): JwtPayload {
     const plain = UserEntity.toObject(userEntity);
     const payload = plainToInstance(JwtPayload, plain);

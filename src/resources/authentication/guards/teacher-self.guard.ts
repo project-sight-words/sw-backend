@@ -40,7 +40,7 @@ export class TeacherSelfGuard implements CanActivate {
       return false;
     }
 
-    if (user.roles.includes(Role.admin)) return true;
+    if (user.roles.map((role) => role.role).includes(Role.admin)) return true;
 
     // Get the teacher ID to use
     const params = extractParams<{ id: string }>(context);

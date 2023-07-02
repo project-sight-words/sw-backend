@@ -42,7 +42,7 @@ export class RolesGuard implements CanActivate {
 
     // Check if the user has at least one of the necessary permissions
     for (const role of requiredRoles) {
-      if (user.roles.includes(role)) return true;
+      if (user.roles.map((role) => role.role).includes(role)) return true;
     }
 
     return false;
