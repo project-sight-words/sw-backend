@@ -12,10 +12,7 @@ async function bootstrap() {
   const port = configService.getOrThrow<number>("PORT");
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.enableCors({
-    credentials: true,
-    origin: "http://localhost:3000",
-  });
+  app.enableCors();
   await app.listen(port);
 }
 
