@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { ClassStudent } from "entities/class.entities";
 import { Lesson, LessonDatum } from "entities/lesson.entities";
 import { Repository } from "typeorm";
 
@@ -8,6 +9,8 @@ export class LessonsService {
   constructor(
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
+    @InjectRepository(ClassStudent)
+    private readonly classStudentRepository: Repository<ClassStudent>,
   ) {}
 
   async findByClassId(classId: string): Promise<Lesson[]> {
@@ -17,6 +20,31 @@ export class LessonsService {
         classId: classId,
       },
     });
+    return lessons;
+  }
+
+  async findByStudentId(studentId: string): Promise<Lesson[]> {
+    const classStudents = await this.classStudentRepository.find({
+      withDeleted: false,
+      where: {
+        studentId: studentId,
+      },
+    });
+
+    const lessonPromises = classStudents.map((classStudent) => {
+      return this.lessonRepository.find({
+        withDeleted: false,
+        where: {
+          classId: classStudent.classId,
+        },
+      });
+    });
+
+    const lessonsNested = await Promise.all(lessonPromises);
+    const lessons = lessonsNested.flat();
+
+    lessons.sort((a, b) => b.startDate.getTime() - a.startDate.getTime()); // DESC order (most recent first)
+
     return lessons;
   }
 

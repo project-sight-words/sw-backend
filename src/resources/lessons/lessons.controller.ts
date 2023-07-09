@@ -25,6 +25,14 @@ export class LessonsController {
     return LessonDto.fromLessons(lessons);
   }
 
+  @Get("student")
+  async getByStudentId(
+    @Query("studentId") studentId: string,
+  ): Promise<LessonDto[]> {
+    const lessons = await this.lessonsService.findByStudentId(studentId);
+    return LessonDto.fromLessons(lessons);
+  }
+
   @Get(":id")
   async getById(@Param("id") id: string): Promise<LessonDto> {
     const isUuid = Uuid.test(id);
