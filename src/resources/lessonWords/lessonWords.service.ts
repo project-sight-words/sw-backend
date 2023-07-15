@@ -42,7 +42,17 @@ export class LessonWordsService {
     lessonId: string,
     createdBy: string | null = null,
   ): Promise<LessonWord> {
-    return await this.lessonWordRepository.save({
+    const existingLessonWord = await this.lessonWordRepository.findOne({
+      where: { wordId, lessonId },
+      withDeleted: true,
+    });
+
+    if (existingLessonWord && existingLessonWord.deletedAt) {
+      await this.lessonWordRepository.restore(existingLessonWord.id);
+      return existingLessonWord;
+    }
+
+    return this.lessonWordRepository.save({
       wordId: wordId,
       lessonId: lessonId,
       createdBy: createdBy,
