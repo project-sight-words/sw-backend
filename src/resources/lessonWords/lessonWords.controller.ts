@@ -23,11 +23,12 @@ export class LessonWordsController {
   constructor(private readonly lessonWordsService: LessonWordsService) {}
 
   @Get()
-  async getByLessonId(
+  async getByLessonIdAndStudentId(
     @Query("lessonId") lessonId: string,
+    @Query("studentId") studentId?: string,
   ): Promise<DetailedLessonWordDto[]> {
     const lessonWords = await this.lessonWordsService.findByLessonId(lessonId);
-    return DetailedLessonWordDto.fromLessonWords(lessonWords);
+    return DetailedLessonWordDto.fromLessonWords(lessonWords, studentId);
   }
 
   @Get(":id")

@@ -58,16 +58,28 @@ export class DetailedLessonWordDto {
   @Type(() => DetailedLessonWordDto)
   attempts!: DetailedWordAttemptDto[];
 
-  static fromLessonWord(lessonWord: LessonWord): DetailedLessonWordDto {
+  static fromLessonWord(
+    lessonWord: LessonWord,
+    studentId?: string,
+  ): DetailedLessonWordDto {
     return {
       id: lessonWord.id,
       word: WordDto.from(lessonWord.word),
-      attempts: DetailedWordAttemptDto.fromEntities(lessonWord.attempts),
+      attempts: DetailedWordAttemptDto.fromEntities(
+        // only filter if studentId is provided
+        lessonWord.attempts.filter(
+          (attempt) => !studentId || attempt.student.id === studentId,
+        ),
+      ),
     };
   }
-  static fromLessonWords(lessonWords: LessonWord[]): DetailedLessonWordDto[] {
+
+  static fromLessonWords(
+    lessonWords: LessonWord[],
+    studentId?: string,
+  ): DetailedLessonWordDto[] {
     return lessonWords.map((lessonWord) =>
-      DetailedLessonWordDto.fromLessonWord(lessonWord),
+      DetailedLessonWordDto.fromLessonWord(lessonWord, studentId),
     );
   }
 }
