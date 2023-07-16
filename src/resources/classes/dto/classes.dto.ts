@@ -46,6 +46,11 @@ export class ClassEntityDto {
   @IsTimeWithTimezone()
   endTime?: string;
 
+  // Defaults to isActive = true
+  @Expose()
+  @IsBoolean()
+  isActive = true;
+
   static fromObject(object: object): ClassEntityDto {
     const datum = plainToInstance(ClassEntityDto, object);
     return datum;

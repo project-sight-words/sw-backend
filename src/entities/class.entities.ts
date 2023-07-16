@@ -53,6 +53,9 @@ export class Class {
   @OneToMany(() => Lesson, (lesson) => lesson.class)
   lessons!: Lesson[];
 
+  @Column({ name: "is_active", type: "boolean", default: true })
+  isActive!: boolean;
+
   @DeleteDateColumn({ name: "deleted_at" })
   deletedAt!: Date | null;
 
