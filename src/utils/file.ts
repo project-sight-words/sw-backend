@@ -7,6 +7,7 @@ export function isValidImage(mimetype: string) {
 
 export function isValidAudio(mimetype: string) {
   return (
-    mimetype.startsWith("audio") && mimetype.substring(6).match(/(wave|mp3)/)
+    mimetype.startsWith("audio") &&
+    mimetype.substring(6).match(/(wave|wav|mpeg)/)
   );
 }
