@@ -172,6 +172,52 @@ export class ClassesService {
     return classes;
   }
 
+  async getClassesByStudent(studentId: string): Promise<Class[]> {
+    const classes = await this.classesRepository.find({
+      relations: {
+        classStudents: { student: true },
+        classTeachers: { teacher: true },
+        classCentre: { centre: true },
+      },
+      where: {
+        classStudents: { studentId },
+      },
+    });
+    return classes;
+  }
+
+  async getClassesByTeacher(teacherId: string): Promise<Class[]> {
+    const classes = await this.classesRepository.find({
+      relations: {
+        classStudents: { student: true },
+        classTeachers: { teacher: true },
+        classCentre: { centre: true },
+      },
+      where: {
+        classTeachers: { teacherId },
+      },
+    });
+    return classes;
+  }
+
+  async getClassesByStudentAndTeacher(
+    studentId: string,
+    teacherId: string,
+  ): Promise<Class[]> {
+    const classes = await this.classesRepository.find({
+      relations: {
+        classStudents: { student: true },
+        classTeachers: { teacher: true },
+        classCentre: { centre: true },
+      },
+      where: {
+        classStudents: { studentId },
+        classTeachers: { teacherId },
+      },
+    });
+    return classes;
+  }
+
   async addClassToCentre(centreId: string, classId: string) {
     await this.classCentreRepository.insert({
       centreId: centreId,

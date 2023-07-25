@@ -18,6 +18,7 @@ export class LessonDto extends LessonDatum {
       classId: lesson.classId,
     };
   }
+
   static fromLessons(lessons: Lesson[]): LessonDto[] {
     return lessons.map((lesson) => LessonDto.fromLesson(lesson));
   }

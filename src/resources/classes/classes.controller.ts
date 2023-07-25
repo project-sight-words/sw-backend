@@ -1,6 +1,10 @@
 import * as Uuid from "utils/uuid";
 import { Class } from "entities/class.entities";
 import { ClassesService } from "./classes.service";
+import { StudentDto } from "resources/students/dto/students.dto";
+import { StudentsService } from "resources/students/students.service";
+import { TeacherDto } from "resources/teachers/dto/teachers.dto";
+import { TeachersService } from "resources/teachers/teachers.service";
 import {
   Controller,
   Get,
@@ -10,9 +14,8 @@ import {
   Delete,
   Put,
   NotFoundException,
+  Query,
 } from "@nestjs/common";
-import { StudentsService } from "resources/students/students.service";
-import { TeachersService } from "resources/teachers/teachers.service";
 import {
   CreateClassCentreDto,
   CreateClassDto,
@@ -21,8 +24,6 @@ import {
   DetailedClassDto,
   UpdateClassDto,
 } from "./dto/classes.dto";
-import { StudentDto } from "resources/students/dto/students.dto";
-import { TeacherDto } from "resources/teachers/dto/teachers.dto";
 
 @Controller("classes")
 export class ClassesController {
@@ -33,8 +34,21 @@ export class ClassesController {
   ) {}
 
   @Get()
-  async get(): Promise<DetailedClassDto[]> {
-    const classes = await this.classesService.get();
+  async get(
+    @Query("studentId") studentId?: string,
+    @Query("teacherId") teacherId?: string,
+  ): Promise<DetailedClassDto[]> {
+    let classes: Class[];
+    if (studentId && teacherId)
+      classes = await this.classesService.getClassesByStudentAndTeacher(
+        studentId,
+        teacherId,
+      );
+    else if (studentId)
+      classes = await this.classesService.getClassesByStudent(studentId);
+    else if (teacherId)
+      classes = await this.classesService.getClassesByTeacher(teacherId);
+    else classes = await this.classesService.get();
     return DetailedClassDto.fromDetailedClassEntities(classes);
   }
 
