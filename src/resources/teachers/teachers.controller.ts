@@ -1,3 +1,7 @@
+import * as Uuid from "utils/uuid";
+import { JwtAuthGuard } from "resources/authentication/guards/jwt-auth.guard";
+import { TeachersService } from "./teachers.service";
+import { TeacherUser } from "../../entities/teacher.entities";
 import {
   BadRequestException,
   Body,
@@ -12,15 +16,12 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common";
-import { JwtAuthGuard } from "resources/authentication/guards/jwt-auth.guard";
 import {
   CreateTeacherDto,
   TeacherDto,
   DetailedTeacherDto,
+  UpdateTeacherDto,
 } from "./dto/teachers.dto";
-import { TeachersService } from "./teachers.service";
-import * as Uuid from "utils/uuid";
-import { TeacherUser } from "../../entities/teacher.entities";
 
 @Controller("teachers")
 @UseGuards(JwtAuthGuard)
@@ -67,7 +68,7 @@ export class TeachersController {
   @Put(":id")
   async updateById(
     @Param("id") id: string,
-    @Body() body: Omit<CreateTeacherDto, "email">,
+    @Body() body: UpdateTeacherDto,
   ): Promise<TeacherDto> {
     const isUuid = Uuid.test(id);
     if (!isUuid) throw new BadRequestException("Invalid UUID");

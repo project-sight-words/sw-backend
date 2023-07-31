@@ -1,13 +1,31 @@
+import { ClassWithCentreDto } from "resources/classes/dto/classes.dto";
 import { Expose, Type } from "class-transformer";
-import { IsArray, IsNotEmpty, IsUUID, ValidateNested } from "class-validator";
 import { Identifier } from "entities/common";
+import { instanceToPlain, plainToInstance } from "utils/transformer";
+import {
+  IsArray,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from "class-validator";
 import {
   TeacherDatum,
   TeacherEntity,
   TeacherUser,
 } from "entities/teacher.entities";
-import { ClassWithCentreDto } from "resources/classes/dto/classes.dto";
-import { instanceToPlain, plainToInstance } from "utils/transformer";
+
+export class UpdateTeacherDto {
+  @Expose()
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+
+  @Expose({ name: "staff_id" })
+  @IsNotEmpty()
+  @IsString()
+  staffId!: string;
+}
 
 export class CreateTeacherDto extends TeacherDatum {}
 
