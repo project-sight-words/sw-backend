@@ -74,6 +74,9 @@ export class UpdateStudentDto {
   @IsNotEmpty()
   @IsString()
   studentId!: string;
+
+  @Expose()
+  comments!: string;
 }
 
 export class CreateStudentDto extends UpdateStudentDto {
@@ -96,6 +99,7 @@ export class StudentDto extends CreateStudentDto {
       email: studentUser.user.email,
       name: studentUser.student.name,
       studentId: studentUser.student.studentId,
+      comments: studentUser.student.comments ?? "",
     };
   }
 

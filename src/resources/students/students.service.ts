@@ -126,7 +126,7 @@ export class StudentsService {
     updateStudentDto: UpdateStudentDto,
     updatedBy: string | null = null,
   ): Promise<StudentDto> {
-    const { name, studentId } = updateStudentDto;
+    const { name, studentId, comments } = updateStudentDto;
     await this.studentRepository
       .createQueryBuilder()
       .select()
@@ -137,6 +137,7 @@ export class StudentsService {
         name,
         studentId,
         updatedBy,
+        comments,
       })
       .execute();
     return this.findOneById(uuid);
@@ -237,6 +238,7 @@ export class StudentsService {
         students.map((s) => ({
           name: s.name,
           studentId: s.studentId,
+          comments: s.comments,
         })),
       )
       .orIgnore()

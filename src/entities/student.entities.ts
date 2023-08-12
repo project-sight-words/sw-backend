@@ -28,6 +28,9 @@ export class Student {
   @Column({ type: "text" })
   name!: string;
 
+  @Column({ type: "text", nullable: true })
+  comments: string | null = null;
+
   @UpdateDateColumn({ name: "updated_at", default: () => "NOW()" })
   updatedAt!: Date;
 
