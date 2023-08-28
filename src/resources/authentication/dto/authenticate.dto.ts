@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsNotEmptyObject,
   IsObject,
+  IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
@@ -57,4 +58,8 @@ export class RoleDto {
   @IsEnum(Role, { each: true })
   @IsNotEmpty()
   role!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  role_id?: string;
 }

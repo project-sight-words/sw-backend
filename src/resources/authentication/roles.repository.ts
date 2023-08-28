@@ -45,12 +45,27 @@ export class RolesRepository {
     }[];
     const row = rows[0];
     const roles: RoleDto[] = [];
-    if ("admin_id" in row && row.admin_id) roles.push({ role: Role.admin });
-    if ("teacher_id" in row && row.teacher_id) {
-      roles.push({ role: Role.teacher, name: row.teacher_name });
+
+    if ("admin_id" in row && row.admin_id) {
+      roles.push({ role: Role.admin, role_id: row.admin_id });
     }
-    if ("student_id" in row && row.student_id)
-      roles.push({ role: Role.student, name: row.student_name });
+
+    if ("teacher_id" in row && row.teacher_id) {
+      roles.push({
+        role: Role.teacher,
+        name: row.teacher_name,
+        role_id: row.teacher_id,
+      });
+    }
+
+    if ("student_id" in row && row.student_id) {
+      roles.push({
+        role: Role.student,
+        name: row.student_name,
+        role_id: row.student_id,
+      });
+    }
+
     return roles;
   }
 }
