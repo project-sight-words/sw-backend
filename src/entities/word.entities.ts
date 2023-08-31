@@ -52,11 +52,13 @@ export class Word {
 
   @OneToMany(() => Audio, (audio) => audio.word, {
     cascade: true,
+    eager: true,
   })
   audios: Audio[] | null = null;
 
   @OneToMany(() => Image, (image) => image.word, {
     cascade: true,
+    eager: true,
   })
   images: Image[] | null = null;
 
