@@ -10,6 +10,7 @@ import {
   IsInstance,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsUUID,
   Max,
   Min,
@@ -49,6 +50,7 @@ export class ClassEntityDto {
   // Defaults to isActive = true
   @Expose()
   @IsBoolean()
+  @IsOptional()
   isActive = true;
 
   static fromObject(object: object): ClassEntityDto {
