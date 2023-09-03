@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Multer } from "multer";
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class S3Service {
@@ -24,11 +25,12 @@ export class S3Service {
   }
 
   async uploadFile(file: Express.Multer.File): Promise<string | null> {
-    const { originalname } = file;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const fileName = uuidv4() as string;
     return await this.uploadToS3(
       file,
       this.bucketName,
-      originalname,
+      fileName,
       file.mimetype,
     );
   }

@@ -19,6 +19,7 @@ import {
 import { WordsService } from "resources/words/words.service";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { isValidAudio, isValidImage } from "utils/file";
+import { CompressionType } from "@aws-sdk/client-s3";
 
 @Controller("/words")
 export class WordsController {
@@ -44,7 +45,7 @@ export class WordsController {
 
     const createdWord = await this.wordsService.create(
       body.word,
-      body.definition,
+      body.definition || body.sentence,
       body.sentence,
       uploadedImage,
       uploadedAudio,
@@ -68,7 +69,7 @@ export class WordsController {
     return WordDto.from(word);
   }
 
-  @Put(":id")
+  @Post(":id")
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: "image", maxCount: 1 },

@@ -29,8 +29,8 @@ export class CreateWordDto extends EditWordDto {
   word!: string;
 
   @IsNotEmpty()
-  @IsString()
-  definition!: string;
+  @IsOptional()
+  definition: string | null = null;
 }
 
 export class WordDto extends CreateWordDto {

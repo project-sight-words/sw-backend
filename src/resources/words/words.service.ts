@@ -29,11 +29,11 @@ export class WordsService {
   ): Promise<Word> {
     const hasHomonym = await this.wordRepository.findOneBy({
       word: word,
-      definition: definition,
+      sentence: sentence,
     });
     if (!!hasHomonym)
       throw new BadRequestException(
-        `${word} defined as ${definition} already exists.`,
+        `${word} with"${sentence}" already exists.`,
       );
 
     const imageLink = await this.s3Service.uploadFile(image);
@@ -95,6 +95,15 @@ export class WordsService {
   ) {
     const word = await this.findOneById(id);
     if (!word) throw new NotFoundException("Word not found");
+
+    const hasHomonym = await this.wordRepository.findOneBy({
+      word: word.word,
+      sentence: sentence,
+    });
+    if (!!hasHomonym && hasHomonym.id !== word.id)
+      throw new BadRequestException(
+        `${word.word} with"${sentence}" already exists.`,
+      );
 
     word.sentence = sentence;
     word.comment = comment;
