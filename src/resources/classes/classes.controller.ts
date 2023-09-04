@@ -91,8 +91,11 @@ export class ClassesController {
     const isUuid = Uuid.test(classId);
     if (!isUuid) throw new NotFoundException();
     const { studentId } = body;
+    const isStudentUuid = Uuid.test(studentId);
+    if (!isStudentUuid) throw new NotFoundException();
+
     await this.classesService.findOneById(classId);
-    // await this.studentsService.getById(studentId); Use after Students refactor
+    await this.studentsService.findOneById(studentId);
     if (!classId || !studentId) throw new NotFoundException();
     await this.classesService.addStudentToClass(classId, studentId);
   }
