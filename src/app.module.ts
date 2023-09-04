@@ -18,6 +18,8 @@ import { UsersModule } from "resources/users/users.module";
 import { WordsModule } from "resources/words/words.module";
 import { WordAttemptsModule } from "resources/wordAttempts/wordAttempts.module";
 import { QuizAttemptsModule } from "resources/quizAttempts/quizAttempts.module";
+import { APP_FILTER } from "@nestjs/core";
+import { AllExceptionsFilter } from "AllExceptionsFilter";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,
@@ -94,6 +96,12 @@ const ConfigurationModule = ConfigModule.forRoot({
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}

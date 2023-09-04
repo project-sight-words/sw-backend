@@ -3,6 +3,7 @@ import { AppModule } from "./app.module";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
+// import { AllExceptionsFilter } from "ExceptionFilter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -13,6 +14,9 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors();
+  // TODO disable in production
+  // app.useGlobalFilters(new AllExceptionsFilter());
+
   await app.listen(port);
 }
 
