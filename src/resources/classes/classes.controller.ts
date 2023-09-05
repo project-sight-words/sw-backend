@@ -73,9 +73,10 @@ export class ClassesController {
     const isUuid = Uuid.test(classId);
     if (!isUuid) throw new NotFoundException();
     const { teacherId, isFormTeacher } = body;
-    await this.classesService.findOneById(classId);
-    // TODO: await this.teachersService.getById(teacherId);  Use after Teachers refactor
-    if (!classId || !teacherId) throw new NotFoundException();
+    const classEntity = await this.classesService.findOneById(classId);
+    const studentEntity = await this.teachersService.findOneById(teacherId);
+
+    if (!classEntity || !studentEntity) throw new NotFoundException();
     await this.classesService.addTeacherToClass(
       classId,
       teacherId,
@@ -94,9 +95,10 @@ export class ClassesController {
     const isStudentUuid = Uuid.test(studentId);
     if (!isStudentUuid) throw new NotFoundException();
 
-    await this.classesService.findOneById(classId);
-    await this.studentsService.findOneById(studentId);
-    if (!classId || !studentId) throw new NotFoundException();
+    const classEntity = await this.classesService.findOneById(classId);
+    const studentEntity = await this.studentsService.findOneById(studentId);
+
+    if (!classEntity || !studentEntity) throw new NotFoundException();
     await this.classesService.addStudentToClass(classId, studentId);
   }
 
@@ -166,6 +168,7 @@ export class ClassesController {
     const { centreId } = classCentreDto;
     const isCentreUuid = Uuid.test(centreId);
     if (!isCentreUuid) throw new NotFoundException();
+
     await this.classesService.addClassToCentre(centreId, id);
   }
 
