@@ -36,8 +36,8 @@ export class WordsController {
   async createWord(
     @UploadedFiles()
     files: {
-      image: Express.Multer.File[];
-      audio: Express.Multer.File[];
+      image: Express.Multer.File[] | undefined;
+      audio: Express.Multer.File[] | undefined;
     },
     @Body() body: CreateWordDto,
   ): Promise<WordDto> {
@@ -80,12 +80,20 @@ export class WordsController {
     @Param("id") id: string,
     @UploadedFiles()
     files: {
-      image: Express.Multer.File[];
-      audio: Express.Multer.File[];
+      image: Express.Multer.File[] | undefined;
+      audio: Express.Multer.File[] | undefined;
     },
     @Body() body: EditWordDto,
   ): Promise<WordDto> {
-    const [uploadedImage, uploadedAudio] = this.validateWordFiles(files);
+    let uploadedImage = null;
+    let uploadedAudio = null;
+
+    if (files.image && files.image.length > 0) {
+      uploadedImage = this.validateImage(files.image);
+    }
+    if (files.audio && files.audio.length > 0) {
+      uploadedAudio = this.validateAudio(files.audio);
+    }
 
     const editedWord = await this.wordsService.update(
       id,
@@ -106,23 +114,45 @@ export class WordsController {
     return WordDto.from(word);
   }
 
-  private validateWordFiles(files: {
-    image: Express.Multer.File[];
-    audio: Express.Multer.File[];
-  }): [Express.Multer.File, Express.Multer.File] {
-    if (!files.image) throw new BadRequestException("Missing image upload");
-    if (!files.audio) throw new BadRequestException("Missing audio upload");
+  // Function to validate image
+  private validateImage(
+    imageFiles: Express.Multer.File[] | undefined,
+  ): Express.Multer.File {
+    console.log("imageFiles", imageFiles);
+    if (!imageFiles || imageFiles.length == 0)
+      throw new BadRequestException("Missing image upload");
 
-    const uploadedImage: Express.Multer.File = files.image[0];
-    const uploadedAudio: Express.Multer.File = files.audio[0];
-
+    const uploadedImage: Express.Multer.File = imageFiles[0];
+    console.log("uploadedImage", uploadedImage);
     if (!isValidImage(uploadedImage.mimetype))
       throw new BadRequestException(
         "Only .jpg, .jpeg, .png, or .gif files supported",
       );
 
+    return uploadedImage;
+  }
+
+  // Function to validate audio
+  private validateAudio(
+    audioFiles: Express.Multer.File[] | undefined,
+  ): Express.Multer.File {
+    if (!audioFiles || audioFiles.length == 0)
+      throw new BadRequestException("Missing audio upload");
+
+    const uploadedAudio: Express.Multer.File = audioFiles[0];
+
     if (!isValidAudio(uploadedAudio.mimetype))
-      throw new BadRequestException(`Only .wav or .mp3 files supported`);
+      throw new BadRequestException("Only .wav or .mp3 files supported");
+
+    return uploadedAudio;
+  }
+
+  private validateWordFiles(files: {
+    image: Express.Multer.File[] | undefined;
+    audio: Express.Multer.File[] | undefined;
+  }): [Express.Multer.File, Express.Multer.File] {
+    const uploadedImage = this.validateImage(files.image);
+    const uploadedAudio = this.validateAudio(files.audio);
 
     return [uploadedImage, uploadedAudio];
   }

@@ -113,8 +113,8 @@ export class WordsService {
     sentence: string,
     comment: string | null,
     difficulty: WordDifficulty,
-    image: Express.Multer.File,
-    audio: Express.Multer.File,
+    image: Express.Multer.File | null,
+    audio: Express.Multer.File | null,
   ) {
     const word = await this.findOneById(id);
     if (!word) throw new NotFoundException("Word not found");
@@ -131,18 +131,22 @@ export class WordsService {
     word.sentence = sentence;
     word.comment = comment;
     word.difficulty = difficulty;
-
-    const imageLink = await this.s3Service.uploadFile(image);
-    if (!imageLink)
-      throw new BadRequestException("Invalid/Missing image given");
-    const audioLink = await this.s3Service.uploadFile(audio);
-    if (!audioLink)
-      throw new BadRequestException("Invalid/Missing audio given");
-
     if (!word.images || !word.audios) throw new InternalServerErrorException();
 
-    word.images[0].link = imageLink;
-    word.audios[0].link = audioLink;
+    if (image !== null) {
+      const imageLink = await this.s3Service.uploadFile(image);
+      if (!imageLink)
+        throw new BadRequestException("Invalid/Missing image given");
+
+      word.images[0].link = imageLink;
+    }
+    if (audio !== null) {
+      const audioLink = await this.s3Service.uploadFile(audio);
+      if (!audioLink)
+        throw new BadRequestException("Invalid/Missing audio given");
+
+      word.audios[0].link = audioLink;
+    }
 
     return await this.wordRepository.save(word);
   }
