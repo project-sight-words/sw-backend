@@ -9,14 +9,14 @@ import {
   Progress,
   WordAttempt,
 } from "entities/wordAttempt.entity";
-import { CustomRepository } from "repository/CustomRepository";
 import { S3Service } from "resources/media/s3.service";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class WordAttemptsService {
   constructor(
     @InjectRepository(WordAttempt)
-    private readonly wordAttemptsRepository: CustomRepository<WordAttempt>,
+    private readonly wordAttemptsRepository: Repository<WordAttempt>,
     private readonly s3Service: S3Service,
   ) {}
 
@@ -24,7 +24,7 @@ export class WordAttemptsService {
     const wordAttempt = new WordAttempt();
     wordAttempt.lessonWordId = lessonWordId;
     wordAttempt.studentId = studentId;
-    const entity = await this.wordAttemptsRepository.saveOrRestore(wordAttempt);
+    const entity = await this.wordAttemptsRepository.save(wordAttempt);
     return entity;
   }
 

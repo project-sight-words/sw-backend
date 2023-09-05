@@ -7,14 +7,14 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Word, WordDifficulty } from "entities/word.entities";
 import { S3Service } from "resources/media/s3.service";
-import { CustomRepository } from "repository/CustomRepository";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class WordsService {
   constructor(
     private readonly s3Service: S3Service,
     @InjectRepository(Word)
-    private readonly wordRepository: CustomRepository<Word>,
+    private readonly wordRepository: Repository<Word>,
   ) {}
 
   // TODO include creator ID
@@ -27,14 +27,16 @@ export class WordsService {
     comment: string | null = null,
     difficulty: WordDifficulty = "Basic",
   ): Promise<Word> {
-    const hasHomonym = await this.wordRepository.findOneBy({
-      word: word,
-      sentence: sentence,
+    const existing = await this.wordRepository.findOne({
+      where: { word: word, sentence: sentence },
+      withDeleted: true,
     });
-    if (!!hasHomonym)
+
+    if (existing && !existing.deletedAt) {
       throw new BadRequestException(
-        `${word} with"${sentence}" already exists.`,
+        `${word} with "${sentence}" already exists.`,
       );
+    }
 
     const imageLink = await this.s3Service.uploadFile(image);
     if (!imageLink)
@@ -43,7 +45,28 @@ export class WordsService {
     if (!audioLink)
       throw new BadRequestException("Invalid/Missing audio given");
 
-    return await this.wordRepository.saveOrRestore({
+    if (existing?.deletedAt) {
+      await this.wordRepository.restore(existing.id);
+
+      return await this.wordRepository.save({
+        ...existing,
+        definition,
+        difficulty,
+        comment,
+        images: [
+          {
+            link: imageLink,
+          },
+        ],
+        audios: [
+          {
+            link: audioLink,
+          },
+        ],
+      });
+    }
+
+    return await this.wordRepository.save({
       word: word,
       definition: definition,
       sentence: sentence,

@@ -5,28 +5,27 @@ import {
   ClassStudent,
   ClassTeacher,
 } from "entities/class.entities";
-import { DataSource } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Student, StudentUser } from "entities/student.entities";
 import { ClassDatum } from "./dto/classes.dto";
 import { Teacher, TeacherUser } from "entities/teacher.entities";
-import { CustomRepository } from "repository/CustomRepository";
 
 @Injectable()
 export class ClassesService {
   constructor(
     @InjectRepository(Class)
-    private readonly classesRepository: CustomRepository<Class>,
+    private readonly classesRepository: Repository<Class>,
     @InjectRepository(ClassStudent)
-    private readonly ClassStudentRepository: CustomRepository<ClassStudent>,
+    private readonly ClassStudentRepository: Repository<ClassStudent>,
     @InjectRepository(ClassTeacher)
-    private readonly ClassTeacherRepository: CustomRepository<ClassTeacher>,
+    private readonly ClassTeacherRepository: Repository<ClassTeacher>,
     @InjectRepository(Student)
-    private readonly studentsRepository: CustomRepository<Student>,
+    private readonly studentsRepository: Repository<Student>,
     @InjectRepository(Teacher)
-    private readonly teachersRepository: CustomRepository<Teacher>,
+    private readonly teachersRepository: Repository<Teacher>,
     @InjectRepository(ClassCentre)
-    private readonly classCentreRepository: CustomRepository<ClassCentre>,
+    private readonly classCentreRepository: Repository<ClassCentre>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -86,7 +85,20 @@ export class ClassesService {
   }
 
   async addStudentToClass(classId: string, studentId: string) {
-    await this.ClassStudentRepository.saveOrRestore({
+    const existing = await this.ClassStudentRepository.findOne({
+      where: {
+        classId: classId,
+        studentId: studentId,
+      },
+      withDeleted: true,
+    });
+
+    if (existing?.deletedAt) {
+      await this.ClassStudentRepository.restore(existing.id);
+      return existing;
+    }
+
+    await this.ClassStudentRepository.save({
       classId: classId,
       studentId: studentId,
     });
@@ -97,7 +109,20 @@ export class ClassesService {
     teacherId: string,
     isFormTeacher: boolean,
   ) {
-    await this.ClassTeacherRepository.saveOrRestore({
+    const existing = await this.ClassTeacherRepository.findOne({
+      where: {
+        classId: classId,
+        teacherId: teacherId,
+        isFormTeacher: isFormTeacher,
+      },
+      withDeleted: true,
+    });
+
+    if (existing?.deletedAt) {
+      await this.ClassTeacherRepository.restore(existing.id);
+      return existing;
+    }
+    await this.ClassTeacherRepository.save({
       classId: classId,
       teacherId: teacherId,
       isFormTeacher: isFormTeacher,
@@ -220,7 +245,19 @@ export class ClassesService {
   }
 
   async addClassToCentre(centreId: string, classId: string) {
-    await this.classCentreRepository.saveOrRestore({
+    const existing = await this.classCentreRepository.findOne({
+      where: {
+        centreId: centreId,
+        classId: classId,
+      },
+      withDeleted: true,
+    });
+
+    if (existing?.deletedAt) {
+      await this.classCentreRepository.restore(existing.id);
+      return existing;
+    }
+    await this.classCentreRepository.save({
       centreId: centreId,
       classId: classId,
     });

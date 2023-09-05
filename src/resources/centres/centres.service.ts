@@ -1,17 +1,16 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Centre } from "entities/centre.entities";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In } from "typeorm";
+import { In, Repository } from "typeorm";
 import { Class } from "entities/class.entities";
-import { CustomRepository } from "repository/CustomRepository";
 
 @Injectable()
 export class CentresService {
   constructor(
     @InjectRepository(Centre)
-    private readonly centresRepository: CustomRepository<Centre>,
+    private readonly centresRepository: Repository<Centre>,
     @InjectRepository(Class)
-    private readonly classesRepository: CustomRepository<Class>,
+    private readonly classesRepository: Repository<Class>,
   ) {}
 
   async get(): Promise<Centre[]> {
@@ -38,7 +37,17 @@ export class CentresService {
   async create(centreName: string): Promise<Centre> {
     const centre = new Centre();
     centre.name = centreName;
-    const entity = await this.centresRepository.saveOrRestore(centre);
+    const existing = await this.centresRepository.findOne({
+      where: { name: centreName },
+      withDeleted: true,
+    });
+
+    if (existing?.deletedAt) {
+      await this.centresRepository.restore(existing.id);
+      return existing;
+    }
+
+    const entity = await this.centresRepository.save(centre);
     return entity;
   }
 

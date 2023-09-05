@@ -2,15 +2,15 @@ import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ClassStudent } from "entities/class.entities";
 import { Lesson, LessonDatum } from "entities/lesson.entities";
-import { CustomRepository } from "repository/CustomRepository";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class LessonsService {
   constructor(
     @InjectRepository(Lesson)
-    private readonly lessonRepository: CustomRepository<Lesson>,
+    private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(ClassStudent)
-    private readonly classStudentRepository: CustomRepository<ClassStudent>,
+    private readonly classStudentRepository: Repository<ClassStudent>,
   ) {}
 
   async findByClassId(classId: string): Promise<Lesson[]> {
@@ -64,7 +64,7 @@ export class LessonsService {
     classId: string,
     createdBy: string | null = null,
   ): Promise<Lesson> {
-    return await this.lessonRepository.saveOrRestore({
+    return await this.lessonRepository.save({
       startDate: startDate,
       endDate: endDate,
       classId: classId,

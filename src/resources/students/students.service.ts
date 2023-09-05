@@ -11,6 +11,7 @@ import {
   EntityManager,
   In,
   IsNull,
+  Repository,
   SelectQueryBuilder,
 } from "typeorm";
 import { UsersService } from "resources/users/users.service";
@@ -21,7 +22,6 @@ import {
   UpdateStudentDto,
 } from "./dto/students.dto";
 import { CreateStamp, DeleteStamp, UpdateStamp } from "entities/common";
-import { CustomRepository } from "repository/CustomRepository";
 
 type EmailFirst = Record<
   string,
@@ -48,9 +48,9 @@ export class StudentsService {
     private readonly usersService: UsersService,
     private readonly dataSource: DataSource,
     @InjectRepository(Student)
-    private readonly studentRepository: CustomRepository<Student>,
+    private readonly studentRepository: Repository<Student>,
     @InjectRepository(StudentUser)
-    private readonly studentUserRepository: CustomRepository<StudentUser>,
+    private readonly studentUserRepository: Repository<StudentUser>,
   ) {}
 
   private readonly loggerService = new Logger("StudentsService");
@@ -158,7 +158,7 @@ export class StudentsService {
   async findExistingStudentsByEmailOrStudentId(
     emails: string[],
     studentIds: string[],
-    entityManager: EntityManager | CustomRepository<StudentUser> = this
+    entityManager: EntityManager | Repository<StudentUser> = this
       .studentUserRepository,
   ) {
     const options = {
@@ -180,7 +180,7 @@ export class StudentsService {
 
   async findByIds(
     ids: string[],
-    entityManager: EntityManager | CustomRepository<StudentUser> = this
+    entityManager: EntityManager | Repository<StudentUser> = this
       .studentUserRepository,
   ): Promise<StudentDto[]> {
     let studentUsers;
@@ -248,7 +248,7 @@ export class StudentsService {
 
   async bulkInsertStudentUsers(
     students: CreateStudentDto[],
-    entityManager: EntityManager | CustomRepository<StudentUser> = this
+    entityManager: EntityManager | Repository<StudentUser> = this
       .studentUserRepository,
   ): Promise<string[]> {
     // Dynamically generate the parameters list
