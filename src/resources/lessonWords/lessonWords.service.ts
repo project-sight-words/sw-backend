@@ -1,13 +1,13 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { LessonWord } from "entities/lessonWord.entities";
-import { Repository } from "typeorm";
+import { CustomRepository } from "repository/CustomRepository";
 
 @Injectable()
 export class LessonWordsService {
   constructor(
     @InjectRepository(LessonWord)
-    private readonly lessonWordRepository: Repository<LessonWord>,
+    private readonly lessonWordRepository: CustomRepository<LessonWord>,
   ) {}
 
   async findByLessonId(lessonId: string): Promise<LessonWord[]> {
@@ -42,17 +42,7 @@ export class LessonWordsService {
     lessonId: string,
     createdBy: string | null = null,
   ): Promise<LessonWord> {
-    const existingLessonWord = await this.lessonWordRepository.findOne({
-      where: { wordId, lessonId },
-      withDeleted: true,
-    });
-
-    if (existingLessonWord && existingLessonWord.deletedAt) {
-      await this.lessonWordRepository.restore(existingLessonWord.id);
-      return existingLessonWord;
-    }
-
-    return this.lessonWordRepository.save({
+    return this.lessonWordRepository.saveOrRestore({
       wordId: wordId,
       lessonId: lessonId,
       createdBy: createdBy,

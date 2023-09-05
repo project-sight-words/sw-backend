@@ -5,23 +5,24 @@ import {
   FindManyOptions,
   In,
   IsNull,
-  Repository,
   SelectQueryBuilder,
 } from "typeorm";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Teacher, TeacherDatum, TeacherUser } from "entities/teacher.entities";
 import { UsersService } from "resources/users/users.service";
+import { CustomRepository } from "repository/CustomRepository";
 
+// Note: Did not touch soft delete logic here
 @Injectable()
 export class TeachersService {
   constructor(
     private readonly usersService: UsersService,
     private readonly dataSource: DataSource,
     @InjectRepository(Teacher)
-    private readonly teacherRepository: Repository<Teacher>,
+    private readonly teacherRepository: CustomRepository<Teacher>,
     @InjectRepository(TeacherUser)
-    private readonly teacherUserRepository: Repository<TeacherUser>,
+    private readonly teacherUserRepository: CustomRepository<TeacherUser>,
   ) {}
 
   async searchByIds(ids: Set<string>): Promise<TeacherUser[]> {
@@ -131,7 +132,7 @@ export class TeachersService {
 
   async findByIds(
     ids: string[],
-    querier: EntityManager | Repository<TeacherUser> = this
+    querier: EntityManager | CustomRepository<TeacherUser> = this
       .teacherUserRepository,
   ): Promise<TeacherUser[]> {
     const options: FindManyOptions<TeacherUser> = {

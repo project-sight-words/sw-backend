@@ -19,7 +19,7 @@ import { WordsModule } from "resources/words/words.module";
 import { WordAttemptsModule } from "resources/wordAttempts/wordAttempts.module";
 import { QuizAttemptsModule } from "resources/quizAttempts/quizAttempts.module";
 import { APP_FILTER } from "@nestjs/core";
-import { AllExceptionsFilter } from "AllExceptionsFilter";
+import { AllExceptionsFilter } from "utils/AllExceptionsFilter";
 
 const ConfigurationModule = ConfigModule.forRoot({
   cache: true,

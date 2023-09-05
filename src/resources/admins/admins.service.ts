@@ -5,12 +5,12 @@ import {
   EntityManager,
   FindManyOptions,
   In,
-  Repository,
   SelectQueryBuilder,
 } from "typeorm";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UsersService } from "resources/users/users.service";
+import { CustomRepository } from "repository/CustomRepository";
 
 @Injectable()
 export class AdminsService {
@@ -18,9 +18,9 @@ export class AdminsService {
     private readonly usersService: UsersService,
     private readonly dataSource: DataSource,
     @InjectRepository(Admin)
-    private readonly adminRepository: Repository<Admin>,
+    private readonly adminRepository: CustomRepository<Admin>,
     @InjectRepository(AdminUser)
-    private readonly adminUserRepository: Repository<AdminUser>,
+    private readonly adminUserRepository: CustomRepository<AdminUser>,
   ) {}
 
   async get(): Promise<AdminUser[]> {
@@ -50,7 +50,8 @@ export class AdminsService {
 
   async findByIds(
     ids: string[],
-    querier: EntityManager | Repository<AdminUser> = this.adminUserRepository,
+    querier: EntityManager | CustomRepository<AdminUser> = this
+      .adminUserRepository,
   ): Promise<AdminUser[]> {
     const options: FindManyOptions<AdminUser> = {
       relations: {

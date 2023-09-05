@@ -1,12 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "entities/user.entities";
-import { EntityManager, FindManyOptions, In, Repository } from "typeorm";
+import { CustomRepository } from "repository/CustomRepository";
+import { EntityManager, FindManyOptions, In } from "typeorm";
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(User) private userRepository: CustomRepository<User>,
   ) {}
 
   findOneByEmail(email: string): Promise<User | null> {
@@ -15,7 +16,7 @@ export class UsersService {
 
   async findByEmails(
     emails: string[],
-    querier: EntityManager | Repository<User> = this.userRepository,
+    querier: EntityManager | CustomRepository<User> = this.userRepository,
   ): Promise<User[]> {
     const options: FindManyOptions<User> = {
       where: {
@@ -43,7 +44,7 @@ export class UsersService {
   create(email: string): Promise<User> {
     const user = new User();
     user.email = email;
-    return this.userRepository.save(user);
+    return this.userRepository.saveOrRestore(user);
   }
 
   async createManyIfNotExists(

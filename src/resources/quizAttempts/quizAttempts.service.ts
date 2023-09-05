@@ -1,19 +1,19 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QuizAttempt } from "entities/quizAttempt.entity";
-import { Repository } from "typeorm";
+import { CustomRepository } from "repository/CustomRepository";
 
 @Injectable()
 export class QuizAttemptsService {
   constructor(
     @InjectRepository(QuizAttempt)
-    private readonly quizAttemptsRepository: Repository<QuizAttempt>,
+    private readonly quizAttemptsRepository: CustomRepository<QuizAttempt>,
   ) {}
 
   async create(wordAttemptId: string): Promise<QuizAttempt> {
     const quizAttempt = new QuizAttempt();
     quizAttempt.wordAttemptId = wordAttemptId;
-    const entity = await this.quizAttemptsRepository.save(quizAttempt);
+    const entity = await this.quizAttemptsRepository.saveOrRestore(quizAttempt);
     return entity;
   }
 

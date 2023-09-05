@@ -6,15 +6,15 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Word, WordDifficulty } from "entities/word.entities";
-import { Repository } from "typeorm";
 import { S3Service } from "resources/media/s3.service";
+import { CustomRepository } from "repository/CustomRepository";
 
 @Injectable()
 export class WordsService {
   constructor(
     private readonly s3Service: S3Service,
     @InjectRepository(Word)
-    private readonly wordRepository: Repository<Word>,
+    private readonly wordRepository: CustomRepository<Word>,
   ) {}
 
   // TODO include creator ID
@@ -43,7 +43,7 @@ export class WordsService {
     if (!audioLink)
       throw new BadRequestException("Invalid/Missing audio given");
 
-    return await this.wordRepository.save({
+    return await this.wordRepository.saveOrRestore({
       word: word,
       definition: definition,
       sentence: sentence,

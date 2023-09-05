@@ -11,7 +11,6 @@ import {
   EntityManager,
   In,
   IsNull,
-  Repository,
   SelectQueryBuilder,
 } from "typeorm";
 import { UsersService } from "resources/users/users.service";
@@ -22,6 +21,7 @@ import {
   UpdateStudentDto,
 } from "./dto/students.dto";
 import { CreateStamp, DeleteStamp, UpdateStamp } from "entities/common";
+import { CustomRepository } from "repository/CustomRepository";
 
 type EmailFirst = Record<
   string,
@@ -41,15 +41,16 @@ type StudentIdFirst = Record<
   }
 >;
 
+// Note: Did not touch the soft delete logic here
 @Injectable()
 export class StudentsService {
   constructor(
     private readonly usersService: UsersService,
     private readonly dataSource: DataSource,
     @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
+    private readonly studentRepository: CustomRepository<Student>,
     @InjectRepository(StudentUser)
-    private readonly studentUserRepository: Repository<StudentUser>,
+    private readonly studentUserRepository: CustomRepository<StudentUser>,
   ) {}
 
   private readonly loggerService = new Logger("StudentsService");
@@ -157,7 +158,7 @@ export class StudentsService {
   async findExistingStudentsByEmailOrStudentId(
     emails: string[],
     studentIds: string[],
-    entityManager: EntityManager | Repository<StudentUser> = this
+    entityManager: EntityManager | CustomRepository<StudentUser> = this
       .studentUserRepository,
   ) {
     const options = {
@@ -179,7 +180,7 @@ export class StudentsService {
 
   async findByIds(
     ids: string[],
-    entityManager: EntityManager | Repository<StudentUser> = this
+    entityManager: EntityManager | CustomRepository<StudentUser> = this
       .studentUserRepository,
   ): Promise<StudentDto[]> {
     let studentUsers;
@@ -247,7 +248,7 @@ export class StudentsService {
 
   async bulkInsertStudentUsers(
     students: CreateStudentDto[],
-    entityManager: EntityManager | Repository<StudentUser> = this
+    entityManager: EntityManager | CustomRepository<StudentUser> = this
       .studentUserRepository,
   ): Promise<string[]> {
     // Dynamically generate the parameters list
