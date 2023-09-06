@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { LessonWord } from "entities/lessonWord.entities";
 import { Repository } from "typeorm";
+import { DetailedLessonWordDto } from "./dto/lessonWords.dto";
 
 @Injectable()
 export class LessonWordsService {
@@ -25,6 +26,46 @@ export class LessonWordsService {
       },
     });
     return lessonWords;
+  }
+
+  async findByLessonIds(
+    lessonIds: string[],
+    studentId?: string,
+  ): Promise<DetailedLessonWordDto[]> {
+    const results: DetailedLessonWordDto[][] = [];
+
+    for (const lessonId of lessonIds) {
+      const lessonWords = await this.lessonWordRepository.find({
+        relations: {
+          word: true,
+          attempts: {
+            quizAttempt: false,
+            student: true,
+          },
+        },
+        where: {
+          lessonId: lessonId,
+        },
+      });
+
+      const filteredAttempts = lessonWords
+        .filter((lessonWord) => lessonWord && lessonWord.word)
+        .map((lessonWord) => {
+          if (lessonWord.attempts) {
+            lessonWord.attempts = lessonWord.attempts.filter(
+              (attempt) =>
+                attempt && (!studentId || attempt.studentId === studentId),
+            );
+          }
+          return lessonWord;
+        });
+
+      results.push(
+        DetailedLessonWordDto.fromLessonWords(filteredAttempts, studentId),
+      );
+    }
+
+    return results.flat();
   }
 
   async findOneById(id: string): Promise<LessonWord | null> {

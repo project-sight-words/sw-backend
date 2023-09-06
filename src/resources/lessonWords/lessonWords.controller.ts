@@ -8,6 +8,7 @@ import {
   HttpCode,
   NotFoundException,
   Param,
+  ParseArrayPipe,
   Post,
   Query,
 } from "@nestjs/common";
@@ -29,6 +30,19 @@ export class LessonWordsController {
   ): Promise<DetailedLessonWordDto[]> {
     const lessonWords = await this.lessonWordsService.findByLessonId(lessonId);
     return DetailedLessonWordDto.fromLessonWords(lessonWords, studentId);
+  }
+
+  @Get("/lessons")
+  async getByLessonIdsAndStudentId(
+    @Query("lessonIds", ParseArrayPipe) lessonIds: string[],
+    @Query("studentId") studentId: string,
+  ): Promise<DetailedLessonWordDto[]> {
+    console.log("lessonIds", lessonIds);
+    const lessonWords = await this.lessonWordsService.findByLessonIds(
+      lessonIds,
+      studentId,
+    );
+    return lessonWords;
   }
 
   @Get(":id")

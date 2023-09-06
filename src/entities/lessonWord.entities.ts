@@ -28,7 +28,7 @@ export class LessonWord {
   lessonId!: string;
 
   @Expose()
-  @ManyToOne(() => Word, (word) => word.lessonWords)
+  @ManyToOne(() => Word, (word) => word.lessonWords, { eager: true })
   @JoinColumn({ name: "word_id" })
   word!: Word;
 
@@ -42,7 +42,9 @@ export class LessonWord {
   createdAt!: Date;
 
   @Expose()
-  @OneToMany(() => WordAttempt, (wordAttempt) => wordAttempt.lessonWord)
+  @OneToMany(() => WordAttempt, (wordAttempt) => wordAttempt.lessonWord, {
+    eager: true,
+  })
   attempts!: WordAttempt[];
 
   @Expose()
