@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Word, WordDifficulty } from "entities/word.entities";
+import { Audio, Image, Word, WordDifficulty } from "entities/word.entities";
 import { S3Service } from "resources/media/s3.service";
 import { Repository } from "typeorm";
 
@@ -15,6 +15,12 @@ export class WordsService {
     private readonly s3Service: S3Service,
     @InjectRepository(Word)
     private readonly wordRepository: Repository<Word>,
+
+    @InjectRepository(Image)
+    private readonly imageRepository: Repository<Image>,
+
+    @InjectRepository(Audio)
+    private readonly audioRepository: Repository<Audio>,
   ) {}
 
   // TODO include creator ID
@@ -138,6 +144,7 @@ export class WordsService {
       if (!imageLink)
         throw new BadRequestException("Invalid/Missing image given");
 
+      await this.imageRepository.update(word.images[0].id, { link: imageLink });
       word.images[0].link = imageLink;
     }
     if (audio !== null) {
@@ -145,10 +152,17 @@ export class WordsService {
       if (!audioLink)
         throw new BadRequestException("Invalid/Missing audio given");
 
+      await this.audioRepository.update(word.audios[0].id, { link: audioLink });
       word.audios[0].link = audioLink;
     }
 
-    return await this.wordRepository.save(word);
+    await this.wordRepository.update(id, {
+      sentence: sentence,
+      comment: comment,
+      difficulty: difficulty,
+    });
+
+    return word;
   }
 
   deleteById(id: string) {
