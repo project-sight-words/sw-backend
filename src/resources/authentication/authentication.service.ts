@@ -29,11 +29,8 @@ export class AuthenticationService {
   }
 
   async login(email: string) {
-    console.log(email);
     const user = await this.usersService.findOneByEmail(email);
-    console.log(user);
     if (!user) throw new BadRequestException();
-    console.log("check");
     const roles = await this.getRolesByUserId(user.id);
     const payload: JwtPayload = {
       id: user.id,
