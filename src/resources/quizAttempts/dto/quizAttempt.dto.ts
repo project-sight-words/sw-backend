@@ -42,7 +42,9 @@ export class QuizAttemptDto {
 
 export class CreateQuizAttemptDto extends PickType(QuizAttemptDto, [
   "wordAttemptId",
-] as const) {}
+  "scoreOne",
+  "scoreTwo",
+]) {}
 
 export class UpdateQuizAttemptDto extends PickType(QuizAttemptDto, [
   "scoreOne",

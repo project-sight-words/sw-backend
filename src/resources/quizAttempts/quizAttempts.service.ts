@@ -10,9 +10,15 @@ export class QuizAttemptsService {
     private readonly quizAttemptsRepository: Repository<QuizAttempt>,
   ) {}
 
-  async create(wordAttemptId: string): Promise<QuizAttempt> {
+  async create(
+    wordAttemptId: string,
+    scoreOne: number | null,
+    scoreTwo: number | null,
+  ): Promise<QuizAttempt> {
     const quizAttempt = new QuizAttempt();
     quizAttempt.wordAttemptId = wordAttemptId;
+    quizAttempt.scoreOne = scoreOne;
+    quizAttempt.scoreTwo = scoreTwo;
     const entity = await this.quizAttemptsRepository.save(quizAttempt);
     return entity;
   }
