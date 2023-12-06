@@ -26,7 +26,7 @@ export class S3Service {
 
   async uploadFile(file: Express.Multer.File): Promise<string | null> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const fileName = uuidv4() as string;
+    const fileName = uuidv4();
     return await this.uploadToS3(
       file,
       this.bucketName,
