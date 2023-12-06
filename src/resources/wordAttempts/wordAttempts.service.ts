@@ -76,6 +76,8 @@ export class WordAttemptsService {
       throw new BadRequestException("Invalid/Missing image given");
 
     wordAttempt.personalisedImageLink = personalisedImageLink;
+    // when update new personalized image, reset status to pending
+    wordAttempt.imageApprovalStatus = ImageApprovalStatus.PENDING;
     wordAttempt.attemptedAt = new Date();
 
     const entity = await this.wordAttemptsRepository.save(wordAttempt);
