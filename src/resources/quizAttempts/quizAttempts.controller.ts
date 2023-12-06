@@ -15,6 +15,8 @@ export class QuizAttemptsController {
   async create(@Body() createQuizAttemptDto: CreateQuizAttemptDto) {
     const entity = await this.quizAttemptsService.create(
       createQuizAttemptDto.wordAttemptId,
+      createQuizAttemptDto.scoreOne,
+      createQuizAttemptDto.scoreTwo,
     );
     return entity;
   }
