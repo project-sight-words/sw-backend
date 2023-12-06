@@ -22,12 +22,27 @@ const clientSettings: Record<string, ClientConfig> = {
 
 const createClient = (name: keyof typeof clientSettings) => {
   log(`Database client selected: ${yellow(name)}`);
+  log(`Client settings: ${JSON.stringify(clientSettings[name])}`); // Log the client settings for debugging
   return new Client(clientSettings[name]);
 };
 
 export const getClient = () => {
   const clientName = process.env.DB_CLIENT;
-  if (!clientName || !(clientName in clientSettings))
-    return createClient("default");
+  if (!clientName || !(clientName in clientSettings)) {
+    log("Using default client settings");
+
+    // Create a new client with modified settings
+    const modifiedDefaultSettings: ClientConfig = {
+      ...clientSettings.default,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    };
+
+    log(`Database client selected: default with modified settings`);
+    log(`Client settings: ${JSON.stringify(modifiedDefaultSettings)}`);
+    return new Client(modifiedDefaultSettings);
+  }
+
   return createClient(clientName);
 };
