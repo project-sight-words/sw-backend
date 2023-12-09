@@ -89,8 +89,9 @@ export class LessonWordsService {
     });
 
     if (existing?.deletedAt) {
-      await this.lessonWordRepository.restore(existing.id);
+      // await this.lessonWordRepository.restore(existing.id);
       // Update any fields as necessary here
+      existing.deletedAt = null;
       existing.createdBy = createdBy;
       return await this.lessonWordRepository.save(existing);
     }
